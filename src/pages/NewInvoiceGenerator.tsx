@@ -291,9 +291,11 @@ export const InvoiceGeneratorPage: React.FC = () => {
         }
       }}
     >
-      <Container 
+      <Container
         maxWidth="lg"
         sx={{
+          px: { xs: 1, sm: 2, md: 3 },
+          py: { xs: 2, sm: 3, md: 4 },
           '@media print': {
             maxWidth: 'none',
             padding: 0,
@@ -313,15 +315,22 @@ export const InvoiceGeneratorPage: React.FC = () => {
           <Paper
             elevation={2}
             sx={{
-              p: 3,
+              p: { xs: 2, sm: 2.5, md: 3 },
             }}
           >
               {/* Header Actions */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, alignItems: 'center' }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: '#2c3e50' }}>
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'space-between', 
+                mb: 3, 
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                gap: { xs: 2, sm: 0 }
+              }}>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: '#2c3e50', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
                   Invoice Generator
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                   <Tooltip title="Preview Invoice">
                     <IconButton 
                       onClick={handlePreview} 
@@ -351,7 +360,13 @@ export const InvoiceGeneratorPage: React.FC = () => {
               </Box>
 
               {/* ROW 1: Logo (Left) + INVOICE Title/Details (Right) */}
-              <Box sx={{ display: 'flex', gap: 3, mb: 4, alignItems: 'flex-start' }}>
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: 3, 
+                mb: 4, 
+                alignItems: 'flex-start' 
+              }}>
                 
                 {/* Logo Upload - Left Side */}
                 <Box sx={{ flex: 1 }}>
@@ -495,15 +510,15 @@ export const InvoiceGeneratorPage: React.FC = () => {
                 </Box>
 
                 {/* INVOICE Title + Details - Right Side */}
-                <Box sx={{ width: '300px' }}>
+                <Box sx={{ width: { xs: '100%', md: '300px' } }}>
                   <Typography 
                     variant="h3" 
                     sx={{ 
                       fontWeight: 700, 
                       color: '#2c3e50',
-                      fontSize: '36px',
+                      fontSize: { xs: '28px', sm: '32px', md: '36px' },
                       mb: 2,
-                      textAlign: 'right'
+                      textAlign: { xs: 'left', md: 'right' }
                     }}
                   >
                     INVOICE
@@ -546,7 +561,13 @@ export const InvoiceGeneratorPage: React.FC = () => {
               </Box>
 
               {/* ROW 2: FROM (Left) + Invoice Dates (Right) */}
-              <Box sx={{ display: 'flex', gap: 3, mb: 4, alignItems: 'flex-start' }}>
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: 3, 
+                mb: 4, 
+                alignItems: 'flex-start' 
+              }}>
                 
                 {/* FROM Section - Left */}
                 <Box sx={{ flex: 1 }}>
@@ -582,7 +603,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                       size="small"
                       placeholder="123 Business St&#10;City, State ZIP"
                     />
-                    <Box sx={{ display: 'flex', gap: 1.5 }}>
+                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
                       <TextField
                         fullWidth
                         label="Email"
@@ -613,7 +634,13 @@ export const InvoiceGeneratorPage: React.FC = () => {
                 </Box>
 
                 {/* Invoice Dates - Right */}
-                <Box sx={{ width: '300px', backgroundColor: '#f8f9fa', p: 2.5, borderRadius: 1, border: '1px solid #e0e0e0' }}>
+                <Box sx={{ 
+                  width: { xs: '100%', md: '300px' }, 
+                  backgroundColor: '#f8f9fa', 
+                  p: 2.5, 
+                  borderRadius: 1, 
+                  border: '1px solid #e0e0e0' 
+                }}>
                   <Stack spacing={2}>
                     <Box>
                       <Typography variant="caption" sx={{ color: '#666', fontWeight: 600, display: 'block', mb: 0.5 }}>
@@ -710,7 +737,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                     rows={2}
                     placeholder="456 Client Ave&#10;City, State ZIP"
                   />
-                  <Box sx={{ display: 'flex', gap: 1.5 }}>
+                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5 }}>
                     <TextField
                       fullWidth
                       label="Email"
@@ -778,14 +805,14 @@ export const InvoiceGeneratorPage: React.FC = () => {
                         size="small"
                         placeholder="Product or service description..."
                       />
-                      <Box sx={{ display: 'flex', gap: 1.5 }}>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
                         <TextField
                           label="Qty"
                           type="number"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)}
                           size="small"
-                          sx={{ width: '100px' }}
+                          sx={{ width: { xs: 'calc(50% - 6px)', sm: '100px' } }}
                           inputProps={{ min: 0, step: 0.01 }}
                         />
                         <TextField
@@ -797,7 +824,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                             startAdornment: <InputAdornment position="start">{invoice.currency}</InputAdornment>,
                           }}
                           size="small"
-                          sx={{ flex: 1 }}
+                          sx={{ flex: { xs: '1 1 calc(50% - 6px)', sm: 1 } }}
                           inputProps={{ min: 0, step: 0.01 }}
                         />
                         <TextField
@@ -810,7 +837,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                           }}
                           size="small"
                           sx={{ 
-                            flex: 1,
+                            flex: { xs: '1 1 100%', sm: 1 },
                             '& .MuiInputBase-input.Mui-disabled': {
                               WebkitTextFillColor: '#1976d2',
                               fontWeight: 600
@@ -839,10 +866,16 @@ export const InvoiceGeneratorPage: React.FC = () => {
               </Box>
 
               {/* ROW 5: TOTALS Section - Split Layout */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: { xs: 'column', md: 'row' },
+                justifyContent: 'space-between', 
+                gap: { xs: 3, md: 3 },
+                mb: 4 
+              }}>
                 
                 {/* Additional Charges - Left */}
-                <Box sx={{ width: '350px' }}>
+                <Box sx={{ width: { xs: '100%', md: '350px' } }}>
                   <Typography 
                     variant="caption" 
                     sx={{ 
@@ -866,8 +899,8 @@ export const InvoiceGeneratorPage: React.FC = () => {
                       size="small"
                       inputProps={{ min: 0, step: 0.01 }}
                     />
-                    <Box sx={{ display: 'flex', gap: 1.5 }}>
-                      <FormControl fullWidth size="small">
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+                      <FormControl size="small" sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 6px)' } }}>
                         <InputLabel>Discount Type</InputLabel>
                         <Select
                           value={invoice.discountType}
@@ -881,13 +914,13 @@ export const InvoiceGeneratorPage: React.FC = () => {
                         </Select>
                       </FormControl>
                       <TextField
-                        fullWidth
                         label="Discount"
                         type="number"
                         value={invoice.discount}
                         onChange={(e) => setInvoice({ ...invoice, discount: parseFloat(e.target.value) || 0 })}
                         size="small"
                         inputProps={{ min: 0, step: 0.01 }}
+                        sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 6px)' } }}
                       />
                     </Box>
                     <TextField
@@ -920,9 +953,9 @@ export const InvoiceGeneratorPage: React.FC = () => {
                 {/* Totals Summary - Right */}
                 <Box 
                   sx={{ 
-                    width: '350px', 
+                    width: { xs: '100%', md: '350px' }, 
                     backgroundColor: '#f8f9fa', 
-                    p: 3, 
+                    p: { xs: 2, sm: 3 }, 
                     borderRadius: 1, 
                     border: '2px solid #e0e0e0',
                   }}
