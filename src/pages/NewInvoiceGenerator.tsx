@@ -40,6 +40,8 @@ import { InvoiceItem } from '../types/invoice';
 import { ProfessionalInvoicePreview } from '../components/InvoicePreview/ProfessionalInvoicePreview';
 import { UserMenu } from '../components/UserMenu';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { useAuth } from '../context/AuthContext';
+import { useInvoices } from '../hooks/useInvoices';
 import {
   updateInvoiceField,
   updateFromField,
@@ -56,6 +58,8 @@ export const InvoiceGeneratorPage: React.FC = () => {
   // Redux state and dispatch
   const dispatch = useAppDispatch();
   const invoice = useAppSelector((state) => state.invoice);
+  const { user, isAuthenticated } = useAuth();
+  const { saveInvoice, syncing: isSaving } = useInvoices();
   
   // Local UI state (not persisted)
   const [isDownloading, setIsDownloading] = useState(false);
@@ -236,6 +240,36 @@ export const InvoiceGeneratorPage: React.FC = () => {
     }
   };
 
+  const handleSaveToServer = async () => {
+    if (!isAuthenticated || user?.isAnonymous) {
+      setNotification({ 
+        open: true, 
+        message: 'Please login to save to server', 
+        severity: 'error' 
+      });
+      return;
+    }
+
+    try {
+      // saveInvoice uses the current invoice from Redux state
+      // Pass ID if updating existing, undefined if creating new
+      const invoiceId = (invoice as any).id;
+      await saveInvoice(invoiceId);
+      setNotification({ 
+        open: true, 
+        message: 'Invoice saved to server successfully!', 
+        severity: 'success' 
+      });
+    } catch (error) {
+      console.error('Error saving to server:', error);
+      setNotification({ 
+        open: true, 
+        message: 'Failed to save invoice to server', 
+        severity: 'error' 
+      });
+    }
+  };
+
   return (
     <Box 
       sx={{ 
@@ -288,6 +322,24 @@ export const InvoiceGeneratorPage: React.FC = () => {
                   Invoice Generator
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                  {/* Save to Server Button - Only for authenticated users */}
+                  {isAuthenticated && !user?.isAnonymous && (
+                    <Tooltip title="Save Invoice to Server">
+                      <span>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="success"
+                          onClick={handleSaveToServer}
+                          disabled={isSaving}
+                          startIcon={isSaving ? <CircularProgress size={16} color="inherit" /> : <UploadIcon />}
+                          sx={{ textTransform: 'none', fontWeight: 600 }}
+                        >
+                          {isSaving ? 'Saving...' : 'Save to Server'}
+                        </Button>
+                      </span>
+                    </Tooltip>
+                  )}
                   <Tooltip title="Preview Invoice">
                     <IconButton 
                       onClick={handlePreview} 

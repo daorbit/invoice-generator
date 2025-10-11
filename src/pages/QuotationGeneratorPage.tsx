@@ -15,6 +15,9 @@ import {
   Tooltip,
   Stack,
   Chip,
+  CircularProgress,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -24,6 +27,7 @@ import {
   Visibility as VisibilityIcon,
   Image as ImageIcon,
   ArrowBack as BackIcon,
+  CloudUpload as CloudUploadIcon,
 } from '@mui/icons-material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -32,6 +36,8 @@ import { QuotationItem } from '../types/quotation';
 import { UserMenu } from '../components/UserMenu';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { useAuth } from '../context/AuthContext';
+import { useQuotations } from '../hooks/useQuotations';
 import {
   updateQuotationField,
   updateFromField,
@@ -57,8 +63,11 @@ export const QuotationGeneratorPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const quotation = useAppSelector((state) => state.quotation);
+  const { user, isAuthenticated } = useAuth();
+  const { saveQuotation, syncing: isSaving } = useQuotations();
   
   const [isDragging, setIsDragging] = useState(false);
+  const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -138,6 +147,36 @@ export const QuotationGeneratorPage: React.FC = () => {
     return subtotal + tax - discount + quotation.shipping;
   };
 
+  const handleSaveToServer = async () => {
+    if (!isAuthenticated || user?.isAnonymous) {
+      setNotification({ 
+        open: true, 
+        message: 'Please login to save to server', 
+        severity: 'error' 
+      });
+      return;
+    }
+
+    try {
+      // saveQuotation uses the current quotation from Redux state
+      // Pass ID if updating existing, undefined if creating new
+      const quotationId = (quotation as any).id;
+      await saveQuotation(quotationId);
+      setNotification({ 
+        open: true, 
+        message: 'Quotation saved to server successfully!', 
+        severity: 'success' 
+      });
+    } catch (error) {
+      console.error('Error saving to server:', error);
+      setNotification({ 
+        open: true, 
+        message: 'Failed to save quotation to server', 
+        severity: 'error' 
+      });
+    }
+  };
+
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f7fa' }}>
       <Container
@@ -184,6 +223,24 @@ export const QuotationGeneratorPage: React.FC = () => {
                 </Box>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                {/* Save to Server Button - Only for authenticated users */}
+                {isAuthenticated && !user?.isAnonymous && (
+                  <Tooltip title="Save Quotation to Server">
+                    <span>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="success"
+                        onClick={handleSaveToServer}
+                        disabled={isSaving}
+                        startIcon={isSaving ? <CircularProgress size={16} color="inherit" /> : <CloudUploadIcon />}
+                        sx={{ textTransform: 'none', fontWeight: 600 }}
+                      >
+                        {isSaving ? 'Saving...' : 'Save to Server'}
+                      </Button>
+                    </span>
+                  </Tooltip>
+                )}
                 <Tooltip title="Preview Quotation">
                   <IconButton size="small" color="primary">
                     <VisibilityIcon />
@@ -876,6 +933,18 @@ export const QuotationGeneratorPage: React.FC = () => {
           </Paper>
         </Box>
       </Container>
+
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={4000}
+        onClose={() => setNotification({ ...notification, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={notification.severity} onClose={() => setNotification({ ...notification, open: false })}>
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

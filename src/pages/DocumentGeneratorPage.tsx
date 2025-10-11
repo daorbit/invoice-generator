@@ -33,6 +33,7 @@ import {
   Close as CloseIcon,
   Image as ImageIcon,
   ArrowBack as BackIcon,
+  CloudUpload as CloudUploadIcon,
 } from '@mui/icons-material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -43,6 +44,9 @@ import { DocumentPreview } from '../components/InvoicePreview/DocumentPreview';
 import { UserMenu } from '../components/UserMenu';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { useAuth } from '../context/AuthContext';
+import { useInvoices } from '../hooks/useInvoices';
+import { useQuotations } from '../hooks/useQuotations';
 import {
   updateInvoiceField,
   updateFromField as updateInvoiceFromField,
@@ -82,6 +86,9 @@ interface DocumentGeneratorPageProps {
 export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mode }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { user, isAuthenticated } = useAuth();
+  const { saveInvoice, syncing: invoiceSyncing } = useInvoices();
+  const { saveQuotation, syncing: quotationSyncing } = useQuotations();
   
   // Get the appropriate state based on mode
   const invoice = useAppSelector((state) => state.invoice);
@@ -93,6 +100,9 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  
+  // Determine if saving is in progress
+  const isSaving = mode === 'invoice' ? invoiceSyncing : quotationSyncing;
 
   // Determine theme colors based on mode
   const themeColor = mode === 'quotation' ? '#2196f3' : '#4caf50';
@@ -289,6 +299,47 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
     }
   };
 
+  const handleSaveToServer = async () => {
+    if (!isAuthenticated || user?.isAnonymous) {
+      setNotification({ 
+        open: true, 
+        message: 'Please login to save to server', 
+        severity: 'error' 
+      });
+      return;
+    }
+
+    try {
+      if (mode === 'invoice') {
+        // saveInvoice uses the current invoice from Redux state
+        // Pass ID if updating existing, undefined if creating new
+        const invoiceId = (invoice as any).id;
+        await saveInvoice(invoiceId);
+        setNotification({ 
+          open: true, 
+          message: 'Invoice saved to server successfully!', 
+          severity: 'success' 
+        });
+      } else {
+        // saveQuotation uses the current quotation from Redux state
+        const quotationId = (quotation as any).id;
+        await saveQuotation(quotationId);
+        setNotification({ 
+          open: true, 
+          message: 'Quotation saved to server successfully!', 
+          severity: 'success' 
+        });
+      }
+    } catch (error) {
+      console.error('Error saving to server:', error);
+      setNotification({ 
+        open: true, 
+        message: `Failed to save ${mode} to server`, 
+        severity: 'error' 
+      });
+    }
+  };
+
   const handlePrint = () => {
     setIsPrintPreview(true);
   };
@@ -342,6 +393,24 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
                 </Box>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                {/* Save to Server Button - Only for authenticated users */}
+                {isAuthenticated && !user?.isAnonymous && (
+                  <Tooltip title={`Save ${mode === 'invoice' ? 'Invoice' : 'Quotation'} to Server`}>
+                    <span>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="success"
+                        onClick={handleSaveToServer}
+                        disabled={isSaving}
+                        startIcon={isSaving ? <CircularProgress size={16} color="inherit" /> : <CloudUploadIcon />}
+                        sx={{ textTransform: 'none', fontWeight: 600 }}
+                      >
+                        {isSaving ? 'Saving...' : 'Save to Server'}
+                      </Button>
+                    </span>
+                  </Tooltip>
+                )}
                 <Tooltip title={`Preview ${mode === 'invoice' ? 'Invoice' : 'Quotation'}`}>
                   <IconButton size="small" color="primary" onClick={() => setIsPreviewOpen(true)}>
                     <VisibilityIcon />
