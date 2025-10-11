@@ -37,6 +37,7 @@ import {
 import { Invoice, InvoiceItem } from '../types/invoice';
 import { ProfessionalInvoicePreview } from '../components/InvoicePreview/ProfessionalInvoicePreview';
 import { generateInvoiceNumber } from '../utils/invoiceUtils';
+import { UserMenu } from '../components/UserMenu';
 
 const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
 
@@ -240,11 +241,11 @@ export const InvoiceGeneratorPage: React.FC = () => {
               }}
             >
               {/* Header Actions */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, alignItems: 'center' }}>
                 <Typography variant="h5" sx={{ fontWeight: 700, color: '#2c3e50' }}>
                   Invoice Details
                 </Typography>
-                <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Tooltip title="Download PDF">
                     <IconButton 
                       onClick={handleDownload} 
@@ -260,6 +261,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                       <PrintIcon />
                     </IconButton>
                   </Tooltip>
+                  <UserMenu />
                 </Box>
               </Box>
 

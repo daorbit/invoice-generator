@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Invoice } from '../types/invoice';
-import { getDefaultInvoice, saveInvoiceToLocalStorage, loadInvoiceFromLocalStorage } from '../utils/invoiceStorage';}
+import { generateInvoiceNumber } from '../utils/invoiceUtils';
 
 interface InvoiceContextType {
   invoice: Invoice;
@@ -9,6 +9,43 @@ interface InvoiceContextType {
 }
 
 const InvoiceContext = createContext<InvoiceContextType | undefined>(undefined);
+
+const getDefaultInvoice = (): Invoice => ({
+  logo: undefined,
+  invoiceNumber: generateInvoiceNumber(),
+  invoiceDate: new Date(),
+  dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+  poNumber: '',
+  from: {
+    name: '',
+    address: '',
+    email: '',
+    phone: '',
+  },
+  billTo: {
+    name: '',
+    address: '',
+    email: '',
+    phone: '',
+  },
+  items: [
+    {
+      id: '1',
+      description: '',
+      quantity: 1,
+      rate: 0,
+      amount: 0,
+    },
+  ],
+  notes: '',
+  terms: '',
+  currency: 'USD',
+  tax: 0,
+  discount: 0,
+  discountType: 'percentage',
+  shipping: 0,
+  amountPaid: 0,
+});
 
 export const useInvoice = () => {
   const context = useContext(InvoiceContext);
@@ -24,12 +61,23 @@ interface InvoiceProviderProps {
 
 export const InvoiceProvider: React.FC<InvoiceProviderProps> = ({ children }) => {
   const [invoice, setInvoice] = useState<Invoice>(() => {
-    const stored = loadInvoiceFromLocalStorage();
-    return stored || getDefaultInvoice();
+    const stored = localStorage.getItem('invoice_data');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        // Convert date strings back to Date objects
+        parsed.invoiceDate = new Date(parsed.invoiceDate);
+        parsed.dueDate = new Date(parsed.dueDate);
+        return parsed;
+      } catch (e) {
+        return getDefaultInvoice();
+      }
+    }
+    return getDefaultInvoice();
   });
 
   useEffect(() => {
-    saveInvoiceToLocalStorage(invoice);
+    localStorage.setItem('invoice_data', JSON.stringify(invoice));
   }, [invoice]);
 
   const updateInvoice = (newInvoice: Invoice) => {
