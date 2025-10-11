@@ -19,7 +19,7 @@ interface DocumentDetailsProps {
 export const DocumentDetails: React.FC<DocumentDetailsProps> = ({
   mode,
   document,
-  themeColor,
+  // themeColor,
   onUpdateField,
   getLabel,
 }) => {
