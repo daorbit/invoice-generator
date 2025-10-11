@@ -6,8 +6,6 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Container,
-  Paper,
   Snackbar,
   Alert,
   Dialog,
@@ -23,10 +21,12 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DocumentPreview } from '../components/InvoicePreview/DocumentPreview';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../store/hooks';
+import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { useAuth } from '../context/AuthContext';
 import { useInvoices } from '../hooks/useInvoices';
 import { useQuotations } from '../hooks/useQuotations';
+import { resetInvoice } from '../store/invoiceSlice';
+import { resetQuotation } from '../store/quotationSlice';
 
 // Component imports
 import { DocumentHeader } from '../components/DocumentGenerator/DocumentHeader';
@@ -53,6 +53,7 @@ interface DocumentGeneratorPageProps {
 
 export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mode }) => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const { user, isAuthenticated } = useAuth();
   const { saveInvoice, syncing: invoiceSyncing } = useInvoices();
   const { saveQuotation, syncing: quotationSyncing } = useQuotations();
@@ -169,9 +170,16 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
 
       await html2pdf().set(opt).from(element).save();
       setNotification({ open: true, message: 'PDF downloaded successfully!', severity: 'success' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating PDF:', error);
-      setNotification({ open: true, message: 'Failed to generate PDF', severity: 'error' });
+      
+      // Extract error message if available
+      let errorMessage = 'Failed to generate PDF';
+      if (error?.message) {
+        errorMessage = `Failed to generate PDF: ${error.message}`;
+      }
+      
+      setNotification({ open: true, message: errorMessage, severity: 'error' });
     } finally {
       setIsDownloading(false);
     }
@@ -196,6 +204,13 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
           message: 'Invoice saved to server successfully!', 
           severity: 'success' 
         });
+        
+        // Reset the form and navigate to dashboard after successful save
+        setTimeout(() => {
+          dispatch(resetInvoice());
+          navigate('/');
+        }, 1500); // Wait 1.5s to show success message
+        
       } else {
         const quotationId = (quotation as any).id;
         await saveQuotation(quotationId);
@@ -204,24 +219,162 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
           message: 'Quotation saved to server successfully!', 
           severity: 'success' 
         });
+        
+        // Reset the form and navigate to dashboard after successful save
+        setTimeout(() => {
+          dispatch(resetQuotation());
+          navigate('/');
+        }, 1500); // Wait 1.5s to show success message
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving to server:', error);
+      
+      // Extract error message from server response if available
+      let errorMessage = `Failed to save ${mode} to server`;
+      
+      if (error?.response?.data?.message) {
+        // Server returned a specific error message
+        errorMessage = error.response.data.message;
+      } else if (error?.response?.data?.error) {
+        // Alternative error field
+        errorMessage = error.response.data.error;
+      } else if (error?.message) {
+        // Generic error message
+        errorMessage = error.message;
+      }
+      
       setNotification({ 
         open: true, 
-        message: `Failed to save ${mode} to server`, 
+        message: errorMessage, 
         severity: 'error' 
       });
     }
   };
 
   const handlePrint = () => {
-    setIsPrintPreview(true);
+    const printContent = window.document.getElementById('invoice-preview');
+    if (!printContent) {
+      setNotification({ open: true, message: 'Preview content not found', severity: 'error' });
+      return;
+    }
+
+    // Clone the element to get all computed styles
+    const clonedContent = printContent.cloneNode(true) as HTMLElement;
+    
+    // Get all elements with computed styles
+    const getAllElements = (element: HTMLElement): HTMLElement[] => {
+      const elements: HTMLElement[] = [element];
+      const children = element.querySelectorAll('*');
+      children.forEach(child => elements.push(child as HTMLElement));
+      return elements;
+    };
+
+    const originalElements = getAllElements(printContent);
+    const clonedElements = getAllElements(clonedContent);
+
+    // Copy computed styles to inline styles
+    originalElements.forEach((element, index) => {
+      const computedStyle = window.getComputedStyle(element);
+      const clonedElement = clonedElements[index];
+      
+      // Copy important styles
+      const stylesToCopy = [
+        'color', 'background-color', 'font-family', 'font-size', 'font-weight',
+        'line-height', 'text-align', 'padding', 'margin', 'border', 'border-radius',
+        'display', 'width', 'height', 'max-width', 'max-height', 'min-width', 'min-height',
+        'box-shadow', 'letter-spacing', 'text-transform', 'white-space', 'flex-direction',
+        'align-items', 'justify-content', 'gap', 'flex', 'flex-wrap'
+      ];
+
+      stylesToCopy.forEach(property => {
+        const value = computedStyle.getPropertyValue(property);
+        if (value && value !== '' && value !== 'none' && value !== '0px') {
+          clonedElement.style.setProperty(property, value, 'important');
+        }
+      });
+    });
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      setNotification({ open: true, message: 'Unable to open print window', severity: 'error' });
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Print ${mode === 'invoice' ? 'Invoice' : 'Quotation'}</title>
+          <meta charset="UTF-8">
+          <style>
+            * {
+              box-sizing: border-box;
+            }
+            body { 
+              margin: 0;
+              padding: 20px;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+              -webkit-font-smoothing: antialiased;
+              -moz-osx-font-smoothing: grayscale;
+              background: #fff;
+            }
+            table {
+              border-collapse: collapse;
+              width: 100%;
+            }
+            img {
+              max-width: 100%;
+              height: auto;
+            }
+            @media print {
+              body { 
+                margin: 0; 
+                padding: 10mm;
+              }
+              @page { 
+                margin: 10mm;
+                size: A4 portrait;
+              }
+              * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${clonedContent.innerHTML}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
   };
 
   const confirmPrint = () => {
     setIsPrintPreview(false);
     setTimeout(() => window.print(), 100);
+  };
+
+  const handleReset = () => {
+    if (window.confirm('Are you sure you want to reset the form? All unsaved data will be lost.')) {
+      if (mode === 'invoice') {
+        dispatch(resetInvoice());
+      } else {
+        dispatch(resetQuotation());
+      }
+      setNotification({ 
+        open: true, 
+        message: `${mode === 'invoice' ? 'Invoice' : 'Quotation'} form has been reset`, 
+        severity: 'success' 
+      });
+    }
   };
 
   // Get labels based on mode
@@ -240,24 +393,47 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5', py: 4 }}>
-        <Container maxWidth="lg">
-          <Paper elevation={2} sx={{ p: { xs: 2, sm: 3, md: 4 }, borderRadius: 2 }}>
-            {/* Header */}
-            <DocumentHeader
-              mode={mode}
-              document={document}
-              isAuthenticated={isAuthenticated}
-              isAnonymous={user?.isAnonymous || false}
-              isSaving={isSaving}
-              isDownloading={isDownloading}
-              onBack={() => navigate('/')}
-              onSave={handleSaveToServer}
-              onPreview={() => setIsPreviewOpen(true)}
-              onDownload={handleDownloadPDF}
-              onPrint={handlePrint}
-              getLabel={getLabel}
-            />
+      {/* Top Navigation Bar - Sticky */}
+      <Box sx={{ 
+        bgcolor: '#ffffff',
+        borderBottom: '2px solid #e2e8f0',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)'
+      }}>
+        <DocumentHeader
+          mode={mode}
+          document={document}
+          isAuthenticated={isAuthenticated}
+          isAnonymous={user?.isAnonymous || false}
+          isSaving={isSaving}
+          isDownloading={isDownloading}
+          onBack={() => navigate('/')}
+          onSave={handleSaveToServer}
+          onPreview={() => setIsPreviewOpen(true)}
+          onDownload={handleDownloadPDF}
+          onPrint={handlePrint}
+          onReset={handleReset}
+          getLabel={getLabel}
+        />
+      </Box>
+
+      {/* Split Screen Layout */}
+      <Box sx={{ 
+        display: 'flex',
+        minHeight: 'calc(100vh - 64px)',
+        backgroundColor: '#f1f5f9'
+      }}>
+        {/* Left Side - Form */}
+        <Box sx={{ 
+          flex: { xs: '1 1 100%', lg: '1 1 50%' },
+          maxWidth: { xs: '100%', lg: '50%' },
+          overflowY: 'auto',
+          backgroundColor: '#ffffff',
+          p: { xs: 3, sm: 4, md: 5 },
+          borderRight: { lg: '1px solid #e2e8f0' }
+        }}>
 
             {/* ROW 1: Logo + Document Header */}
             <Box sx={{ 
@@ -352,38 +528,77 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
               />
             </Box>
 
-            {/* ROW 6: Notes, Terms, and Payment Terms */}
-            <NotesSection
-              mode={mode}
-              document={document}
-              onUpdateField={handlers.handleUpdateField}
-            />
-          </Paper>
-        </Container>
+          {/* ROW 6: Notes, Terms, and Payment Terms */}
+          <NotesSection
+            mode={mode}
+            document={document}
+            onUpdateField={handlers.handleUpdateField}
+          />
+        </Box>
 
-        {/* Preview Dialog */}
-        <Dialog
-          open={isPreviewOpen}
-          onClose={() => setIsPreviewOpen(false)}
-          maxWidth="md"
-          fullWidth
-          PaperProps={{ sx: { minHeight: '80vh' } }}
-        >
-          <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6">{mode === 'invoice' ? 'Invoice' : 'Quotation'} Preview</Typography>
-            <IconButton onClick={() => setIsPreviewOpen(false)} size="small">
-              <CloseIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent>
+        {/* Right Side - Live Preview (Desktop Only) */}
+        <Box sx={{ 
+          display: { xs: 'none', lg: 'block' },
+          flex: '1 1 50%',
+          maxWidth: '50%',
+          overflowY: 'auto',
+          backgroundColor: '#f8fafc',
+          p: 4,
+          position: 'sticky',
+          top: 64,
+          height: 'calc(100vh - 64px)'
+        }}>
+          <Box sx={{ 
+            backgroundColor: '#ffffff',
+            borderRadius: 4,
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
+            p: 3,
+            minHeight: '100%',
+            border: '1px solid #e2e8f0'
+          }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                mb: 3, 
+                fontWeight: 700, 
+                color: '#1e293b',
+                fontSize: '1.125rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                borderBottom: '2px solid #cbd5e1',
+                paddingBottom: 1.5
+              }}
+            >
+              Live Preview
+            </Typography>
             <Box id="invoice-preview">
               <DocumentPreview document={document} mode={mode} />
             </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setIsPreviewOpen(false)}>Close</Button>
-          </DialogActions>
-        </Dialog>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Preview Dialog (Mobile) */}
+      <Dialog
+        open={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ sx: { minHeight: '80vh' } }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6">{mode === 'invoice' ? 'Invoice' : 'Quotation'} Preview</Typography>
+          <IconButton onClick={() => setIsPreviewOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <DocumentPreview document={document} mode={mode} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsPreviewOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
 
         {/* Print Preview Dialog */}
         <Dialog
@@ -407,18 +622,17 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
           </DialogActions>
         </Dialog>
 
-        {/* Notification Snackbar */}
-        <Snackbar
-          open={notification.open}
-          autoHideDuration={4000}
-          onClose={() => setNotification({ ...notification, open: false })}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert severity={notification.severity} onClose={() => setNotification({ ...notification, open: false })}>
-            {notification.message}
-          </Alert>
-        </Snackbar>
-      </Box>
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={4000}
+        onClose={() => setNotification({ ...notification, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={notification.severity} onClose={() => setNotification({ ...notification, open: false })}>
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </LocalizationProvider>
   );
 };

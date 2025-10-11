@@ -125,12 +125,45 @@ const invoiceSlice = createSlice({
       }
     },
     resetInvoice: () => {
-      const freshState = getInitialState();
-      // Clear localStorage
+      // Clear localStorage first
       localStorage.removeItem('invoice');
+      // Return completely fresh state
       return {
-        ...freshState,
-        invoiceNumber: generateInvoiceNumber(), // Generate new invoice number
+        invoiceNumber: generateInvoiceNumber(),
+        invoiceDate: new Date(),
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+        from: {
+          name: '',
+          address: '',
+          email: '',
+          phone: '',
+          website: '',
+        },
+        billTo: {
+          name: '',
+          address: '',
+          email: '',
+          phone: '',
+        },
+        items: [
+          {
+            id: '1',
+            description: '',
+            quantity: 1,
+            rate: 0,
+            amount: 0,
+          },
+        ],
+        currency: 'USD',
+        tax: 0,
+        discount: 0,
+        discountType: 'percentage' as const,
+        shipping: 0,
+        amountPaid: 0,
+        notes: '',
+        terms: '',
+        logo: '',
+        poNumber: '',
       };
     },
     setLogo: (state, action: PayloadAction<string>) => {

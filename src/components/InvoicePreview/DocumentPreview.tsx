@@ -125,7 +125,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({ document, mode
       </Box>
 
       {/* Company Info and Document Details */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
         {/* From Section */}
         <Box sx={{ flex: 1 }}>
           <Typography variant="body2" sx={{ color: '#7f8c8d', mb: 0.5, fontWeight: 600 }}>
@@ -196,7 +196,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = ({ document, mode
       </Box>
 
       {/* Bill To / Quote To */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 3 }}>
         <Box sx={{ flex: 1 }}>
           <Typography variant="body2" sx={{ color: '#7f8c8d', mb: 0.5, fontWeight: 600 }}>
             {mode === 'invoice' ? 'BILL TO' : 'QUOTE FOR'}

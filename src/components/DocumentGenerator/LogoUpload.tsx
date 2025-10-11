@@ -22,8 +22,8 @@ interface LogoUploadProps {
 export const LogoUpload: React.FC<LogoUploadProps> = ({
   logo,
   isDragging,
-  themeColor,
-  themeLightBg,
+  themeColor: _themeColor,
+  themeLightBg: _themeLightBg,
   onLogoUpload,
   onLogoRemove,
   onDragEnter,
@@ -34,8 +34,16 @@ export const LogoUpload: React.FC<LogoUploadProps> = ({
   return (
     <Box sx={{ flex: 1 }}>
       <Typography 
-        variant="caption" 
-        sx={{ color: '#666', fontWeight: 600, display: 'block', mb: 1 }}
+        variant="subtitle2" 
+        sx={{ 
+          color: '#1a1a1a', 
+          fontWeight: 700, 
+          display: 'block', 
+          mb: 1.5,
+          fontSize: '0.875rem',
+          letterSpacing: '0.5px',
+          textTransform: 'uppercase'
+        }}
       >
         Company Logo
       </Typography>
@@ -43,14 +51,15 @@ export const LogoUpload: React.FC<LogoUploadProps> = ({
         <Box
           sx={{
             position: 'relative',
-            border: '2px dashed #e0e0e0',
-            borderRadius: 2,
-            p: 2,
-            backgroundColor: '#fafafa',
+            border: '2px solid #e8e8e8',
+            borderRadius: 3,
+            p: 2.5,
+            backgroundColor: '#ffffff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             minHeight: 150,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
           }}
         >
           <img
@@ -84,8 +93,8 @@ export const LogoUpload: React.FC<LogoUploadProps> = ({
           onDragLeave={onDragLeave}
           onDrop={onDrop}
           sx={{
-            border: isDragging ? `2px solid ${themeColor}` : '2px dashed #d0d0d0',
-            borderRadius: 2,
+            border: isDragging ? '2px solid #2563eb' : '2px dashed #cbd5e1',
+            borderRadius: 3,
             p: 3,
             display: 'flex',
             flexDirection: 'column',
@@ -93,11 +102,13 @@ export const LogoUpload: React.FC<LogoUploadProps> = ({
             justifyContent: 'center',
             minHeight: 150,
             cursor: 'pointer',
-            backgroundColor: isDragging ? themeLightBg : '#fafafa',
-            transition: 'all 0.3s ease',
+            backgroundColor: isDragging ? '#eff6ff' : '#f8fafc',
+            transition: 'all 0.2s ease',
+            boxShadow: isDragging ? '0 4px 6px rgba(37, 99, 235, 0.1)' : '0 1px 2px rgba(0,0,0,0.05)',
             '&:hover': {
-              borderColor: themeColor,
-              backgroundColor: themeLightBg,
+              borderColor: '#2563eb',
+              backgroundColor: '#eff6ff',
+              boxShadow: '0 4px 6px rgba(37, 99, 235, 0.1)',
             },
           }}
         >
@@ -111,11 +122,11 @@ export const LogoUpload: React.FC<LogoUploadProps> = ({
               width: '100%',
             }}
           >
-            <ImageIcon sx={{ fontSize: 48, color: isDragging ? themeColor : '#bdbdbd', mb: 1 }} />
-            <Typography variant="body2" sx={{ color: isDragging ? themeColor : '#666', mb: 0.5 }}>
+            <ImageIcon sx={{ fontSize: 48, color: isDragging ? '#2563eb' : '#94a3b8', mb: 1 }} />
+            <Typography variant="body2" sx={{ color: isDragging ? '#1e293b' : '#64748b', mb: 0.5, fontWeight: 600 }}>
               {isDragging ? 'Drop logo here' : 'Click or drag to upload logo'}
             </Typography>
-            <Typography variant="caption" sx={{ color: '#999' }}>
+            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 500 }}>
               PNG, JPG or SVG (max. 2MB)
             </Typography>
             <input type="file" hidden accept="image/*" onChange={onLogoUpload} />

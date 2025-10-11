@@ -10,6 +10,7 @@ import {
   Visibility as VisibilityIcon,
   Download as DownloadIcon,
   Print as PrintIcon,
+  RestartAlt as ResetIcon,
 } from '@mui/icons-material';
 import { UserMenu } from '../UserMenu';
 import { DocumentMode, statusColors } from './types';
@@ -26,6 +27,7 @@ interface DocumentHeaderProps {
   onPreview: () => void;
   onDownload: () => void;
   onPrint: () => void;
+  onReset: () => void;
   getLabel: (key: string) => string;
 }
 
@@ -41,66 +43,177 @@ export const DocumentHeader: React.FC<DocumentHeaderProps> = ({
   onPreview,
   onDownload,
   onPrint,
+  onReset,
   getLabel,
 }) => {
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <IconButton onClick={onBack} size="small">
+    <Box sx={{ 
+      display: 'flex', 
+      justifyContent: 'space-between', 
+      alignItems: 'center', 
+      py: 2.5,
+      px: { xs: 3, sm: 4 },
+      flexWrap: 'wrap', 
+      gap: 2 
+    }}>
+      {/* Left Side - Back Button + Title */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+        <IconButton 
+          onClick={onBack} 
+          size="medium"
+          sx={{ 
+            color: '#475569',
+            backgroundColor: '#f8fafc',
+            border: '1px solid #e2e8f0',
+            '&:hover': { 
+              bgcolor: '#2563eb', 
+              color: '#fff',
+              borderColor: '#2563eb'
+            }
+          }}
+        >
           <BackIcon />
         </IconButton>
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: '#2c3e50', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
-            {getLabel('title')}
-          </Typography>
-          {mode === 'quotation' && 'status' in document && (
-            <Chip 
-              label={document.status.toUpperCase()} 
-              size="small" 
-              sx={{ 
-                mt: 0.5,
-                backgroundColor: statusColors[document.status as keyof typeof statusColors] || statusColors.draft,
-                color: 'white',
-                fontWeight: 600
-              }}
-            />
-          )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="h6" sx={{ 
+              fontWeight: 800, 
+              color: '#1e293b', 
+              fontSize: { xs: '1.25rem', sm: '1.5rem' },
+              letterSpacing: '-0.5px'
+            }}>
+              {getLabel('title')}
+            </Typography>
+            {mode === 'quotation' && 'status' in document && (
+              <Chip 
+                label={document.status.toUpperCase()} 
+                size="small" 
+                sx={{ 
+                  backgroundColor: statusColors[document.status as keyof typeof statusColors] || statusColors.draft,
+                  color: 'white',
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                  height: 26,
+                  letterSpacing: '0.5px',
+                }}
+              />
+            )}
+          </Box>
         </Box>
       </Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+      
+      {/* Right Side - Action Buttons */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
         {/* Save to Server Button - Only for authenticated users */}
         {isAuthenticated && !isAnonymous && (
-          <Tooltip title={`Save ${mode === 'invoice' ? 'Invoice' : 'Quotation'} to Server`}>
-            <span>
-              <Button
-                size="small"
-                variant="contained"
-                color="success"
-                onClick={onSave}
-                disabled={isSaving}
-                startIcon={isSaving ? <CircularProgress size={16} color="inherit" /> : <CloudUploadIcon />}
-                sx={{ textTransform: 'none', fontWeight: 600 }}
-              >
-                {isSaving ? 'Saving...' : 'Save to Server'}
-              </Button>
-            </span>
-          </Tooltip>
+          <Button
+            size="medium"
+            variant="contained"
+            onClick={onSave}
+            disabled={isSaving}
+            startIcon={isSaving ? <CircularProgress size={16} color="inherit" /> : <CloudUploadIcon />}
+            sx={{ 
+              textTransform: 'none', 
+              fontWeight: 700,
+              fontSize: '0.875rem',
+              bgcolor: '#10b981',
+              boxShadow: '0 1px 3px rgba(16, 185, 129, 0.4)',
+              px: 3,
+              py: 1,
+              '&:hover': { 
+                bgcolor: '#059669', 
+                boxShadow: '0 4px 6px rgba(16, 185, 129, 0.4)' 
+              },
+              display: { xs: 'none', sm: 'inline-flex' }
+            }}
+          >
+            {isSaving ? 'Saving...' : 'Save'}
+          </Button>
         )}
-        <Tooltip title={`Preview ${mode === 'invoice' ? 'Invoice' : 'Quotation'}`}>
-          <IconButton size="small" color="primary" onClick={onPreview}>
+        
+        {/* Reset Button */}
+        <Tooltip title="Reset Form">
+          <IconButton 
+            size="medium" 
+            onClick={onReset}
+            sx={{ 
+              color: '#475569',
+              backgroundColor: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              '&:hover': { 
+                bgcolor: '#dc2626', 
+                color: '#fff',
+                borderColor: '#dc2626'
+              }
+            }}
+          >
+            <ResetIcon />
+          </IconButton>
+        </Tooltip>
+        
+        {/* Preview Button - Always visible */}
+        <Tooltip title="Preview">
+          <IconButton 
+            size="medium" 
+            onClick={onPreview}
+            sx={{ 
+              color: '#475569',
+              backgroundColor: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              '&:hover': { 
+                bgcolor: '#2563eb', 
+                color: '#fff',
+                borderColor: '#2563eb'
+              }
+            }}
+          >
             <VisibilityIcon />
           </IconButton>
         </Tooltip>
+        
         <Tooltip title="Download PDF">
-          <IconButton size="small" color="primary" onClick={onDownload} disabled={isDownloading}>
+          <IconButton 
+            size="medium" 
+            onClick={onDownload} 
+            disabled={isDownloading}
+            sx={{ 
+              color: '#475569',
+              backgroundColor: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              '&:hover': { 
+                bgcolor: '#2563eb', 
+                color: '#fff',
+                borderColor: '#2563eb'
+              },
+              '&.Mui-disabled': {
+                backgroundColor: '#f1f5f9',
+                borderColor: '#e2e8f0',
+              }
+            }}
+          >
             {isDownloading ? <CircularProgress size={20} /> : <DownloadIcon />}
           </IconButton>
         </Tooltip>
+        
         <Tooltip title="Print">
-          <IconButton size="small" color="primary" onClick={onPrint}>
+          <IconButton 
+            size="medium" 
+            onClick={onPrint}
+            sx={{ 
+              color: '#475569',
+              backgroundColor: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              '&:hover': { 
+                bgcolor: '#2563eb', 
+                color: '#fff',
+                borderColor: '#2563eb'
+              }
+            }}
+          >
             <PrintIcon />
           </IconButton>
         </Tooltip>
+        
         <UserMenu />
       </Box>
     </Box>
