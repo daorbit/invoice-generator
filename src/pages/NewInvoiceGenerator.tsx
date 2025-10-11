@@ -13,9 +13,6 @@ import {
   FormControl,
   InputLabel,
   InputAdornment,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Tooltip,
   Stack,
   CircularProgress,
@@ -32,7 +29,6 @@ import {
   Download as DownloadIcon,
   Print as PrintIcon,
   CloudUpload as UploadIcon,
-  ExpandMore as ExpandMoreIcon,
   Visibility as VisibilityIcon,
   Close as CloseIcon,
   Image as ImageIcon,
@@ -195,6 +191,29 @@ export const InvoiceGeneratorPage: React.FC = () => {
     setInvoice({ ...invoice, items: updatedItems });
   };
 
+  // Calculation functions
+  const calculateSubtotal = () => {
+    return invoice.items.reduce((sum, item) => sum + item.amount, 0);
+  };
+
+  const calculateTax = () => {
+    return (calculateSubtotal() * invoice.tax) / 100;
+  };
+
+  const calculateDiscount = () => {
+    if (invoice.discountType === 'percentage') {
+      return (calculateSubtotal() * invoice.discount) / 100;
+    }
+    return invoice.discount;
+  };
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    const tax = calculateTax();
+    const discount = calculateDiscount();
+    return subtotal + tax - discount + invoice.shipping;
+  };
+
   const handlePrint = () => {
     // Show print preview first
     setIsPrintPreview(true);
@@ -300,7 +319,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
               {/* Header Actions */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, alignItems: 'center' }}>
                 <Typography variant="h5" sx={{ fontWeight: 700, color: '#2c3e50' }}>
-                  Invoice Details
+                  Invoice Generator
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Tooltip title="Preview Invoice">
@@ -331,8 +350,17 @@ export const InvoiceGeneratorPage: React.FC = () => {
                 </Box>
               </Box>
 
-              {/* Logo Upload */}
-              <Box sx={{ mb: 3 }}>
+              {/* ROW 1: Logo (Left) + INVOICE Title/Details (Right) */}
+              <Box sx={{ display: 'flex', gap: 3, mb: 4, alignItems: 'flex-start' }}>
+                
+                {/* Logo Upload - Left Side */}
+                <Box sx={{ flex: 1 }}>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ color: '#666', fontWeight: 600, display: 'block', mb: 1 }}
+                  >
+                    Company Logo
+                  </Typography>
                 <Typography 
                   variant="subtitle2" 
                   sx={{ mb: 1.5, fontWeight: 600, color: '#555' }}
@@ -464,179 +492,274 @@ export const InvoiceGeneratorPage: React.FC = () => {
                     </Box>
                   </Box>
                 )}
+                </Box>
+
+                {/* INVOICE Title + Details - Right Side */}
+                <Box sx={{ width: '300px' }}>
+                  <Typography 
+                    variant="h3" 
+                    sx={{ 
+                      fontWeight: 700, 
+                      color: '#2c3e50',
+                      fontSize: '36px',
+                      mb: 2,
+                      textAlign: 'right'
+                    }}
+                  >
+                    INVOICE
+                  </Typography>
+                  <Box sx={{ backgroundColor: '#f8f9fa', p: 2, borderRadius: 1, border: '1px solid #e0e0e0' }}>
+                    <Stack spacing={1.5}>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: '#666', fontWeight: 600, display: 'block', mb: 0.5 }}>
+                          Invoice Number
+                        </Typography>
+                        <TextField
+                          fullWidth
+                          value={invoice.invoiceNumber}
+                          onChange={(e) => setInvoice({ ...invoice, invoiceNumber: e.target.value })}
+                          size="small"
+                          placeholder="INV-001"
+                          sx={{ backgroundColor: '#fff' }}
+                        />
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: '#666', fontWeight: 600, display: 'block', mb: 0.5 }}>
+                          Currency
+                        </Typography>
+                        <FormControl fullWidth size="small" sx={{ backgroundColor: '#fff' }}>
+                          <Select
+                            value={invoice.currency}
+                            onChange={(e) => setInvoice({ ...invoice, currency: e.target.value })}
+                          >
+                            {currencies.map((curr) => (
+                              <MenuItem key={curr} value={curr}>
+                                {curr}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Box>
+                    </Stack>
+                  </Box>
+                </Box>
               </Box>
 
-              {/* Invoice Number and Dates */}
-              <Stack spacing={2} sx={{ mb: 3 }}>
-                <TextField
-                  fullWidth
-                  label="Invoice Number"
-                  value={invoice.invoiceNumber}
-                  onChange={(e) => setInvoice({ ...invoice, invoiceNumber: e.target.value })}
-                />
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    <DatePicker
-                      label="Invoice Date"
-                      value={invoice.invoiceDate}
-                      onChange={(newValue) => {
-                        if (newValue) {
-                          setInvoice({ ...invoice, invoiceDate: newValue });
-                        }
-                      }}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          size: 'small',
-                        },
-                      }}
-                    />
-                    <DatePicker
-                      label="Due Date"
-                      value={invoice.dueDate}
-                      onChange={(newValue) => {
-                        if (newValue) {
-                          setInvoice({ ...invoice, dueDate: newValue });
-                        }
-                      }}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          size: 'small',
-                        },
-                      }}
-                    />
-                  </Box>
-                </LocalizationProvider>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <TextField
-                    fullWidth
-                    label="PO Number (Optional)"
-                    value={invoice.poNumber}
-                    onChange={(e) => setInvoice({ ...invoice, poNumber: e.target.value })}
-                  />
-                  <FormControl fullWidth>
-                    <InputLabel>Currency</InputLabel>
-                    <Select
-                      value={invoice.currency}
-                      label="Currency"
-                      onChange={(e) => setInvoice({ ...invoice, currency: e.target.value })}
-                    >
-                      {currencies.map((curr) => (
-                        <MenuItem key={curr} value={curr}>
-                          {curr}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-              </Stack>
-
-              <Divider sx={{ my: 3 }} />
-
-              {/* From Section */}
-              <Accordion defaultExpanded>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                    From (Your Company)
+              {/* ROW 2: FROM (Left) + Invoice Dates (Right) */}
+              <Box sx={{ display: 'flex', gap: 3, mb: 4, alignItems: 'flex-start' }}>
+                
+                {/* FROM Section - Left */}
+                <Box sx={{ flex: 1 }}>
+                  <Typography 
+                    variant="overline" 
+                    sx={{ 
+                      color: '#1976d2', 
+                      fontWeight: 700,
+                      fontSize: '11px',
+                      letterSpacing: '1.5px',
+                      display: 'block',
+                      mb: 1.5
+                    }}
+                  >
+                    FROM (YOUR COMPANY)
                   </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Stack spacing={2}>
+                  <Stack spacing={1.5}>
                     <TextField
                       fullWidth
                       label="Company Name"
                       value={invoice.from.name}
                       onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, name: e.target.value } })}
+                      size="small"
+                      placeholder="Your Company Inc."
                     />
-                    <Box sx={{ display: 'flex', gap: 2 }}>
+                    <TextField
+                      fullWidth
+                      label="Address"
+                      value={invoice.from.address}
+                      onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, address: e.target.value } })}
+                      multiline
+                      rows={2}
+                      size="small"
+                      placeholder="123 Business St&#10;City, State ZIP"
+                    />
+                    <Box sx={{ display: 'flex', gap: 1.5 }}>
                       <TextField
                         fullWidth
                         label="Email"
                         type="email"
                         value={invoice.from.email}
                         onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, email: e.target.value } })}
+                        size="small"
+                        placeholder="contact@company.com"
                       />
                       <TextField
                         fullWidth
                         label="Phone"
                         value={invoice.from.phone}
                         onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, phone: e.target.value } })}
+                        size="small"
+                        placeholder="+1 (555) 123-4567"
                       />
                     </Box>
-                    <TextField
-                      fullWidth
-                      label="Address"
-                      value={invoice.from.address}
-                      onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, address: e.target.value } })}
-                    />
                     <TextField
                       fullWidth
                       label="Website (Optional)"
                       value={invoice.from.website}
                       onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, website: e.target.value } })}
+                      size="small"
+                      placeholder="www.yourcompany.com"
                     />
                   </Stack>
-                </AccordionDetails>
-              </Accordion>
+                </Box>
 
-              {/* Bill To Section */}
-              <Accordion defaultExpanded>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                    Bill To (Client)
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
+                {/* Invoice Dates - Right */}
+                <Box sx={{ width: '300px', backgroundColor: '#f8f9fa', p: 2.5, borderRadius: 1, border: '1px solid #e0e0e0' }}>
                   <Stack spacing={2}>
-                    <TextField
-                      fullWidth
-                      label="Client Name"
-                      value={invoice.billTo.name}
-                      onChange={(e) => setInvoice({ ...invoice, billTo: { ...invoice.billTo, name: e.target.value } })}
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#666', fontWeight: 600, display: 'block', mb: 0.5 }}>
+                        Invoice Date
+                      </Typography>
+                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DatePicker
+                          value={invoice.invoiceDate}
+                          onChange={(newValue) => {
+                            if (newValue) {
+                              setInvoice({ ...invoice, invoiceDate: newValue });
+                            }
+                          }}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              size: 'small',
+                              sx: { backgroundColor: '#fff' }
+                            },
+                          }}
+                        />
+                      </LocalizationProvider>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#666', fontWeight: 600, display: 'block', mb: 0.5 }}>
+                        Due Date
+                      </Typography>
+                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DatePicker
+                          value={invoice.dueDate}
+                          onChange={(newValue) => {
+                            if (newValue) {
+                              setInvoice({ ...invoice, dueDate: newValue });
+                            }
+                          }}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          size: 'small',
+                          sx: { backgroundColor: '#fff' }
+                        },
+                      }}
                     />
-                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      </LocalizationProvider>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#666', fontWeight: 600, display: 'block', mb: 0.5 }}>
+                        PO Number (Optional)
+                      </Typography>
                       <TextField
                         fullWidth
-                        label="Email"
-                        type="email"
-                        value={invoice.billTo.email}
-                        onChange={(e) =>
-                          setInvoice({ ...invoice, billTo: { ...invoice.billTo, email: e.target.value } })
-                        }
-                      />
-                      <TextField
-                        fullWidth
-                        label="Phone"
-                        value={invoice.billTo.phone}
-                        onChange={(e) =>
-                          setInvoice({ ...invoice, billTo: { ...invoice.billTo, phone: e.target.value } })
-                        }
+                        value={invoice.poNumber}
+                        onChange={(e) => setInvoice({ ...invoice, poNumber: e.target.value })}
+                        size="small"
+                        placeholder="PO-12345"
+                        sx={{ backgroundColor: '#fff' }}
                       />
                     </Box>
+                  </Stack>
+                </Box>
+              </Box>
+
+              {/* ROW 3: BILL TO Section */}
+              <Box sx={{ mb: 4 }}>
+                <Typography 
+                  variant="overline" 
+                  sx={{ 
+                    color: '#1976d2', 
+                    fontWeight: 700,
+                    fontSize: '11px',
+                    letterSpacing: '1.5px',
+                    display: 'block',
+                    mb: 1.5
+                  }}
+                >
+                  BILL TO
+                </Typography>
+                <Stack spacing={1.5}>
+                  <TextField
+                    fullWidth
+                    label="Client Name"
+                    value={invoice.billTo.name}
+                    onChange={(e) => setInvoice({ ...invoice, billTo: { ...invoice.billTo, name: e.target.value } })}
+                    size="small"
+                    placeholder="Client Company"
+                  />
+                  <TextField
+                    fullWidth
+                    label="Address"
+                    value={invoice.billTo.address}
+                    onChange={(e) => setInvoice({ ...invoice, billTo: { ...invoice.billTo, address: e.target.value } })}
+                    size="small"
+                    multiline
+                    rows={2}
+                    placeholder="456 Client Ave&#10;City, State ZIP"
+                  />
+                  <Box sx={{ display: 'flex', gap: 1.5 }}>
                     <TextField
                       fullWidth
-                      label="Address"
-                      value={invoice.billTo.address}
-                      onChange={(e) => setInvoice({ ...invoice, billTo: { ...invoice.billTo, address: e.target.value } })}
+                      label="Email"
+                      value={invoice.billTo.email}
+                      onChange={(e) => setInvoice({ ...invoice, billTo: { ...invoice.billTo, email: e.target.value } })}
+                      size="small"
+                      placeholder="client@company.com"
                     />
-                  </Stack>
-                </AccordionDetails>
-              </Accordion>
+                    <TextField
+                      fullWidth
+                      label="Phone"
+                      value={invoice.billTo.phone}
+                      onChange={(e) => setInvoice({ ...invoice, billTo: { ...invoice.billTo, phone: e.target.value } })}
+                      size="small"
+                      placeholder="+1 (555) 987-6543"
+                    />
+                  </Box>
+                </Stack>
+              </Box>
 
-              <Divider sx={{ my: 3 }} />
-
-              {/* Items Section */}
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                Items
-              </Typography>
-
-              <Box sx={{ mb: 2 }}>
+              {/* ROW 4: LINE ITEMS Section */}
+              <Box sx={{ mb: 4 }}>
+                <Typography 
+                  variant="overline" 
+                  sx={{ 
+                    color: '#1976d2', 
+                    fontWeight: 700,
+                    fontSize: '11px',
+                    letterSpacing: '1.5px',
+                    display: 'block',
+                    mb: 1.5
+                  }}
+                >
+                  LINE ITEMS
+                </Typography>
                 {invoice.items.map((item, index) => (
-                  <Paper key={item.id} variant="outlined" sx={{ p: 2, mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Item {index + 1}
+                  <Box 
+                    key={item.id}
+                    sx={{ 
+                      mb: 2,
+                      p: 2,
+                      backgroundColor: '#fafafa',
+                      borderRadius: 1,
+                      border: '1px solid #e0e0e0'
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>
+                        Item #{index + 1}
                       </Typography>
                       {invoice.items.length > 1 && (
                         <IconButton size="small" onClick={() => handleDeleteItem(item.id)} color="error">
@@ -644,7 +767,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                         </IconButton>
                       )}
                     </Box>
-                    <Stack spacing={2}>
+                    <Stack spacing={1.5}>
                       <TextField
                         fullWidth
                         label="Description"
@@ -652,14 +775,18 @@ export const InvoiceGeneratorPage: React.FC = () => {
                         onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
                         multiline
                         rows={2}
+                        size="small"
+                        placeholder="Product or service description..."
                       />
-                      <Box sx={{ display: 'flex', gap: 2 }}>
+                      <Box sx={{ display: 'flex', gap: 1.5 }}>
                         <TextField
                           label="Qty"
                           type="number"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)}
-                          sx={{ flex: 1 }}
+                          size="small"
+                          sx={{ width: '100px' }}
+                          inputProps={{ min: 0, step: 0.01 }}
                         />
                         <TextField
                           label="Rate"
@@ -669,7 +796,9 @@ export const InvoiceGeneratorPage: React.FC = () => {
                           InputProps={{
                             startAdornment: <InputAdornment position="start">{invoice.currency}</InputAdornment>,
                           }}
+                          size="small"
                           sx={{ flex: 1 }}
+                          inputProps={{ min: 0, step: 0.01 }}
                         />
                         <TextField
                           label="Amount"
@@ -679,38 +808,66 @@ export const InvoiceGeneratorPage: React.FC = () => {
                           InputProps={{
                             startAdornment: <InputAdornment position="start">{invoice.currency}</InputAdornment>,
                           }}
-                          sx={{ flex: 1 }}
+                          size="small"
+                          sx={{ 
+                            flex: 1,
+                            '& .MuiInputBase-input.Mui-disabled': {
+                              WebkitTextFillColor: '#1976d2',
+                              fontWeight: 600
+                            }
+                          }}
                         />
                       </Box>
                     </Stack>
-                  </Paper>
+                  </Box>
                 ))}
-
-                <Button fullWidth variant="outlined" startIcon={<AddIcon />} onClick={handleAddItem} sx={{ py: 1.5 }}>
+                <Button 
+                  fullWidth 
+                  variant="outlined" 
+                  startIcon={<AddIcon />} 
+                  onClick={handleAddItem} 
+                  sx={{ 
+                    py: 1,
+                    borderStyle: 'dashed',
+                    '&:hover': {
+                      borderStyle: 'dashed'
+                    }
+                  }}
+                >
                   Add Item
                 </Button>
               </Box>
 
-              <Divider sx={{ my: 3 }} />
-
-              {/* Financial Section */}
-              <Accordion>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+              {/* ROW 5: TOTALS Section - Split Layout */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+                
+                {/* Additional Charges - Left */}
+                <Box sx={{ width: '350px' }}>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      color: '#666', 
+                      fontWeight: 700,
+                      display: 'block',
+                      mb: 2,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                  >
                     Additional Charges
                   </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Stack spacing={2}>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                      <TextField
-                        fullWidth
-                        label="Tax (%)"
-                        type="number"
-                        value={invoice.tax}
-                        onChange={(e) => setInvoice({ ...invoice, tax: parseFloat(e.target.value) || 0 })}
-                      />
-                      <FormControl fullWidth>
+                  <Stack spacing={1.5}>
+                    <TextField
+                      fullWidth
+                      label="Tax (%)"
+                      type="number"
+                      value={invoice.tax}
+                      onChange={(e) => setInvoice({ ...invoice, tax: parseFloat(e.target.value) || 0 })}
+                      size="small"
+                      inputProps={{ min: 0, step: 0.01 }}
+                    />
+                    <Box sx={{ display: 'flex', gap: 1.5 }}>
+                      <FormControl fullWidth size="small">
                         <InputLabel>Discount Type</InputLabel>
                         <Select
                           value={invoice.discountType}
@@ -719,30 +876,32 @@ export const InvoiceGeneratorPage: React.FC = () => {
                             setInvoice({ ...invoice, discountType: e.target.value as 'percentage' | 'fixed' })
                           }
                         >
-                          <MenuItem value="percentage">Percentage</MenuItem>
-                          <MenuItem value="fixed">Fixed</MenuItem>
+                          <MenuItem value="percentage">%</MenuItem>
+                          <MenuItem value="fixed">{invoice.currency}</MenuItem>
                         </Select>
                       </FormControl>
-                    </Box>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
                       <TextField
                         fullWidth
-                        label={invoice.discountType === 'percentage' ? 'Discount (%)' : `Discount (${invoice.currency})`}
+                        label="Discount"
                         type="number"
                         value={invoice.discount}
                         onChange={(e) => setInvoice({ ...invoice, discount: parseFloat(e.target.value) || 0 })}
-                      />
-                      <TextField
-                        fullWidth
-                        label="Shipping"
-                        type="number"
-                        value={invoice.shipping}
-                        onChange={(e) => setInvoice({ ...invoice, shipping: parseFloat(e.target.value) || 0 })}
-                        InputProps={{
-                          startAdornment: <InputAdornment position="start">{invoice.currency}</InputAdornment>,
-                        }}
+                        size="small"
+                        inputProps={{ min: 0, step: 0.01 }}
                       />
                     </Box>
+                    <TextField
+                      fullWidth
+                      label="Shipping"
+                      type="number"
+                      value={invoice.shipping}
+                      onChange={(e) => setInvoice({ ...invoice, shipping: parseFloat(e.target.value) || 0 })}
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start">{invoice.currency}</InputAdornment>,
+                      }}
+                      size="small"
+                      inputProps={{ min: 0, step: 0.01 }}
+                    />
                     <TextField
                       fullWidth
                       label="Amount Paid"
@@ -752,43 +911,143 @@ export const InvoiceGeneratorPage: React.FC = () => {
                       InputProps={{
                         startAdornment: <InputAdornment position="start">{invoice.currency}</InputAdornment>,
                       }}
+                      size="small"
+                      inputProps={{ min: 0, step: 0.01 }}
                     />
                   </Stack>
-                </AccordionDetails>
-              </Accordion>
+                </Box>
 
-              <Divider sx={{ my: 3 }} />
+                {/* Totals Summary - Right */}
+                <Box 
+                  sx={{ 
+                    width: '350px', 
+                    backgroundColor: '#f8f9fa', 
+                    p: 3, 
+                    borderRadius: 1, 
+                    border: '2px solid #e0e0e0',
+                  }}
+                >
+                  <Stack spacing={1.5}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
+                      <Typography variant="body2" sx={{ color: '#666' }}>Subtotal:</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {invoice.currency} {calculateSubtotal().toFixed(2)}
+                      </Typography>
+                    </Box>
+                    {invoice.tax > 0 && (
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
+                        <Typography variant="body2" sx={{ color: '#666' }}>Tax ({invoice.tax}%):</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {invoice.currency} {calculateTax().toFixed(2)}
+                        </Typography>
+                      </Box>
+                    )}
+                    {invoice.discount > 0 && (
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
+                        <Typography variant="body2" sx={{ color: '#666' }}>
+                          Discount ({invoice.discountType === 'percentage' ? `${invoice.discount}%` : invoice.currency}):
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#d32f2f' }}>
+                          -{invoice.currency} {calculateDiscount().toFixed(2)}
+                        </Typography>
+                      </Box>
+                    )}
+                    {invoice.shipping > 0 && (
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
+                        <Typography variant="body2" sx={{ color: '#666' }}>Shipping:</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {invoice.currency} {invoice.shipping.toFixed(2)}
+                        </Typography>
+                      </Box>
+                    )}
+                    <Divider sx={{ my: 1 }} />
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>Total:</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#1976d2' }}>
+                        {invoice.currency} {calculateTotal().toFixed(2)}
+                      </Typography>
+                    </Box>
+                    {invoice.amountPaid > 0 && (
+                      <>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
+                          <Typography variant="body2" sx={{ color: '#666' }}>Amount Paid:</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: '#2e7d32' }}>
+                            {invoice.currency} {invoice.amountPaid.toFixed(2)}
+                          </Typography>
+                        </Box>
+                        <Box 
+                          sx={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            py: 1,
+                            backgroundColor: '#fff3e0',
+                            px: 1.5,
+                            borderRadius: 1,
+                            mt: 1
+                          }}
+                        >
+                          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Balance Due:</Typography>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ed6c02' }}>
+                            {invoice.currency} {(calculateTotal() - invoice.amountPaid).toFixed(2)}
+                          </Typography>
+                        </Box>
+                      </>
+                    )}
+                  </Stack>
+                </Box>
+              </Box>
 
-              {/* Notes and Terms */}
-              <Accordion>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                    Notes & Terms
+              {/* ROW 6: NOTES & TERMS Section */}
+              <Stack spacing={2.5}>
+                <Box>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      color: '#666', 
+                      fontWeight: 700,
+                      display: 'block',
+                      mb: 1,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                  >
+                    Notes
                   </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Stack spacing={2}>
-                    <TextField
-                      fullWidth
-                      label="Notes"
-                      multiline
-                      rows={3}
-                      value={invoice.notes}
-                      onChange={(e) => setInvoice({ ...invoice, notes: e.target.value })}
-                      placeholder="Additional notes to the client..."
-                    />
-                    <TextField
-                      fullWidth
-                      label="Terms & Conditions"
-                      multiline
-                      rows={3}
-                      value={invoice.terms}
-                      onChange={(e) => setInvoice({ ...invoice, terms: e.target.value })}
-                      placeholder="Payment terms and conditions..."
-                    />
-                  </Stack>
-                </AccordionDetails>
-              </Accordion>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    value={invoice.notes}
+                    onChange={(e) => setInvoice({ ...invoice, notes: e.target.value })}
+                    placeholder="Additional notes to the client..."
+                    size="small"
+                  />
+                </Box>
+                <Box>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      color: '#666', 
+                      fontWeight: 700,
+                      display: 'block',
+                      mb: 1,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                  >
+                    Terms & Conditions
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    value={invoice.terms}
+                    onChange={(e) => setInvoice({ ...invoice, terms: e.target.value })}
+                    placeholder="Payment terms and conditions..."
+                    size="small"
+                  />
+                </Box>
+              </Stack>
             </Paper>
           </Box>
       </Container>
