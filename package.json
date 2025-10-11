@@ -16,12 +16,14 @@
     "@mui/material": "^7.3.4",
     "@mui/x-date-pickers": "^8.14.0",
     "@reduxjs/toolkit": "^2.9.0",
+    "axios": "^1.12.2",
     "date-fns": "^4.1.0",
     "html2pdf.js": "^0.10.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^7.9.4"
+    "react-router-dom": "^7.9.4",
+    "recharts": "^3.2.1"
   },
   "devDependencies": {
     "@types/react": "^19.0.6",

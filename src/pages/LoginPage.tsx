@@ -11,6 +11,7 @@ import {
   Divider,
   Alert,
   CircularProgress,
+  Link,
 } from '@mui/material';
 import {
   Visibility,
@@ -20,7 +21,7 @@ import {
   Receipt as ReceiptIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
 export const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -40,7 +41,8 @@ export const LoginPage: React.FC = () => {
     const result = await login(username, password);
 
     if (result.success) {
-      navigate('/');
+      // Redirect authenticated users to dashboard
+      navigate('/dashboard');
     } else {
       setError(result.error || 'Login failed');
     }
@@ -50,6 +52,7 @@ export const LoginPage: React.FC = () => {
 
   const handleGuestLogin = () => {
     loginAsGuest();
+    // Redirect guest users to home page (document selection)
     navigate('/');
   };
 
@@ -190,6 +193,27 @@ export const LoginPage: React.FC = () => {
           >
             Continue as Guest
           </Button>
+
+          {/* Register Link */}
+          <Box sx={{ mt: 3, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              Don't have an account?{' '}
+              <Link
+                component={RouterLink}
+                to="/register"
+                sx={{ 
+                  fontWeight: 600, 
+                  textDecoration: 'none',
+                  color: '#667eea',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                  }
+                }}
+              >
+                Create Account
+              </Link>
+            </Typography>
+          </Box>
         </Paper>
       </Container>
     </Box>

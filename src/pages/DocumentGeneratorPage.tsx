@@ -1,79 +1,51 @@
+/**
+ * Refactored Document Generator Page
+ * Broken down into smaller, maintainable components
+ */
+
 import React, { useState } from 'react';
 import {
   Box,
-  Container,
-  TextField,
-  Button,
-  IconButton,
-  Typography,
-  Paper,
-  MenuItem,
-  Select,
-  FormControl,
-  InputAdornment,
-  Tooltip,
-  Stack,
-  CircularProgress,
   Snackbar,
   Alert,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Chip,
-  Divider,
-  InputLabel,
+  Button,
+  IconButton,
+  Typography,
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  Download as DownloadIcon,
-  Print as PrintIcon,
-  Visibility as VisibilityIcon,
-  Close as CloseIcon,
-  Image as ImageIcon,
-  ArrowBack as BackIcon,
-} from '@mui/icons-material';
+import { Close as CloseIcon, Print as PrintIcon } from '@mui/icons-material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { InvoiceItem } from '../types/invoice';
-import { QuotationItem } from '../types/quotation';
 import { DocumentPreview } from '../components/InvoicePreview/DocumentPreview';
-import { UserMenu } from '../components/UserMenu';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import {
-  updateInvoiceField,
-  updateFromField as updateInvoiceFromField,
-  updateBillToField,
-  updateItem as updateInvoiceItem,
-  addItem as addInvoiceItem,
-  deleteItem as deleteInvoiceItem,
-  setLogo as setInvoiceLogo,
-} from '../store/invoiceSlice';
-import {
-  updateQuotationField,
-  updateFromField as updateQuotationFromField,
-  updateQuoteToField,
-  updateQuotationItem,
-  addQuotationItem,
-  deleteQuotationItem,
-  setQuotationLogo,
-  updateQuotationStatus,
-} from '../store/quotationSlice';
+import { useAppSelector, useAppDispatch } from '../store/hooks';
+import { useAuth } from '../context/AuthContext';
+import { useInvoices } from '../hooks/useInvoices';
+import { useQuotations } from '../hooks/useQuotations';
+import { resetInvoice } from '../store/invoiceSlice';
+import { resetQuotation } from '../store/quotationSlice';
 
-const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
+// Component imports
+import { DocumentHeader } from '../components/DocumentGenerator/DocumentHeader';
+import { LogoUpload } from '../components/DocumentGenerator/LogoUpload';
+import { DocumentDetails } from '../components/DocumentGenerator/DocumentDetails';
+import { FromSection } from '../components/DocumentGenerator/FromSection';
+import { DatesSection } from '../components/DocumentGenerator/DatesSection';
+import { ClientSection } from '../components/DocumentGenerator/ClientSection';
+import { LineItems } from '../components/DocumentGenerator/LineItems';
+import { AdditionalCharges } from '../components/DocumentGenerator/AdditionalCharges';
+import { TotalsSummary } from '../components/DocumentGenerator/TotalsSummary';
+import { NotesSection } from '../components/DocumentGenerator/NotesSection';
 
-const statusColors = {
-  draft: '#9e9e9e',
-  sent: '#2196f3',
-  accepted: '#4caf50',
-  rejected: '#f44336',
-  expired: '#ff9800',
-};
+// Hook imports
+import { useDocumentHandlers } from '../components/DocumentGenerator/useDocumentHandlers';
+import { useDocumentCalculations } from '../components/DocumentGenerator/useDocumentCalculations';
 
-type DocumentMode = 'invoice' | 'quotation';
+// Type imports
+import { DocumentMode, NotificationState } from '../components/DocumentGenerator/types';
 
 interface DocumentGeneratorPageProps {
   mode: DocumentMode;
@@ -82,79 +54,38 @@ interface DocumentGeneratorPageProps {
 export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mode }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { user, isAuthenticated } = useAuth();
+  const { saveInvoice, syncing: invoiceSyncing } = useInvoices();
+  const { saveQuotation, syncing: quotationSyncing } = useQuotations();
   
   // Get the appropriate state based on mode
   const invoice = useAppSelector((state) => state.invoice);
   const quotation = useAppSelector((state) => state.quotation);
   const document = mode === 'invoice' ? invoice : quotation;
   
+  // Local state
   const [isDownloading, setIsDownloading] = useState(false);
   const [isPrintPreview, setIsPrintPreview] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  const [notification, setNotification] = useState<NotificationState>({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+  
+  // Determine if saving is in progress
+  const isSaving = mode === 'invoice' ? invoiceSyncing : quotationSyncing;
 
-  // Determine theme colors based on mode
+  // Theme colors based on mode
   const themeColor = mode === 'quotation' ? '#2196f3' : '#4caf50';
   const themeLightBg = mode === 'quotation' ? '#e3f2fd' : '#e8f5e9';
 
-  // Helper functions to dispatch actions based on mode
-  const handleUpdateField = (field: string, value: any) => {
-    if (mode === 'invoice') {
-      dispatch(updateInvoiceField({ field: field as any, value }));
-    } else {
-      dispatch(updateQuotationField({ field: field as any, value }));
-    }
-  };
+  // Custom hooks
+  const handlers = useDocumentHandlers(mode, document);
+  const calculations = useDocumentCalculations(document, mode);
 
-  const handleUpdateFromField = (field: string, value: any) => {
-    if (mode === 'invoice') {
-      dispatch(updateInvoiceFromField({ field: field as any, value }));
-    } else {
-      dispatch(updateQuotationFromField({ field: field as any, value }));
-    }
-  };
-
-  const handleUpdateClientField = (field: string, value: any) => {
-    if (mode === 'invoice') {
-      dispatch(updateBillToField({ field: field as any, value }));
-    } else {
-      dispatch(updateQuoteToField({ field: field as any, value }));
-    }
-  };
-
-  const handleUpdateItem = (id: string, field: string, value: any) => {
-    if (mode === 'invoice') {
-      dispatch(updateInvoiceItem({ id, field: field as any, value }));
-    } else {
-      dispatch(updateQuotationItem({ id, field: field as any, value }));
-    }
-  };
-
-  const handleAddItem = () => {
-    if (mode === 'invoice') {
-      dispatch(addInvoiceItem());
-    } else {
-      dispatch(addQuotationItem());
-    }
-  };
-
-  const handleDeleteItem = (id: string) => {
-    if (mode === 'invoice') {
-      dispatch(deleteInvoiceItem(id));
-    } else {
-      dispatch(deleteQuotationItem(id));
-    }
-  };
-
-  const handleSetLogo = (logo: string) => {
-    if (mode === 'invoice') {
-      dispatch(setInvoiceLogo(logo));
-    } else {
-      dispatch(setQuotationLogo(logo));
-    }
-  };
-
+  // Logo upload handlers
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -168,7 +99,7 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
       }
       const reader = new FileReader();
       reader.onloadend = () => {
-        handleSetLogo(reader.result as string);
+        handlers.handleSetLogo(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -208,55 +139,13 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
       }
       const reader = new FileReader();
       reader.onloadend = () => {
-        handleSetLogo(reader.result as string);
+        handlers.handleSetLogo(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const calculateSubtotal = () => {
-    return document.items.reduce((sum: number, item: InvoiceItem | QuotationItem) => sum + item.amount, 0);
-  };
-
-  const calculateTax = () => {
-    return (calculateSubtotal() * document.tax) / 100;
-  };
-
-  const calculateDiscount = () => {
-    if (document.discountType === 'percentage') {
-      return (calculateSubtotal() * document.discount) / 100;
-    }
-    return document.discount;
-  };
-
-  const calculateTotal = () => {
-    return calculateSubtotal() + calculateTax() - calculateDiscount() + document.shipping;
-  };
-
-  const calculateBalance = () => {
-    if (mode === 'invoice' && 'amountPaid' in document) {
-      return calculateTotal() - (document.amountPaid || 0);
-    }
-    return calculateTotal();
-  };
-
-  const handleItemChange = (id: string, field: keyof InvoiceItem | keyof QuotationItem, value: string | number) => {
-    const numValue = typeof value === 'string' ? parseFloat(value) || 0 : value;
-    
-    if (field === 'quantity' || field === 'rate') {
-      handleUpdateItem(id, field, numValue);
-      
-      const item = document.items.find((i: InvoiceItem | QuotationItem) => i.id === id);
-      if (item) {
-        const qty = field === 'quantity' ? numValue : item.quantity;
-        const rate = field === 'rate' ? numValue : item.rate;
-        handleUpdateItem(id, 'amount', qty * rate);
-      }
-    } else {
-      handleUpdateItem(id, field, value);
-    }
-  };
-
+  // PDF and Print handlers
   const handleDownloadPDF = async () => {
     setIsDownloading(true);
     try {
@@ -281,21 +170,211 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
 
       await html2pdf().set(opt).from(element).save();
       setNotification({ open: true, message: 'PDF downloaded successfully!', severity: 'success' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating PDF:', error);
-      setNotification({ open: true, message: 'Failed to generate PDF', severity: 'error' });
+      
+      // Extract error message if available
+      let errorMessage = 'Failed to generate PDF';
+      if (error?.message) {
+        errorMessage = `Failed to generate PDF: ${error.message}`;
+      }
+      
+      setNotification({ open: true, message: errorMessage, severity: 'error' });
     } finally {
       setIsDownloading(false);
     }
   };
 
+  const handleSaveToServer = async () => {
+    if (!isAuthenticated || user?.isAnonymous) {
+      setNotification({ 
+        open: true, 
+        message: 'Please login to save to server', 
+        severity: 'error' 
+      });
+      return;
+    }
+
+    try {
+      if (mode === 'invoice') {
+        const invoiceId = (invoice as any).id;
+        await saveInvoice(invoiceId);
+        setNotification({ 
+          open: true, 
+          message: 'Invoice saved to server successfully!', 
+          severity: 'success' 
+        });
+        
+        // Reset the form and navigate to dashboard after successful save
+        setTimeout(() => {
+          dispatch(resetInvoice());
+          navigate('/');
+        }, 1500); // Wait 1.5s to show success message
+        
+      } else {
+        const quotationId = (quotation as any).id;
+        await saveQuotation(quotationId);
+        setNotification({ 
+          open: true, 
+          message: 'Quotation saved to server successfully!', 
+          severity: 'success' 
+        });
+        
+        // Reset the form and navigate to dashboard after successful save
+        setTimeout(() => {
+          dispatch(resetQuotation());
+          navigate('/');
+        }, 1500); // Wait 1.5s to show success message
+      }
+    } catch (error: any) {
+      console.error('Error saving to server:', error);
+      
+      // Extract error message from server response if available
+      let errorMessage = `Failed to save ${mode} to server`;
+      
+      if (error?.response?.data?.message) {
+        // Server returned a specific error message
+        errorMessage = error.response.data.message;
+      } else if (error?.response?.data?.error) {
+        // Alternative error field
+        errorMessage = error.response.data.error;
+      } else if (error?.message) {
+        // Generic error message
+        errorMessage = error.message;
+      }
+      
+      setNotification({ 
+        open: true, 
+        message: errorMessage, 
+        severity: 'error' 
+      });
+    }
+  };
+
   const handlePrint = () => {
-    setIsPrintPreview(true);
+    const printContent = window.document.getElementById('invoice-preview');
+    if (!printContent) {
+      setNotification({ open: true, message: 'Preview content not found', severity: 'error' });
+      return;
+    }
+
+    // Clone the element to get all computed styles
+    const clonedContent = printContent.cloneNode(true) as HTMLElement;
+    
+    // Get all elements with computed styles
+    const getAllElements = (element: HTMLElement): HTMLElement[] => {
+      const elements: HTMLElement[] = [element];
+      const children = element.querySelectorAll('*');
+      children.forEach(child => elements.push(child as HTMLElement));
+      return elements;
+    };
+
+    const originalElements = getAllElements(printContent);
+    const clonedElements = getAllElements(clonedContent);
+
+    // Copy computed styles to inline styles
+    originalElements.forEach((element, index) => {
+      const computedStyle = window.getComputedStyle(element);
+      const clonedElement = clonedElements[index];
+      
+      // Copy important styles
+      const stylesToCopy = [
+        'color', 'background-color', 'font-family', 'font-size', 'font-weight',
+        'line-height', 'text-align', 'padding', 'margin', 'border', 'border-radius',
+        'display', 'width', 'height', 'max-width', 'max-height', 'min-width', 'min-height',
+        'box-shadow', 'letter-spacing', 'text-transform', 'white-space', 'flex-direction',
+        'align-items', 'justify-content', 'gap', 'flex', 'flex-wrap'
+      ];
+
+      stylesToCopy.forEach(property => {
+        const value = computedStyle.getPropertyValue(property);
+        if (value && value !== '' && value !== 'none' && value !== '0px') {
+          clonedElement.style.setProperty(property, value, 'important');
+        }
+      });
+    });
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      setNotification({ open: true, message: 'Unable to open print window', severity: 'error' });
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Print ${mode === 'invoice' ? 'Invoice' : 'Quotation'}</title>
+          <meta charset="UTF-8">
+          <style>
+            * {
+              box-sizing: border-box;
+            }
+            body { 
+              margin: 0;
+              padding: 20px;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+              -webkit-font-smoothing: antialiased;
+              -moz-osx-font-smoothing: grayscale;
+              background: #fff;
+            }
+            table {
+              border-collapse: collapse;
+              width: 100%;
+            }
+            img {
+              max-width: 100%;
+              height: auto;
+            }
+            @media print {
+              body { 
+                margin: 0; 
+                padding: 10mm;
+              }
+              @page { 
+                margin: 10mm;
+                size: A4 portrait;
+              }
+              * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          ${clonedContent.innerHTML}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
   };
 
   const confirmPrint = () => {
     setIsPrintPreview(false);
     setTimeout(() => window.print(), 100);
+  };
+
+  const handleReset = () => {
+    if (window.confirm('Are you sure you want to reset the form? All unsaved data will be lost.')) {
+      if (mode === 'invoice') {
+        dispatch(resetInvoice());
+      } else {
+        dispatch(resetQuotation());
+      }
+      setNotification({ 
+        open: true, 
+        message: `${mode === 'invoice' ? 'Invoice' : 'Quotation'} form has been reset`, 
+        severity: 'success' 
+      });
+    }
   };
 
   // Get labels based on mode
@@ -314,52 +393,47 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5', py: 4 }}>
-        <Container maxWidth="lg">
-          <Paper elevation={2} sx={{ p: { xs: 2, sm: 3, md: 4 }, borderRadius: 2 }}>
-            {/* Header */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <IconButton onClick={() => navigate('/')} size="small">
-                  <BackIcon />
-                </IconButton>
-                <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 700, color: '#2c3e50', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
-                    {getLabel('title')}
-                  </Typography>
-                  {mode === 'quotation' && 'status' in document && (
-                    <Chip 
-                      label={document.status.toUpperCase()} 
-                      size="small" 
-                      sx={{ 
-                        mt: 0.5,
-                        backgroundColor: statusColors[document.status],
-                        color: 'white',
-                        fontWeight: 600
-                      }}
-                    />
-                  )}
-                </Box>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                <Tooltip title={`Preview ${mode === 'invoice' ? 'Invoice' : 'Quotation'}`}>
-                  <IconButton size="small" color="primary" onClick={() => setIsPreviewOpen(true)}>
-                    <VisibilityIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Download PDF">
-                  <IconButton size="small" color="primary" onClick={handleDownloadPDF} disabled={isDownloading}>
-                    {isDownloading ? <CircularProgress size={20} /> : <DownloadIcon />}
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Print">
-                  <IconButton size="small" color="primary" onClick={handlePrint}>
-                    <PrintIcon />
-                  </IconButton>
-                </Tooltip>
-                <UserMenu />
-              </Box>
-            </Box>
+      {/* Top Navigation Bar - Sticky */}
+      <Box sx={{ 
+        bgcolor: '#ffffff',
+        borderBottom: '2px solid #e2e8f0',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)'
+      }}>
+        <DocumentHeader
+          mode={mode}
+          document={document}
+          isAuthenticated={isAuthenticated}
+          isAnonymous={user?.isAnonymous || false}
+          isSaving={isSaving}
+          isDownloading={isDownloading}
+          onBack={() => navigate('/')}
+          onSave={handleSaveToServer}
+          onPreview={() => setIsPreviewOpen(true)}
+          onDownload={handleDownloadPDF}
+          onPrint={handlePrint}
+          onReset={handleReset}
+          getLabel={getLabel}
+        />
+      </Box>
+
+      {/* Split Screen Layout */}
+      <Box sx={{ 
+        display: 'flex',
+        minHeight: 'calc(100vh - 64px)',
+        backgroundColor: '#f1f5f9'
+      }}>
+        {/* Left Side - Form */}
+        <Box sx={{ 
+          flex: { xs: '1 1 100%', lg: '1 1 50%' },
+          maxWidth: { xs: '100%', lg: '50%' },
+          overflowY: 'auto',
+          backgroundColor: '#ffffff',
+          p: { xs: 3, sm: 4, md: 5 },
+          borderRight: { lg: '1px solid #e2e8f0' }
+        }}>
 
             {/* ROW 1: Logo + Document Header */}
             <Box sx={{ 
@@ -369,167 +443,25 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
               mb: 4, 
               alignItems: 'flex-start' 
             }}>
-              {/* Logo Upload */}
-              <Box sx={{ flex: 1 }}>
-                <Typography 
-                  variant="caption" 
-                  sx={{ color: '#666', fontWeight: 600, display: 'block', mb: 1 }}
-                >
-                  Company Logo
-                </Typography>
-                {document.logo ? (
-                  <Box
-                    sx={{
-                      position: 'relative',
-                      border: '2px dashed #e0e0e0',
-                      borderRadius: 2,
-                      p: 2,
-                      backgroundColor: '#fafafa',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      minHeight: 150,
-                    }}
-                  >
-                    <img
-                      src={document.logo}
-                      alt="Company Logo"
-                      style={{
-                        maxHeight: '120px',
-                        maxWidth: '100%',
-                        objectFit: 'contain',
-                      }}
-                    />
-                    <IconButton
-                      size="small"
-                      onClick={() => handleSetLogo('')}
-                      sx={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                        boxShadow: 1,
-                        '&:hover': { backgroundColor: '#fff' },
-                      }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                ) : (
-                  <Box
-                    onDragEnter={handleDragEnter}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    sx={{
-                      border: isDragging ? `2px solid ${themeColor}` : '2px dashed #d0d0d0',
-                      borderRadius: 2,
-                      p: 3,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      minHeight: 150,
-                      cursor: 'pointer',
-                      backgroundColor: isDragging ? themeLightBg : '#fafafa',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        borderColor: themeColor,
-                        backgroundColor: themeLightBg,
-                      },
-                    }}
-                  >
-                    <Box
-                      component="label"
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        cursor: 'pointer',
-                        width: '100%',
-                      }}
-                    >
-                      <ImageIcon sx={{ fontSize: 48, color: isDragging ? themeColor : '#bdbdbd', mb: 1 }} />
-                      <Typography variant="body2" sx={{ color: isDragging ? themeColor : '#666', mb: 0.5 }}>
-                        {isDragging ? 'Drop logo here' : 'Click or drag to upload logo'}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: '#999' }}>
-                        PNG, JPG or SVG (max. 2MB)
-                      </Typography>
-                      <input type="file" hidden accept="image/*" onChange={handleLogoUpload} />
-                    </Box>
-                  </Box>
-                )}
-              </Box>
-
-              {/* Document Title + Details */}
-              <Box sx={{ width: { xs: '100%', md: '300px' } }}>
-                <Typography 
-                  variant="h3" 
-                  sx={{ 
-                    fontWeight: 700, 
-                    color: themeColor,
-                    fontSize: { xs: '28px', sm: '32px', md: '36px' },
-                    mb: 2,
-                    textAlign: { xs: 'left', md: 'right' }
-                  }}
-                >
-                  {getLabel('header')}
-                </Typography>
-                <Box sx={{ backgroundColor: '#f8f9fa', p: 2, borderRadius: 1, border: '1px solid #e0e0e0' }}>
-                  <Stack spacing={1.5}>
-                    <Box>
-                      <Typography variant="caption" sx={{ color: '#666', fontWeight: 600, display: 'block', mb: 0.5 }}>
-                        {getLabel('number')}
-                      </Typography>
-                      <TextField
-                        fullWidth
-                        value={mode === 'invoice' ? (document as any).invoiceNumber : (document as any).quotationNumber}
-                        onChange={(e) => handleUpdateField(mode === 'invoice' ? 'invoiceNumber' : 'quotationNumber', e.target.value)}
-                        size="small"
-                        placeholder={mode === 'invoice' ? 'INV-001' : 'QUO-001'}
-                        sx={{ backgroundColor: '#fff' }}
-                      />
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" sx={{ color: '#666', fontWeight: 600, display: 'block', mb: 0.5 }}>
-                        Currency
-                      </Typography>
-                      <FormControl fullWidth size="small" sx={{ backgroundColor: '#fff' }}>
-                        <Select
-                          value={document.currency}
-                          onChange={(e) => handleUpdateField('currency', e.target.value)}
-                        >
-                          {currencies.map((curr) => (
-                            <MenuItem key={curr} value={curr}>
-                              {curr}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Box>
-                    {mode === 'quotation' && 'status' in document && (
-                      <Box>
-                        <Typography variant="caption" sx={{ color: '#666', fontWeight: 600, display: 'block', mb: 0.5 }}>
-                          Status
-                        </Typography>
-                        <FormControl fullWidth size="small" sx={{ backgroundColor: '#fff' }}>
-                          <Select
-                            value={document.status}
-                            onChange={(e) => dispatch(updateQuotationStatus(e.target.value as any))}
-                          >
-                            <MenuItem value="draft">Draft</MenuItem>
-                            <MenuItem value="sent">Sent</MenuItem>
-                            <MenuItem value="accepted">Accepted</MenuItem>
-                            <MenuItem value="rejected">Rejected</MenuItem>
-                            <MenuItem value="expired">Expired</MenuItem>
-                          </Select>
-                        </FormControl>
-                      </Box>
-                    )}
-                  </Stack>
-                </Box>
-              </Box>
+              <LogoUpload
+                logo={document.logo || ''}
+                isDragging={isDragging}
+                themeColor={themeColor}
+                themeLightBg={themeLightBg}
+                onLogoUpload={handleLogoUpload}
+                onLogoRemove={() => handlers.handleSetLogo('')}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              />
+              <DocumentDetails
+                mode={mode}
+                document={document}
+                themeColor={themeColor}
+                onUpdateField={handlers.handleUpdateField}
+                getLabel={getLabel}
+              />
             </Box>
 
             {/* ROW 2: FROM + Dates */}
@@ -539,269 +471,37 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
               gap: 3, 
               mb: 4 
             }}>
-              {/* FROM (Your Company) */}
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="h6" sx={{ color: '#2c3e50', fontWeight: 600, mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-                  FROM (YOUR COMPANY)
-                </Typography>
-                <Box sx={{ backgroundColor: '#f8f9fa', p: 2, borderRadius: 1, border: '1px solid #e0e0e0' }}>
-                  <Stack spacing={2}>
-                    <TextField
-                      fullWidth
-                      label="Company Name"
-                      value={document.from.name}
-                      onChange={(e) => handleUpdateFromField('name', e.target.value)}
-                      size="small"
-                      sx={{ backgroundColor: '#fff' }}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Address"
-                      value={document.from.address}
-                      onChange={(e) => handleUpdateFromField('address', e.target.value)}
-                      multiline
-                      rows={2}
-                      size="small"
-                      sx={{ backgroundColor: '#fff' }}
-                    />
-                    <Box sx={{ display: 'flex', gap: 1, flexDirection: { xs: 'column', sm: 'row' } }}>
-                      <TextField
-                        fullWidth
-                        label="Email"
-                        value={document.from.email}
-                        onChange={(e) => handleUpdateFromField('email', e.target.value)}
-                        size="small"
-                        sx={{ backgroundColor: '#fff' }}
-                      />
-                      <TextField
-                        fullWidth
-                        label="Phone"
-                        value={document.from.phone}
-                        onChange={(e) => handleUpdateFromField('phone', e.target.value)}
-                        size="small"
-                        sx={{ backgroundColor: '#fff' }}
-                      />
-                    </Box>
-                    <TextField
-                      fullWidth
-                      label="Website (Optional)"
-                      value={document.from.website || ''}
-                      onChange={(e) => handleUpdateFromField('website', e.target.value)}
-                      size="small"
-                      sx={{ backgroundColor: '#fff' }}
-                    />
-                  </Stack>
-                </Box>
-              </Box>
-
-              {/* Dates */}
-              <Box sx={{ width: { xs: '100%', md: '300px' } }}>
-                <Typography variant="h6" sx={{ color: '#2c3e50', fontWeight: 600, mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-                  &nbsp;
-                </Typography>
-                <Box sx={{ backgroundColor: themeLightBg, p: 2, borderRadius: 1, border: `1px solid ${themeColor}40` }}>
-                  <Stack spacing={2}>
-                    <Box>
-                      <Typography variant="caption" sx={{ color: '#666', fontWeight: 600, display: 'block', mb: 0.5 }}>
-                        {getLabel('date')}
-                      </Typography>
-                      <DatePicker
-                        value={mode === 'invoice' ? (document as any).invoiceDate : (document as any).quotationDate}
-                        onChange={(date) => handleUpdateField(mode === 'invoice' ? 'invoiceDate' : 'quotationDate', date)}
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            size: 'small',
-                            sx: { backgroundColor: '#fff' }
-                          }
-                        }}
-                      />
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" sx={{ color: '#666', fontWeight: 600, display: 'block', mb: 0.5 }}>
-                        {getLabel('secondDate')}
-                      </Typography>
-                      <DatePicker
-                        value={mode === 'invoice' ? (document as any).dueDate : (document as any).validUntil}
-                        onChange={(date) => handleUpdateField(mode === 'invoice' ? 'dueDate' : 'validUntil', date)}
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            size: 'small',
-                            sx: { backgroundColor: '#fff' }
-                          }
-                        }}
-                      />
-                    </Box>
-                    {mode === 'quotation' && 'referenceNumber' in document && (
-                      <TextField
-                        fullWidth
-                        label="Reference Number (Optional)"
-                        value={document.referenceNumber || ''}
-                        onChange={(e) => handleUpdateField('referenceNumber', e.target.value)}
-                        size="small"
-                        placeholder="REF-12345"
-                        sx={{ backgroundColor: '#fff' }}
-                      />
-                    )}
-                  </Stack>
-                </Box>
-              </Box>
+              <FromSection
+                from={document.from}
+                onUpdateFromField={handlers.handleUpdateFromField}
+              />
+              <DatesSection
+                mode={mode}
+                document={document}
+                themeColor={themeColor}
+                themeLightBg={themeLightBg}
+                onUpdateField={handlers.handleUpdateField}
+                getLabel={getLabel}
+              />
             </Box>
 
             {/* ROW 3: Client Info */}
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ color: '#2c3e50', fontWeight: 600, mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-                {getLabel('client')}
-              </Typography>
-              <Box sx={{ backgroundColor: '#f8f9fa', p: 2, borderRadius: 1, border: '1px solid #e0e0e0' }}>
-                <Stack spacing={2}>
-                  <TextField
-                    fullWidth
-                    label="Client Name"
-                    value={mode === 'invoice' ? (document as any).billTo.name : (document as any).quoteTo.name}
-                    onChange={(e) => handleUpdateClientField('name', e.target.value)}
-                    size="small"
-                    sx={{ backgroundColor: '#fff' }}
-                  />
-                  <TextField
-                    fullWidth
-                    label="Address"
-                    value={mode === 'invoice' ? (document as any).billTo.address : (document as any).quoteTo.address}
-                    onChange={(e) => handleUpdateClientField('address', e.target.value)}
-                    multiline
-                    rows={2}
-                    size="small"
-                    sx={{ backgroundColor: '#fff' }}
-                  />
-                  <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
-                    <TextField
-                      fullWidth
-                      label="Email"
-                      value={mode === 'invoice' ? (document as any).billTo.email : (document as any).quoteTo.email}
-                      onChange={(e) => handleUpdateClientField('email', e.target.value)}
-                      size="small"
-                      sx={{ backgroundColor: '#fff' }}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Phone"
-                      value={mode === 'invoice' ? (document as any).billTo.phone : (document as any).quoteTo.phone}
-                      onChange={(e) => handleUpdateClientField('phone', e.target.value)}
-                      size="small"
-                      sx={{ backgroundColor: '#fff' }}
-                    />
-                  </Box>
-                </Stack>
-              </Box>
-            </Box>
+            <ClientSection
+              mode={mode}
+              document={document}
+              onUpdateClientField={handlers.handleUpdateClientField}
+              getLabel={getLabel}
+            />
 
             {/* ROW 4: LINE ITEMS */}
-            <Box sx={{ mb: 4 }}>
-              <Typography 
-                variant="overline" 
-                sx={{ 
-                  color: themeColor, 
-                  fontWeight: 700,
-                  fontSize: '11px',
-                  letterSpacing: '1.5px',
-                  display: 'block',
-                  mb: 1.5
-                }}
-              >
-                LINE ITEMS
-              </Typography>
-              {document.items.map((item: InvoiceItem | QuotationItem, index: number) => (
-                <Box 
-                  key={item.id}
-                  sx={{ 
-                    mb: 2,
-                    p: 2,
-                    backgroundColor: '#fafafa',
-                    borderRadius: 1,
-                    border: '1px solid #e0e0e0'
-                  }}
-                >
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>
-                      Item #{index + 1}
-                    </Typography>
-                    {document.items.length > 1 && (
-                      <IconButton size="small" onClick={() => handleDeleteItem(item.id)} color="error">
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    )}
-                  </Box>
-                  <Stack spacing={1.5}>
-                    <TextField
-                      fullWidth
-                      label="Description"
-                      value={item.description}
-                      onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
-                      multiline
-                      rows={2}
-                      size="small"
-                      placeholder="Product or service description..."
-                    />
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-                      <TextField
-                        label="Qty"
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)}
-                        size="small"
-                        sx={{ width: { xs: 'calc(50% - 6px)', sm: '100px' } }}
-                        inputProps={{ min: 0, step: 0.01 }}
-                      />
-                      <TextField
-                        label="Rate"
-                        type="number"
-                        value={item.rate}
-                        onChange={(e) => handleItemChange(item.id, 'rate', parseFloat(e.target.value) || 0)}
-                        InputProps={{
-                          startAdornment: <InputAdornment position="start">{document.currency}</InputAdornment>,
-                        }}
-                        size="small"
-                        sx={{ flex: { xs: '1 1 calc(50% - 6px)', sm: 1 } }}
-                        inputProps={{ min: 0, step: 0.01 }}
-                      />
-                      <TextField
-                        label="Amount"
-                        type="number"
-                        value={item.amount}
-                        disabled
-                        InputProps={{
-                          startAdornment: <InputAdornment position="start">{document.currency}</InputAdornment>,
-                        }}
-                        size="small"
-                        sx={{ 
-                          flex: { xs: '1 1 100%', sm: 1 },
-                          '& .MuiInputBase-input.Mui-disabled': {
-                            WebkitTextFillColor: themeColor,
-                            fontWeight: 600
-                          }
-                        }}
-                      />
-                    </Box>
-                  </Stack>
-                </Box>
-              ))}
-              <Button 
-                fullWidth 
-                variant="outlined" 
-                startIcon={<AddIcon />} 
-                onClick={handleAddItem} 
-                sx={{ 
-                  py: 1,
-                  borderStyle: 'dashed',
-                  '&:hover': {
-                    borderStyle: 'dashed'
-                  }
-                }}
-              >
-                Add Item
-              </Button>
-            </Box>
+            <LineItems
+              items={document.items}
+              currency={document.currency}
+              themeColor={themeColor}
+              onItemChange={handlers.handleItemChange}
+              onDeleteItem={handlers.handleDeleteItem}
+              onAddItem={handlers.handleAddItem}
+            />
 
             {/* ROW 5: Additional Charges + Totals Summary */}
             <Box sx={{ 
@@ -811,221 +511,94 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
               gap: { xs: 3, md: 3 },
               mb: 4 
             }}>
-              {/* Additional Charges - Left */}
-              <Box sx={{ width: { xs: '100%', md: '350px' } }}>
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
-                    color: '#666', 
-                    fontWeight: 700,
-                    display: 'block',
-                    mb: 2,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}
-                >
-                  Additional Charges
-                </Typography>
-                <Stack spacing={1.5}>
-                  <TextField
-                    fullWidth
-                    label="Tax (%)"
-                    type="number"
-                    value={document.tax}
-                    onChange={(e) => handleUpdateField('tax', parseFloat(e.target.value) || 0)}
-                    size="small"
-                    inputProps={{ min: 0, step: 0.01 }}
-                  />
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-                    <FormControl size="small" sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 6px)' } }}>
-                      <InputLabel>Discount Type</InputLabel>
-                      <Select
-                        value={document.discountType}
-                        label="Discount Type"
-                        onChange={(e) => handleUpdateField('discountType', e.target.value as 'percentage' | 'fixed')}
-                      >
-                        <MenuItem value="percentage">%</MenuItem>
-                        <MenuItem value="fixed">{document.currency}</MenuItem>
-                      </Select>
-                    </FormControl>
-                    <TextField
-                      label="Discount"
-                      type="number"
-                      value={document.discount}
-                      onChange={(e) => handleUpdateField('discount', parseFloat(e.target.value) || 0)}
-                      size="small"
-                      inputProps={{ min: 0, step: 0.01 }}
-                      sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 6px)' } }}
-                    />
-                  </Box>
-                  <TextField
-                    fullWidth
-                    label="Shipping"
-                    type="number"
-                    value={document.shipping}
-                    onChange={(e) => handleUpdateField('shipping', parseFloat(e.target.value) || 0)}
-                    InputProps={{
-                      startAdornment: <InputAdornment position="start">{document.currency}</InputAdornment>,
-                    }}
-                    size="small"
-                    inputProps={{ min: 0, step: 0.01 }}
-                  />
-                  {mode === 'invoice' && 'amountPaid' in document && (
-                    <TextField
-                      fullWidth
-                      label="Amount Paid"
-                      type="number"
-                      value={document.amountPaid || 0}
-                      onChange={(e) => handleUpdateField('amountPaid', parseFloat(e.target.value) || 0)}
-                      InputProps={{
-                        startAdornment: <InputAdornment position="start">{document.currency}</InputAdornment>,
-                      }}
-                      size="small"
-                      inputProps={{ min: 0, step: 0.01 }}
-                    />
-                  )}
-                </Stack>
-              </Box>
-
-              {/* Totals Summary - Right */}
-              <Box 
-                sx={{ 
-                  width: { xs: '100%', md: '350px' }, 
-                  backgroundColor: '#f8f9fa', 
-                  p: { xs: 2, sm: 3 }, 
-                  borderRadius: 1, 
-                  border: '2px solid #e0e0e0',
-                }}
-              >
-                <Stack spacing={1.5}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
-                    <Typography variant="body2" sx={{ color: '#666' }}>Subtotal:</Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {document.currency} {calculateSubtotal().toFixed(2)}
-                    </Typography>
-                  </Box>
-                  {document.tax > 0 && (
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
-                      <Typography variant="body2" sx={{ color: '#666' }}>Tax ({document.tax}%):</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {document.currency} {calculateTax().toFixed(2)}
-                      </Typography>
-                    </Box>
-                  )}
-                  {document.discount > 0 && (
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
-                      <Typography variant="body2" sx={{ color: '#666' }}>
-                        Discount ({document.discountType === 'percentage' ? `${document.discount}%` : document.currency}):
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, color: '#d32f2f' }}>
-                        -{document.currency} {calculateDiscount().toFixed(2)}
-                      </Typography>
-                    </Box>
-                  )}
-                  {document.shipping > 0 && (
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
-                      <Typography variant="body2" sx={{ color: '#666' }}>Shipping:</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {document.currency} {document.shipping.toFixed(2)}
-                      </Typography>
-                    </Box>
-                  )}
-                  <Divider sx={{ my: 1 }} />
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>Total:</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: themeColor }}>
-                      {document.currency} {calculateTotal().toFixed(2)}
-                    </Typography>
-                  </Box>
-                  {mode === 'invoice' && 'amountPaid' in document && document.amountPaid > 0 && (
-                    <>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
-                        <Typography variant="body2" sx={{ color: '#666' }}>Amount Paid:</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#2e7d32' }}>
-                          {document.currency} {document.amountPaid.toFixed(2)}
-                        </Typography>
-                      </Box>
-                      <Box 
-                        sx={{ 
-                          display: 'flex', 
-                          justifyContent: 'space-between', 
-                          py: 1,
-                          backgroundColor: '#fff3e0',
-                          px: 1.5,
-                          borderRadius: 1,
-                          mt: 1
-                        }}
-                      >
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Balance Due:</Typography>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ed6c02' }}>
-                          {document.currency} {calculateBalance().toFixed(2)}
-                        </Typography>
-                      </Box>
-                    </>
-                  )}
-                </Stack>
-              </Box>
+              <AdditionalCharges
+                mode={mode}
+                document={document}
+                onUpdateField={handlers.handleUpdateField}
+              />
+              <TotalsSummary
+                mode={mode}
+                document={document}
+                themeColor={themeColor}
+                subtotal={calculations.calculateSubtotal()}
+                tax={calculations.calculateTax()}
+                discount={calculations.calculateDiscount()}
+                total={calculations.calculateTotal()}
+                balance={calculations.calculateBalance()}
+              />
             </Box>
 
-            {/* ROW 6: Notes, Terms, and Payment Terms */}
-            <Stack spacing={3}>
-              <TextField
-                fullWidth
-                label="Notes"
-                value={document.notes || ''}
-                onChange={(e) => handleUpdateField('notes', e.target.value)}
-                multiline
-                rows={3}
-                placeholder="Additional notes for the client..."
-                size="small"
-              />
-              <TextField
-                fullWidth
-                label="Terms & Conditions"
-                value={document.terms || ''}
-                onChange={(e) => handleUpdateField('terms', e.target.value)}
-                multiline
-                rows={3}
-                placeholder="Payment terms, refund policy, etc..."
-                size="small"
-              />
-              {mode === 'quotation' && 'paymentTerms' in document && (
-                <TextField
-                  fullWidth
-                  label="Payment Terms"
-                  value={document.paymentTerms || ''}
-                  onChange={(e) => handleUpdateField('paymentTerms', e.target.value)}
-                  placeholder="E.g., Net 30 days, 50% upfront..."
-                  size="small"
-                />
-              )}
-            </Stack>
-          </Paper>
-        </Container>
+          {/* ROW 6: Notes, Terms, and Payment Terms */}
+          <NotesSection
+            mode={mode}
+            document={document}
+            onUpdateField={handlers.handleUpdateField}
+          />
+        </Box>
 
-        {/* Preview Dialog */}
-        <Dialog
-          open={isPreviewOpen}
-          onClose={() => setIsPreviewOpen(false)}
-          maxWidth="md"
-          fullWidth
-          PaperProps={{ sx: { minHeight: '80vh' } }}
-        >
-          <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6">{mode === 'invoice' ? 'Invoice' : 'Quotation'} Preview</Typography>
-            <IconButton onClick={() => setIsPreviewOpen(false)} size="small">
-              <CloseIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent>
+        {/* Right Side - Live Preview (Desktop Only) */}
+        <Box sx={{ 
+          display: { xs: 'none', lg: 'block' },
+          flex: '1 1 50%',
+          maxWidth: '50%',
+          overflowY: 'auto',
+          backgroundColor: '#f8fafc',
+          p: 4,
+          position: 'sticky',
+          top: 64,
+          height: 'calc(100vh - 64px)'
+        }}>
+          <Box sx={{ 
+            backgroundColor: '#ffffff',
+            borderRadius: 4,
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
+            p: 3,
+            minHeight: '100%',
+            border: '1px solid #e2e8f0'
+          }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                mb: 3, 
+                fontWeight: 700, 
+                color: '#1e293b',
+                fontSize: '1.125rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                borderBottom: '2px solid #cbd5e1',
+                paddingBottom: 1.5
+              }}
+            >
+              Live Preview
+            </Typography>
             <Box id="invoice-preview">
               <DocumentPreview document={document} mode={mode} />
             </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setIsPreviewOpen(false)}>Close</Button>
-          </DialogActions>
-        </Dialog>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Preview Dialog (Mobile) */}
+      <Dialog
+        open={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ sx: { minHeight: '80vh' } }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6">{mode === 'invoice' ? 'Invoice' : 'Quotation'} Preview</Typography>
+          <IconButton onClick={() => setIsPreviewOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <DocumentPreview document={document} mode={mode} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsPreviewOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
 
         {/* Print Preview Dialog */}
         <Dialog
@@ -1049,18 +622,17 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
           </DialogActions>
         </Dialog>
 
-        {/* Notification Snackbar */}
-        <Snackbar
-          open={notification.open}
-          autoHideDuration={4000}
-          onClose={() => setNotification({ ...notification, open: false })}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert severity={notification.severity} onClose={() => setNotification({ ...notification, open: false })}>
-            {notification.message}
-          </Alert>
-        </Snackbar>
-      </Box>
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={4000}
+        onClose={() => setNotification({ ...notification, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={notification.severity} onClose={() => setNotification({ ...notification, open: false })}>
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </LocalizationProvider>
   );
 };

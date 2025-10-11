@@ -138,12 +138,46 @@ const quotationSlice = createSlice({
       state.status = action.payload;
     },
     resetQuotation: () => {
-      const freshState = getInitialState();
-      // Clear localStorage
+      // Clear localStorage first
       localStorage.removeItem('quotation');
+      // Return completely fresh state
       return {
-        ...freshState,
-        quotationNumber: generateQuotationNumber(), // Generate new quotation number
+        quotationNumber: generateQuotationNumber(),
+        quotationDate: new Date(),
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days validity
+        from: {
+          name: '',
+          address: '',
+          email: '',
+          phone: '',
+          website: '',
+        },
+        quoteTo: {
+          name: '',
+          address: '',
+          email: '',
+          phone: '',
+        },
+        items: [
+          {
+            id: '1',
+            description: '',
+            quantity: 1,
+            rate: 0,
+            amount: 0,
+          },
+        ],
+        currency: 'USD',
+        tax: 0,
+        discount: 0,
+        discountType: 'percentage' as const,
+        shipping: 0,
+        status: 'draft' as const,
+        notes: '',
+        terms: '',
+        logo: '',
+        referenceNumber: '',
+        paymentTerms: 'Net 30 days',
       };
     },
     setQuotationLogo: (state, action: PayloadAction<string>) => {
