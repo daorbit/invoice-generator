@@ -4,7 +4,8 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { InvoiceGeneratorPage } from './pages/NewInvoiceGenerator';
+import { DocumentGeneratorPage } from './pages/DocumentGeneratorPage';
+import { DocumentSelectionPage } from './pages/DocumentSelectionPage';
 import { LoginPage } from './pages/LoginPage';
 
 const theme = createTheme({
@@ -61,7 +62,23 @@ const App: React.FC = () => {
               path="/"
               element={
                 <ProtectedRoute>
-                  <InvoiceGeneratorPage />
+                  <DocumentSelectionPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/invoice"
+              element={
+                <ProtectedRoute>
+                  <DocumentGeneratorPage mode="invoice" />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quotation"
+              element={
+                <ProtectedRoute>
+                  <DocumentGeneratorPage mode="quotation" />
                 </ProtectedRoute>
               }
             />

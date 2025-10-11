@@ -36,54 +36,28 @@ import {
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { Invoice, InvoiceItem } from '../types/invoice';
+import { InvoiceItem } from '../types/invoice';
 import { ProfessionalInvoicePreview } from '../components/InvoicePreview/ProfessionalInvoicePreview';
-import { generateInvoiceNumber } from '../utils/invoiceUtils';
 import { UserMenu } from '../components/UserMenu';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import {
+  updateInvoiceField,
+  updateFromField,
+  updateBillToField,
+  updateItem,
+  addItem,
+  deleteItem,
+  setLogo,
+} from '../store/invoiceSlice';
 
 const currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY', 'INR'];
 
 export const InvoiceGeneratorPage: React.FC = () => {
-  const [invoice, setInvoice] = useState<Invoice>({
-    logo: undefined,
-    invoiceNumber: generateInvoiceNumber(),
-    invoiceDate: new Date(),
-    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-    poNumber: '',
-    from: {
-      name: 'Your Company Name',
-      email: 'your@email.com',
-      address: 'Your Address',
-      phone: '+1 (555) 123-4567',
-      website: 'www.yourcompany.com',
-    },
-    billTo: {
-      name: 'Client Name',
-      email: 'client@email.com',
-      address: 'Client Address',
-      phone: '+1 (555) 987-6543',
-      website: '',
-    },
-    shipTo: undefined,
-    items: [
-      {
-        id: '1',
-        description: 'Service or Product Description',
-        quantity: 1,
-        rate: 0,
-        amount: 0,
-      },
-    ],
-    tax: 0,
-    discount: 0,
-    discountType: 'percentage',
-    shipping: 0,
-    amountPaid: 0,
-    currency: 'USD',
-    notes: '',
-    terms: '',
-  });
+  // Redux state and dispatch
+  const dispatch = useAppDispatch();
+  const invoice = useAppSelector((state) => state.invoice);
   
+  // Local UI state (not persisted)
   const [isDownloading, setIsDownloading] = useState(false);
   const [isPrintPreview, setIsPrintPreview] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -117,7 +91,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setInvoice({ ...invoice, logo: reader.result as string });
+      dispatch(setLogo(reader.result as string));
       setNotification({ 
         open: true, 
         message: 'Logo uploaded successfully!', 
@@ -163,32 +137,15 @@ export const InvoiceGeneratorPage: React.FC = () => {
   };
 
   const handleAddItem = () => {
-    const newItem: InvoiceItem = {
-      id: Date.now().toString(),
-      description: '',
-      quantity: 1,
-      rate: 0,
-      amount: 0,
-    };
-    setInvoice({ ...invoice, items: [...invoice.items, newItem] });
+    dispatch(addItem());
   };
 
   const handleDeleteItem = (id: string) => {
-    setInvoice({ ...invoice, items: invoice.items.filter((item) => item.id !== id) });
+    dispatch(deleteItem(id));
   };
 
   const handleItemChange = (id: string, field: keyof InvoiceItem, value: string | number) => {
-    const updatedItems = invoice.items.map((item) => {
-      if (item.id === id) {
-        const updatedItem = { ...item, [field]: value };
-        if (field === 'quantity' || field === 'rate') {
-          updatedItem.amount = updatedItem.quantity * updatedItem.rate;
-        }
-        return updatedItem;
-      }
-      return item;
-    });
-    setInvoice({ ...invoice, items: updatedItems });
+    dispatch(updateItem({ id, field, value }));
   };
 
   // Calculation functions
@@ -412,7 +369,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                     />
                     <IconButton
                       size="small"
-                      onClick={() => setInvoice({ ...invoice, logo: undefined })}
+                      onClick={() => dispatch(setLogo(''))}
                       sx={{
                         position: 'absolute',
                         top: 8,
@@ -532,7 +489,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                         <TextField
                           fullWidth
                           value={invoice.invoiceNumber}
-                          onChange={(e) => setInvoice({ ...invoice, invoiceNumber: e.target.value })}
+                          onChange={(e) => dispatch(updateInvoiceField({ field: 'invoiceNumber', value: e.target.value }))}
                           size="small"
                           placeholder="INV-001"
                           sx={{ backgroundColor: '#fff' }}
@@ -545,7 +502,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                         <FormControl fullWidth size="small" sx={{ backgroundColor: '#fff' }}>
                           <Select
                             value={invoice.currency}
-                            onChange={(e) => setInvoice({ ...invoice, currency: e.target.value })}
+                            onChange={(e) => dispatch(updateInvoiceField({ field: 'currency', value: e.target.value }))}
                           >
                             {currencies.map((curr) => (
                               <MenuItem key={curr} value={curr}>
@@ -589,7 +546,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                       fullWidth
                       label="Company Name"
                       value={invoice.from.name}
-                      onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, name: e.target.value } })}
+                      onChange={(e) => dispatch(updateFromField({ field: 'name', value: e.target.value }))}
                       size="small"
                       placeholder="Your Company Inc."
                     />
@@ -597,7 +554,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                       fullWidth
                       label="Address"
                       value={invoice.from.address}
-                      onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, address: e.target.value } })}
+                      onChange={(e) => dispatch(updateFromField({ field: 'address', value: e.target.value }))}
                       multiline
                       rows={2}
                       size="small"
@@ -609,7 +566,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                         label="Email"
                         type="email"
                         value={invoice.from.email}
-                        onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, email: e.target.value } })}
+                        onChange={(e) => dispatch(updateFromField({ field: 'email', value: e.target.value }))}
                         size="small"
                         placeholder="contact@company.com"
                       />
@@ -617,7 +574,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                         fullWidth
                         label="Phone"
                         value={invoice.from.phone}
-                        onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, phone: e.target.value } })}
+                        onChange={(e) => dispatch(updateFromField({ field: 'phone', value: e.target.value }))}
                         size="small"
                         placeholder="+1 (555) 123-4567"
                       />
@@ -626,7 +583,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                       fullWidth
                       label="Website (Optional)"
                       value={invoice.from.website}
-                      onChange={(e) => setInvoice({ ...invoice, from: { ...invoice.from, website: e.target.value } })}
+                      onChange={(e) => dispatch(updateFromField({ field: 'website', value: e.target.value }))}
                       size="small"
                       placeholder="www.yourcompany.com"
                     />
@@ -651,7 +608,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                           value={invoice.invoiceDate}
                           onChange={(newValue) => {
                             if (newValue) {
-                              setInvoice({ ...invoice, invoiceDate: newValue });
+                              dispatch(updateInvoiceField({ field: 'invoiceDate', value: newValue }));
                             }
                           }}
                           slotProps={{
@@ -673,7 +630,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                           value={invoice.dueDate}
                           onChange={(newValue) => {
                             if (newValue) {
-                              setInvoice({ ...invoice, dueDate: newValue });
+                              dispatch(updateInvoiceField({ field: 'dueDate', value: newValue }));
                             }
                           }}
                       slotProps={{
@@ -693,7 +650,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                       <TextField
                         fullWidth
                         value={invoice.poNumber}
-                        onChange={(e) => setInvoice({ ...invoice, poNumber: e.target.value })}
+                        onChange={(e) => dispatch(updateInvoiceField({ field: 'poNumber', value: e.target.value }))}
                         size="small"
                         placeholder="PO-12345"
                         sx={{ backgroundColor: '#fff' }}
@@ -723,7 +680,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                     fullWidth
                     label="Client Name"
                     value={invoice.billTo.name}
-                    onChange={(e) => setInvoice({ ...invoice, billTo: { ...invoice.billTo, name: e.target.value } })}
+                    onChange={(e) => dispatch(updateBillToField({ field: 'name', value: e.target.value }))}
                     size="small"
                     placeholder="Client Company"
                   />
@@ -731,7 +688,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                     fullWidth
                     label="Address"
                     value={invoice.billTo.address}
-                    onChange={(e) => setInvoice({ ...invoice, billTo: { ...invoice.billTo, address: e.target.value } })}
+                    onChange={(e) => dispatch(updateBillToField({ field: 'address', value: e.target.value }))}
                     size="small"
                     multiline
                     rows={2}
@@ -742,7 +699,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                       fullWidth
                       label="Email"
                       value={invoice.billTo.email}
-                      onChange={(e) => setInvoice({ ...invoice, billTo: { ...invoice.billTo, email: e.target.value } })}
+                      onChange={(e) => dispatch(updateBillToField({ field: 'email', value: e.target.value }))}
                       size="small"
                       placeholder="client@company.com"
                     />
@@ -750,7 +707,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                       fullWidth
                       label="Phone"
                       value={invoice.billTo.phone}
-                      onChange={(e) => setInvoice({ ...invoice, billTo: { ...invoice.billTo, phone: e.target.value } })}
+                      onChange={(e) => dispatch(updateBillToField({ field: 'phone', value: e.target.value }))}
                       size="small"
                       placeholder="+1 (555) 987-6543"
                     />
@@ -895,7 +852,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                       label="Tax (%)"
                       type="number"
                       value={invoice.tax}
-                      onChange={(e) => setInvoice({ ...invoice, tax: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) => dispatch(updateInvoiceField({ field: 'tax', value: parseFloat(e.target.value) || 0 }))}
                       size="small"
                       inputProps={{ min: 0, step: 0.01 }}
                     />
@@ -906,7 +863,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                           value={invoice.discountType}
                           label="Discount Type"
                           onChange={(e) =>
-                            setInvoice({ ...invoice, discountType: e.target.value as 'percentage' | 'fixed' })
+                            dispatch(updateInvoiceField({ field: 'discountType', value: e.target.value as 'percentage' | 'fixed' }))
                           }
                         >
                           <MenuItem value="percentage">%</MenuItem>
@@ -917,7 +874,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                         label="Discount"
                         type="number"
                         value={invoice.discount}
-                        onChange={(e) => setInvoice({ ...invoice, discount: parseFloat(e.target.value) || 0 })}
+                        onChange={(e) => dispatch(updateInvoiceField({ field: 'discount', value: parseFloat(e.target.value) || 0 }))}
                         size="small"
                         inputProps={{ min: 0, step: 0.01 }}
                         sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 6px)' } }}
@@ -928,7 +885,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                       label="Shipping"
                       type="number"
                       value={invoice.shipping}
-                      onChange={(e) => setInvoice({ ...invoice, shipping: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) => dispatch(updateInvoiceField({ field: 'shipping', value: parseFloat(e.target.value) || 0 }))}
                       InputProps={{
                         startAdornment: <InputAdornment position="start">{invoice.currency}</InputAdornment>,
                       }}
@@ -940,7 +897,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                       label="Amount Paid"
                       type="number"
                       value={invoice.amountPaid}
-                      onChange={(e) => setInvoice({ ...invoice, amountPaid: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) => dispatch(updateInvoiceField({ field: 'amountPaid', value: parseFloat(e.target.value) || 0 }))}
                       InputProps={{
                         startAdornment: <InputAdornment position="start">{invoice.currency}</InputAdornment>,
                       }}
@@ -1051,7 +1008,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                     multiline
                     rows={3}
                     value={invoice.notes}
-                    onChange={(e) => setInvoice({ ...invoice, notes: e.target.value })}
+                    onChange={(e) => dispatch(updateInvoiceField({ field: 'notes', value: e.target.value }))}
                     placeholder="Additional notes to the client..."
                     size="small"
                   />
@@ -1075,7 +1032,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
                     multiline
                     rows={3}
                     value={invoice.terms}
-                    onChange={(e) => setInvoice({ ...invoice, terms: e.target.value })}
+                    onChange={(e) => dispatch(updateInvoiceField({ field: 'terms', value: e.target.value }))}
                     placeholder="Payment terms and conditions..."
                     size="small"
                   />
