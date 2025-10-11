@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice Generator</title>
+    <style>
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+      
+      @media print {
+        @page {
+          size: letter;
+          margin: 0.5in;
+        }
+        
+        body {
+          background: white !important;
+        }
+        
+        /* Hide everything except the invoice preview */
+        .no-print {
+          display: none !important;
+        }
+        
+        /* Ensure invoice preview takes full width */
+        .invoice-preview-printable {
+          display: block !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          margin: 0 auto !important;
+        }
+        
+        /* Remove shadows for print */
+        * {
+          box-shadow: none !important;
+        }
+        
+        /* Prevent page breaks inside tables */
+        table {
+          page-break-inside: avoid;
+        }
+        
+        tr {
+          page-break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
