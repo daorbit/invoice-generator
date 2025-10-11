@@ -10,15 +10,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-router-dom": "^7.9.4",
-    "@mui/material": "^7.3.4",
-    "@mui/icons-material": "^7.3.4",
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
+    "@mui/icons-material": "^7.3.4",
+    "@mui/material": "^7.3.4",
+    "@mui/x-date-pickers": "^8.14.0",
+    "date-fns": "^4.1.0",
     "html2pdf.js": "^0.10.2",
-    "date-fns": "^4.1.0"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.9.4"
   },
   "devDependencies": {
     "@types/react": "^19.0.6",

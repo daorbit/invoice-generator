@@ -33,7 +33,13 @@ import {
   Print as PrintIcon,
   CloudUpload as UploadIcon,
   ExpandMore as ExpandMoreIcon,
+  Visibility as VisibilityIcon,
+  Close as CloseIcon,
+  Image as ImageIcon,
 } from '@mui/icons-material';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Invoice, InvoiceItem } from '../types/invoice';
 import { ProfessionalInvoicePreview } from '../components/InvoicePreview/ProfessionalInvoicePreview';
 import { generateInvoiceNumber } from '../utils/invoiceUtils';
@@ -84,20 +90,79 @@ export const InvoiceGeneratorPage: React.FC = () => {
   
   const [isDownloading, setIsDownloading] = useState(false);
   const [isPrintPreview, setIsPrintPreview] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [notification, setNotification] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
     severity: 'success',
   });
 
+  const processLogoFile = (file: File) => {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setNotification({ 
+        open: true, 
+        message: 'Please upload an image file (PNG, JPG, SVG)', 
+        severity: 'error' 
+      });
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setNotification({ 
+        open: true, 
+        message: 'Image size should be less than 2MB', 
+        severity: 'error' 
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setInvoice({ ...invoice, logo: reader.result as string });
+      setNotification({ 
+        open: true, 
+        message: 'Logo uploaded successfully!', 
+        severity: 'success' 
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setInvoice({ ...invoice, logo: reader.result as string });
-      };
-      reader.readAsDataURL(file);
+      processLogoFile(file);
+    }
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processLogoFile(file);
     }
   };
 
@@ -149,10 +214,18 @@ export const InvoiceGeneratorPage: React.FC = () => {
     setIsPrintPreview(false);
   };
 
+  const handlePreview = () => {
+    setIsPreviewOpen(true);
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewOpen(false);
+  };
+
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
-      const element = document.querySelector('.invoice-preview-printable');
+      const element = document.querySelector('.invoice-preview-dialog');
       if (!element) {
         setNotification({ open: true, message: 'Invoice preview not found', severity: 'error' });
         return;
@@ -200,7 +273,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
       }}
     >
       <Container 
-        maxWidth="xl"
+        maxWidth="lg"
         sx={{
           '@media print': {
             maxWidth: 'none',
@@ -209,43 +282,36 @@ export const InvoiceGeneratorPage: React.FC = () => {
           }
         }}
       >
+        {/* Form Panel */}
         <Box 
+          className="no-print"
           sx={{ 
-            display: 'flex', 
-            gap: 3, 
-            flexDirection: { xs: 'column', lg: 'row' },
             '@media print': {
-              flexDirection: 'row',
-              gap: 0,
+              display: 'none !important',
             }
           }}
         >
-          {/* Left Panel - Form */}
-          <Box 
-            className="no-print"
-            sx={{ 
-              flex: { lg: '0 0 42%' },
-              '@media print': {
-                display: 'none !important',
-              }
+          <Paper
+            elevation={2}
+            sx={{
+              p: 3,
             }}
           >
-            <Paper
-              elevation={2}
-              sx={{
-                p: 3,
-                position: { lg: 'sticky' },
-                top: 20,
-                maxHeight: { lg: 'calc(100vh - 40px)' },
-                overflowY: 'auto',
-              }}
-            >
               {/* Header Actions */}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, alignItems: 'center' }}>
                 <Typography variant="h5" sx={{ fontWeight: 700, color: '#2c3e50' }}>
                   Invoice Details
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Tooltip title="Preview Invoice">
+                    <IconButton 
+                      onClick={handlePreview} 
+                      size="small" 
+                      color="primary"
+                    >
+                      <VisibilityIcon />
+                    </IconButton>
+                  </Tooltip>
                   <Tooltip title="Download PDF">
                     <IconButton 
                       onClick={handleDownload} 
@@ -267,13 +333,135 @@ export const InvoiceGeneratorPage: React.FC = () => {
 
               {/* Logo Upload */}
               <Box sx={{ mb: 3 }}>
-                <Button variant="outlined" component="label" startIcon={<UploadIcon />} fullWidth sx={{ py: 1.5 }}>
-                  {invoice.logo ? 'Change Logo' : 'Upload Logo'}
-                  <input type="file" hidden accept="image/*" onChange={handleLogoUpload} />
-                </Button>
-                {invoice.logo && (
-                  <Box sx={{ mt: 2, textAlign: 'center' }}>
-                    <img src={invoice.logo} alt="Logo" style={{ maxHeight: '60px' }} />
+                <Typography 
+                  variant="subtitle2" 
+                  sx={{ mb: 1.5, fontWeight: 600, color: '#555' }}
+                >
+                  Company Logo
+                </Typography>
+                {invoice.logo ? (
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      border: '2px dashed #e0e0e0',
+                      borderRadius: 2,
+                      p: 3,
+                      backgroundColor: '#fafafa',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minHeight: 120,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        borderColor: '#bdbdbd',
+                        backgroundColor: '#f5f5f5',
+                      },
+                    }}
+                  >
+                    <img
+                      src={invoice.logo}
+                      alt="Company Logo"
+                      style={{
+                        maxHeight: '100px',
+                        maxWidth: '100%',
+                        objectFit: 'contain',
+                      }}
+                    />
+                    <IconButton
+                      size="small"
+                      onClick={() => setInvoice({ ...invoice, logo: undefined })}
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        boxShadow: 1,
+                        '&:hover': {
+                          backgroundColor: '#fff',
+                          color: 'error.main',
+                        },
+                      }}
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      size="small"
+                      startIcon={<UploadIcon />}
+                      sx={{
+                        position: 'absolute',
+                        bottom: 8,
+                        right: 8,
+                      }}
+                    >
+                      Change
+                      <input type="file" hidden accept="image/*" onChange={handleLogoUpload} />
+                    </Button>
+                  </Box>
+                ) : (
+                  <Box
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    sx={{
+                      border: isDragging ? '2px solid #1976d2' : '2px dashed #d0d0d0',
+                      borderRadius: 2,
+                      p: 3,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minHeight: 120,
+                      cursor: 'pointer',
+                      backgroundColor: isDragging ? '#e3f2fd' : '#fafafa',
+                      transition: 'all 0.3s ease',
+                      position: 'relative',
+                      '&:hover': {
+                        borderColor: '#1976d2',
+                        backgroundColor: '#f0f7ff',
+                        '& .upload-icon': {
+                          color: '#1976d2',
+                        },
+                      },
+                    }}
+                  >
+                    <Box
+                      component="label"
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        cursor: 'pointer',
+                        width: '100%',
+                      }}
+                    >
+                      <ImageIcon
+                        className="upload-icon"
+                        sx={{
+                          fontSize: 48,
+                          color: isDragging ? '#1976d2' : '#bdbdbd',
+                          mb: 1,
+                          transition: 'color 0.3s ease',
+                        }}
+                      />
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: isDragging ? '#1976d2' : '#666', 
+                          mb: 0.5, 
+                          fontWeight: 500,
+                          transition: 'color 0.3s ease',
+                        }}
+                      >
+                        {isDragging ? 'Drop logo here' : 'Click or drag to upload logo'}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#999' }}>
+                        PNG, JPG or SVG (max. 2MB)
+                      </Typography>
+                      <input type="file" hidden accept="image/*" onChange={handleLogoUpload} />
+                    </Box>
                   </Box>
                 )}
               </Box>
@@ -286,24 +474,40 @@ export const InvoiceGeneratorPage: React.FC = () => {
                   value={invoice.invoiceNumber}
                   onChange={(e) => setInvoice({ ...invoice, invoiceNumber: e.target.value })}
                 />
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <TextField
-                    fullWidth
-                    label="Invoice Date"
-                    type="date"
-                    value={invoice.invoiceDate.toISOString().split('T')[0]}
-                    onChange={(e) => setInvoice({ ...invoice, invoiceDate: new Date(e.target.value) })}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                  <TextField
-                    fullWidth
-                    label="Due Date"
-                    type="date"
-                    value={invoice.dueDate.toISOString().split('T')[0]}
-                    onChange={(e) => setInvoice({ ...invoice, dueDate: new Date(e.target.value) })}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                </Box>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <DatePicker
+                      label="Invoice Date"
+                      value={invoice.invoiceDate}
+                      onChange={(newValue) => {
+                        if (newValue) {
+                          setInvoice({ ...invoice, invoiceDate: newValue });
+                        }
+                      }}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          size: 'small',
+                        },
+                      }}
+                    />
+                    <DatePicker
+                      label="Due Date"
+                      value={invoice.dueDate}
+                      onChange={(newValue) => {
+                        if (newValue) {
+                          setInvoice({ ...invoice, dueDate: newValue });
+                        }
+                      }}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          size: 'small',
+                        },
+                      }}
+                    />
+                  </Box>
+                </LocalizationProvider>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <TextField
                     fullWidth
@@ -587,33 +791,6 @@ export const InvoiceGeneratorPage: React.FC = () => {
               </Accordion>
             </Paper>
           </Box>
-
-          {/* Right Panel - Live Preview */}
-          <Box 
-            sx={{ 
-              flex: 1,
-              '@media print': {
-                flex: 'none',
-                width: '100%',
-                maxWidth: '100%',
-              }
-            }}
-          >
-            <Box 
-              className="invoice-preview-printable"
-              sx={{
-                '@media print': {
-                  boxShadow: 'none !important',
-                  '& .MuiPaper-root': {
-                    boxShadow: 'none !important',
-                  }
-                }
-              }}
-            >
-              <ProfessionalInvoicePreview invoice={invoice} />
-            </Box>
-          </Box>
-        </Box>
       </Container>
 
       {/* Download Loading Overlay */}
@@ -667,6 +844,56 @@ export const InvoiceGeneratorPage: React.FC = () => {
         </Alert>
       </Snackbar>
 
+      {/* Invoice Preview Dialog */}
+      <Dialog
+        open={isPreviewOpen}
+        onClose={handleClosePreview}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            minHeight: '80vh',
+            maxHeight: '90vh',
+          }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Invoice Preview
+          </Typography>
+          <IconButton onClick={handleClosePreview} size="small">
+            <Typography variant="body2">✕</Typography>
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers sx={{ p: 3, backgroundColor: '#f5f5f5' }}>
+          <Box className="invoice-preview-dialog" sx={{ maxWidth: '850px', margin: '0 auto' }}>
+            <ProfessionalInvoicePreview invoice={invoice} />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button onClick={handleClosePreview} variant="outlined" color="inherit">
+            Close
+          </Button>
+          <Button 
+            onClick={handleDownload} 
+            variant="contained" 
+            color="primary"
+            startIcon={<DownloadIcon />}
+            disabled={isDownloading}
+          >
+            Download PDF
+          </Button>
+          <Button 
+            onClick={handlePrint} 
+            variant="contained" 
+            color="primary"
+            startIcon={<PrintIcon />}
+          >
+            Print
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Print Preview Dialog */}
       <Dialog
         open={isPrintPreview}
@@ -689,7 +916,7 @@ export const InvoiceGeneratorPage: React.FC = () => {
           </IconButton>
         </DialogTitle>
         <DialogContent dividers sx={{ p: 3, backgroundColor: '#f5f5f5' }}>
-          <Box sx={{ maxWidth: '850px', margin: '0 auto' }}>
+          <Box className="invoice-preview-dialog" sx={{ maxWidth: '850px', margin: '0 auto' }}>
             <ProfessionalInvoicePreview invoice={invoice} />
           </Box>
         </DialogContent>
