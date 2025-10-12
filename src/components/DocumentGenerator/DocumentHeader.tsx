@@ -76,7 +76,7 @@ export const DocumentHeader: React.FC<DocumentHeaderProps> = ({
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Typography variant="h6" sx={{ 
-              fontWeight: 800, 
+              fontWeight: 600, 
               color: '#1e293b', 
               fontSize: { xs: '1.25rem', sm: '16px' },
               letterSpacing: '-0.5px'

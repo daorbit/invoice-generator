@@ -613,7 +613,7 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
                 <Typography variant="h6" sx={{ color: '#2c3e50', fontWeight: 600, mb: 2, fontSize: { xs: '1rem', sm: '1rem' } }}>
                   FROM (YOUR COMPANY)
                 </Typography>
-                <Box sx={{ backgroundColor: '#f8f9fa', p: 2, borderRadius: 1, border: '1px solid #e0e0e0' }}>
+                <Box sx={{  p: 2, borderRadius: 1, border: '1px solid #e0e0e0' }}>
                   <Stack spacing={2}>
                     <TextField
                       fullWidth
@@ -786,7 +786,6 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
                   sx={{ 
                     mb: 2,
                     p: 2,
-                    backgroundColor: '#fafafa',
                     borderRadius: 1,
                     border: '1px solid #e0e0e0'
                   }}

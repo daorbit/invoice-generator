@@ -459,8 +459,7 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({
       <Box
         sx={{
           bgcolor: "#ffffff",
-          borderBottom: "2px solid #e2e8f0",
-          position: "sticky",
+           position: "sticky",
           top: 0,
           zIndex: 100,
           boxShadow: "0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)",

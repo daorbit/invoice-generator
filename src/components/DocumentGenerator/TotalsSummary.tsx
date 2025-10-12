@@ -31,57 +31,56 @@ export const TotalsSummary: React.FC<TotalsSummaryProps> = ({
     <Box 
       sx={{ 
         width: { xs: '100%', md: '350px' }, 
-        backgroundColor: '#f8f9fa', 
         p: { xs: 2, sm: 3 }, 
         borderRadius: 1, 
-        border: '2px solid #e0e0e0',
+        border: '1px solid #e0e0e0',
       }}
     >
       <Stack spacing={1.5}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
-          <Typography variant="body2" sx={{ color: '#666' }}>Subtotal:</Typography>
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          <Typography variant="body2" sx={{ color: '#666', fontSize: '0.8125rem' }}>Subtotal:</Typography>
+          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
             {document.currency} {subtotal.toFixed(2)}
           </Typography>
         </Box>
         {document.tax > 0 && (
           <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
-            <Typography variant="body2" sx={{ color: '#666' }}>Tax ({document.tax}%):</Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            <Typography variant="body2" sx={{ color: '#666', fontSize: '0.8125rem' }}>Tax ({document.tax}%):</Typography>
+            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
               {document.currency} {tax.toFixed(2)}
             </Typography>
           </Box>
         )}
         {document.discount > 0 && (
           <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
-            <Typography variant="body2" sx={{ color: '#666' }}>
+            <Typography variant="body2" sx={{ color: '#666', fontSize: '0.8125rem' }}>
               Discount ({document.discountType === 'percentage' ? `${document.discount}%` : document.currency}):
             </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: '#d32f2f' }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: '#d32f2f', fontSize: '0.8125rem' }}>
               -{document.currency} {discount.toFixed(2)}
             </Typography>
           </Box>
         )}
         {document.shipping > 0 && (
           <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
-            <Typography variant="body2" sx={{ color: '#666' }}>Shipping:</Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            <Typography variant="body2" sx={{ color: '#666', fontSize: '0.8125rem' }}>Shipping:</Typography>
+            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8125rem' }}>
               {document.currency} {document.shipping.toFixed(2)}
             </Typography>
           </Box>
         )}
         <Divider sx={{ my: 1 }} />
         <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>Total:</Typography>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: themeColor }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, fontSize: '0.875rem' }}>Total:</Typography>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: themeColor, fontSize: '0.875rem' }}>
             {document.currency} {total.toFixed(2)}
           </Typography>
         </Box>
         {mode === 'invoice' && 'amountPaid' in document && document.amountPaid > 0 && (
           <>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
-              <Typography variant="body2" sx={{ color: '#666' }}>Amount Paid:</Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: '#2e7d32' }}>
+              <Typography variant="body2" sx={{ color: '#666', fontSize: '0.8125rem' }}>Amount Paid:</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: '#2e7d32', fontSize: '0.8125rem' }}>
                 {document.currency} {document.amountPaid.toFixed(2)}
               </Typography>
             </Box>
@@ -96,8 +95,8 @@ export const TotalsSummary: React.FC<TotalsSummaryProps> = ({
                 mt: 1
               }}
             >
-              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Balance Due:</Typography>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ed6c02' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, fontSize: '0.875rem' }}>Balance Due:</Typography>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ed6c02', fontSize: '0.875rem' }}>
                 {document.currency} {balance.toFixed(2)}
               </Typography>
             </Box>

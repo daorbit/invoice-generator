@@ -23,17 +23,14 @@ export const ClientSection: React.FC<ClientSectionProps> = ({
 
   const fieldStyles = {
     '& .MuiOutlinedInput-root': {
-      backgroundColor: '#f8fafc',
-      '&:hover': {
-        backgroundColor: '#f1f5f9',
-      },
+      
       '&.Mui-focused': {
         backgroundColor: '#fff',
       }
     },
     '& .MuiInputLabel-root': {
       fontWeight: 600,
-      fontSize: '0.875rem',
+      fontSize: '0.75rem',
     }
   };
 
@@ -42,10 +39,10 @@ export const ClientSection: React.FC<ClientSectionProps> = ({
       <Typography 
         variant="h6" 
         sx={{ 
-          color: '#1e293b', 
+          color: '#374151', 
           fontWeight: 700, 
-          mb: 2.5, 
-          fontSize: { xs: '1rem', sm: '1.125rem' },
+          mb: 2, 
+          fontSize: { xs: '0.875rem', sm: '1rem' },
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
           borderBottom: '2px solid #cbd5e1',
@@ -56,12 +53,12 @@ export const ClientSection: React.FC<ClientSectionProps> = ({
       </Typography>
       <Box sx={{ 
         backgroundColor: '#ffffff', 
-        p: 2.5, 
+        p: 2, 
         borderRadius: 3, 
         border: '1px solid #e2e8f0',
         boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
       }}>
-        <Stack spacing={2}>
+        <Stack spacing={1.5}>
           <TextField
             fullWidth
             label="Client Name"

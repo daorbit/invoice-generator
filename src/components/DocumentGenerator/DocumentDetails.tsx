@@ -38,22 +38,22 @@ export const DocumentDetails: React.FC<DocumentDetailsProps> = ({
       <Box
         sx={{
           backgroundColor: "#ffffff",
-          p: 2.5,
+          p: 2,
           borderRadius: 3,
           border: "1px solid #e2e8f0",
           boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
         }}
       >
-        <Stack spacing={2}>
+        <Stack spacing={1.5}>
           <Box>
             <Typography
               variant="caption"
               sx={{
-                color: "#475569",
+                color: "#4b5563",
                 fontWeight: 700,
                 display: "block",
                 mb: 0.8,
-                fontSize: "0.75rem",
+                fontSize: "0.6875rem",
                 letterSpacing: "0.5px",
                 textTransform: "uppercase",
               }}
@@ -93,11 +93,11 @@ export const DocumentDetails: React.FC<DocumentDetailsProps> = ({
             <Typography
               variant="caption"
               sx={{
-                color: "#475569",
+                color: "#4b5563",
                 fontWeight: 700,
                 display: "block",
                 mb: 0.8,
-                fontSize: "0.75rem",
+                fontSize: "0.6875rem",
                 letterSpacing: "0.5px",
                 textTransform: "uppercase",
               }}
@@ -137,11 +137,11 @@ export const DocumentDetails: React.FC<DocumentDetailsProps> = ({
               <Typography
                 variant="caption"
                 sx={{
-                  color: "#475569",
+                  color: "#4b5563",
                   fontWeight: 700,
                   display: "block",
                   mb: 0.8,
-                  fontSize: "0.75rem",
+                  fontSize: "0.6875rem",
                   letterSpacing: "0.5px",
                   textTransform: "uppercase",
                 }}
