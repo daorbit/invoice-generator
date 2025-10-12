@@ -610,7 +610,7 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({ mo
             }}>
               {/* FROM (Your Company) */}
               <Box sx={{ flex: 1 }}>
-                <Typography variant="h6" sx={{ color: '#2c3e50', fontWeight: 600, mb: 2, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                <Typography variant="h6" sx={{ color: '#2c3e50', fontWeight: 600, mb: 2, fontSize: { xs: '1rem', sm: '1rem' } }}>
                   FROM (YOUR COMPANY)
                 </Typography>
                 <Box sx={{ backgroundColor: '#f8f9fa', p: 2, borderRadius: 1, border: '1px solid #e0e0e0' }}>

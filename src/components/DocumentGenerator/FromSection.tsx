@@ -35,8 +35,7 @@ export const FromSection: React.FC<FromSectionProps> = ({ from, onUpdateFromFiel
           color: '#1e293b', 
           fontWeight: 700, 
           mb: 2.5, 
-          fontSize: { xs: '1rem', sm: '1.125rem' },
-          textTransform: 'uppercase',
+          fontSize: { xs: '1rem', sm: '13px' },
           letterSpacing: '0.5px',
           borderBottom: '2px solid #cbd5e1',
           paddingBottom: 1

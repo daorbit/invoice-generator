@@ -51,19 +51,18 @@ export const DocumentHeader: React.FC<DocumentHeaderProps> = ({
       display: 'flex', 
       justifyContent: 'space-between', 
       alignItems: 'center', 
-      py: 2.5,
+      py: 1,
       px: { xs: 3, sm: 4 },
       flexWrap: 'wrap', 
       gap: 2 
     }}>
-      {/* Left Side - Back Button + Title */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
         <IconButton 
           onClick={onBack} 
-          size="medium"
+          size="small"
           sx={{ 
-            color: '#475569',
-            backgroundColor: '#f8fafc',
+            color: '#2563eb',
+            backgroundColor: '#dbeafe',
             border: '1px solid #e2e8f0',
             '&:hover': { 
               bgcolor: '#2563eb', 
@@ -79,7 +78,7 @@ export const DocumentHeader: React.FC<DocumentHeaderProps> = ({
             <Typography variant="h6" sx={{ 
               fontWeight: 800, 
               color: '#1e293b', 
-              fontSize: { xs: '1.25rem', sm: '1.5rem' },
+              fontSize: { xs: '1.25rem', sm: '16px' },
               letterSpacing: '-0.5px'
             }}>
               {getLabel('title')}
@@ -92,8 +91,8 @@ export const DocumentHeader: React.FC<DocumentHeaderProps> = ({
                   backgroundColor: statusColors[document.status as keyof typeof statusColors] || statusColors.draft,
                   color: 'white',
                   fontWeight: 700,
-                  fontSize: '0.75rem',
-                  height: 26,
+                  fontSize: '10px',
+                  height: 22,
                   letterSpacing: '0.5px',
                 }}
               />
@@ -131,14 +130,13 @@ export const DocumentHeader: React.FC<DocumentHeaderProps> = ({
           </Button>
         )}
         
-        {/* Reset Button */}
         <Tooltip title="Reset Form">
           <IconButton 
-            size="medium" 
+            size="small" 
             onClick={onReset}
             sx={{ 
-              color: '#475569',
-              backgroundColor: '#f8fafc',
+              color: '#dc2626',
+              backgroundColor: '#fecaca',
               border: '1px solid #e2e8f0',
               '&:hover': { 
                 bgcolor: '#dc2626', 
@@ -154,11 +152,11 @@ export const DocumentHeader: React.FC<DocumentHeaderProps> = ({
         {/* Preview Button - Always visible */}
         <Tooltip title="Preview">
           <IconButton 
-            size="medium" 
+            size="small" 
             onClick={onPreview}
             sx={{ 
-              color: '#475569',
-              backgroundColor: '#f8fafc',
+              color: '#2563eb',
+              backgroundColor: '#dbeafe',
               border: '1px solid #e2e8f0',
               '&:hover': { 
                 bgcolor: '#2563eb', 
@@ -173,12 +171,12 @@ export const DocumentHeader: React.FC<DocumentHeaderProps> = ({
         
         <Tooltip title="Download PDF">
           <IconButton 
-            size="medium" 
+            size="small" 
             onClick={onDownload} 
             disabled={isDownloading}
             sx={{ 
-              color: '#475569',
-              backgroundColor: '#f8fafc',
+              color: '#2563eb',
+              backgroundColor: '#dbeafe',
               border: '1px solid #e2e8f0',
               '&:hover': { 
                 bgcolor: '#2563eb', 
@@ -197,11 +195,11 @@ export const DocumentHeader: React.FC<DocumentHeaderProps> = ({
         
         <Tooltip title="Print">
           <IconButton 
-            size="medium" 
+            size="small" 
             onClick={onPrint}
             sx={{ 
-              color: '#475569',
-              backgroundColor: '#f8fafc',
+              color: '#2563eb',
+              backgroundColor: '#dbeafe',
               border: '1px solid #e2e8f0',
               '&:hover': { 
                 bgcolor: '#2563eb', 

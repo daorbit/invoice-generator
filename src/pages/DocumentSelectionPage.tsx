@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
-  Container,
   Paper,
   Typography,
   Button,
@@ -54,8 +53,8 @@ export const DocumentSelectionPage: React.FC = () => {
   ];
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f7fa', py: 4 }}>
-      <Container maxWidth="lg">
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f7fa', p: 4 }}>
+      <Box>
         {/* Header */}
         <Paper 
           elevation={0} 
@@ -91,7 +90,6 @@ export const DocumentSelectionPage: React.FC = () => {
                   flexDirection: 'column',
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    transform: 'translateY(-8px)',
                     boxShadow: 6,
                   },
                 }}
@@ -210,7 +208,7 @@ export const DocumentSelectionPage: React.FC = () => {
             <strong> Invoices</strong> are used for billing completed work and tracking payments.
           </Typography>
         </Paper>
-      </Container>
+      </Box>
     </Box>
   );
 };
