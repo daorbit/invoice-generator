@@ -8,5 +8,6 @@ export interface SectionProps {
   setField: Editor['setField'];
 }
 
-export type ClientActions = Pick<Editor, 'setClient' | 'fillClient'>;
-export type ItemActions = Pick<Editor, 'updateItem' | 'addItem' | 'removeItem'>;
+export type ClientActions = Pick<Editor, 'setClient' | 'fillCustomer'>;
+export type ItemActions = Pick<Editor, 'updateItem' | 'fillItem' | 'addItem' | 'removeItem'>;
+export type TaxActions = Pick<Editor, 'applyTaxRate'>;

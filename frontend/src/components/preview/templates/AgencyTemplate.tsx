@@ -1,6 +1,6 @@
 import type { DocumentView } from '../useDocumentView';
 import { pageClasses } from './PageShell';
-import { AmountWords, PaymentStrip } from './Extras';
+import { AmountWords, PaymentStrip, ItemText } from './Extras';
 import classes from './Agency.module.css';
 
 export function AgencyTemplate({ view }: { view: DocumentView }) {
@@ -65,8 +65,8 @@ export function AgencyTemplate({ view }: { view: DocumentView }) {
         <tbody>
           {view.items.map((item) => (
             <tr key={item.id}>
-              <td className={classes.strong}>{item.description}</td>
-              <td className={classes.num}>{item.quantity}</td>
+              <td className={classes.strong}><ItemText item={item} view={view} /></td>
+              <td className={classes.num}>{view.qty(item)}</td>
               <td className={classes.num}>{view.money(item.rate)}</td>
               <td className={`${classes.num} ${classes.strong}`}>{view.money(item.amount)}</td>
             </tr>

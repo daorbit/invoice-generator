@@ -8,10 +8,16 @@
   grid-template-columns: minmax(0, 1fr) 76px 116px 104px 30px;
   align-items: center;
   gap: 8px;
-  padding-block: 6px;
 }
 
-.row + .row {
+.line {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-block: 10px;
+}
+
+.line + .line {
   border-top: 1px solid var(--border);
 }
 
@@ -32,6 +38,30 @@
   font-variant-numeric: tabular-nums;
   text-align: right;
   color: var(--text);
+}
+
+.details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hsn {
+  width: 104px;
+}
+
+.unit {
+  width: 96px;
+}
+
+.tax {
+  width: 124px;
+}
+
+.taxLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
 }
 
 .footer {

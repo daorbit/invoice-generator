@@ -1,6 +1,6 @@
 import type { DocumentView } from '../useDocumentView';
 import { UpiQr } from './PageShell';
-import { DetailRows } from './Extras';
+import { DetailRows, ItemText } from './Extras';
 import classes from './Soft.module.css';
 
 export function SoftTemplate({ view }: { view: DocumentView }) {
@@ -51,8 +51,8 @@ export function SoftTemplate({ view }: { view: DocumentView }) {
           <tbody>
             {view.items.map((item) => (
               <tr key={item.id}>
-                <td>{item.description}</td>
-                <td className={classes.num}>{item.quantity}</td>
+                <td><ItemText item={item} view={view} /></td>
+                <td className={classes.num}>{view.qty(item)}</td>
                 <td className={classes.num}>{view.money(item.rate)}</td>
                 <td className={classes.num}>{view.money(item.amount)}</td>
               </tr>

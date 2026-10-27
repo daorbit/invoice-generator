@@ -1,6 +1,6 @@
 import type { DocumentView } from '../useDocumentView';
 import { pageClasses } from './PageShell';
-import { AmountWords, NotesAndSignature, PaymentStrip } from './Extras';
+import { AmountWords, NotesAndSignature, PaymentStrip, ItemText } from './Extras';
 import classes from './Capsule.module.css';
 
 export function CapsuleTemplate({ view }: { view: DocumentView }) {
@@ -53,8 +53,8 @@ export function CapsuleTemplate({ view }: { view: DocumentView }) {
       </div>
       {view.items.map((item) => (
         <div key={item.id} className={classes.row}>
-          <span className={classes.pill}>{item.description}</span>
-          <span className={classes.ring}>{item.quantity}</span>
+          <span className={classes.pill}><ItemText item={item} view={view} /></span>
+          <span className={classes.ring}>{view.qty(item)}</span>
           <span className={classes.ring}>{view.money(item.rate)}</span>
           <span className={classes.solid}>{view.money(item.amount)}</span>
         </div>

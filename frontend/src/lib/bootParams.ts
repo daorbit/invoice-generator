@@ -11,6 +11,12 @@ function bootWorkspaceId(): string {
 
 export const WORKSPACE_ID = bootWorkspaceId();
 
+const PUBLIC_PATH = /^\/p\/([A-Za-z0-9_-]{20,64})\/?$/;
+
+export const PUBLIC_TOKEN = PUBLIC_PATH.exec(window.location.pathname)?.[1] ?? '';
+
+export const PUBLIC_PREVIEW = params.get('preview') === '1';
+
 export const IS_EMBEDDED = params.get('embedded') === '1';
 
 export const WORKSPACE_TOKEN = params.get('wt') ?? '';

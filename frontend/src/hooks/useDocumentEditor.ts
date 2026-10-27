@@ -1,33 +1,80 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getDocument, saveDocument } from '@/api/documents';
-import { newDraft, newLineItem } from '@/lib/newDraft';
+import { getCustomer } from '@/api/catalog';
+import { customerParty, lineFromCatalog, newDraft, newLineItem } from '@/lib/newDraft';
 import { lineAmount } from '@/lib/totals';
 import { notify } from '@/lib/notify';
 import type { BusinessProfile } from '@/types/businessProfile';
-import type { DocumentDraft, DocumentKind, DocumentStatus, LineItem, Party } from '@/types/document';
+import type { CatalogItem, Customer } from '@/types/catalog';
+import type {
+  ClientResponse,
+  DocumentActivity,
+  DocumentDraft,
+  DocumentKind,
+  DocumentStatus,
+  LineItem,
+  LoadedDocument,
+  Party,
+} from '@/types/document';
 
 type EditableField = Exclude<keyof DocumentDraft, 'kind' | 'client' | 'items' | 'from' | 'status'>;
+type ItemPatch = Partial<Omit<LineItem, 'id' | 'amount'>>;
+
+function withCustomer(draft: DocumentDraft, customer: Customer): DocumentDraft {
+  return {
+    ...draft,
+    client: customerParty(customer),
+    customerId: customer.id,
+    placeOfSupply: customer.gstin ? '' : customer.stateCode,
+  };
+}
 
 export function useDocumentEditor(
   kind: DocumentKind,
   id: string | undefined,
   profile: BusinessProfile | null,
-  profileLoading: boolean
+  profileLoading: boolean,
+  prefillCustomerId?: string | null
 ) {
   const [draft, setDraft] = useState<DocumentDraft | null>(null);
   const [saved, setSaved] = useState<string>('');
+  const [activity, setActivity] = useState<DocumentActivity | null>(null);
+  const [clientResponse, setClientResponse] = useState<ClientResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [missing, setMissing] = useState(false);
 
+  const apply = useCallback((loaded: LoadedDocument) => {
+    setDraft(loaded.draft);
+    setSaved(JSON.stringify(loaded.draft));
+    setActivity(loaded.activity);
+    setClientResponse(loaded.clientResponse);
+  }, []);
+
   useEffect(() => {
     if (id || profileLoading) return;
+    let cancelled = false;
     const fresh = newDraft(kind, profile);
-    setDraft(fresh);
-    setSaved(JSON.stringify(fresh));
-    setMissing(false);
-    setLoading(false);
-  }, [kind, id, profile, profileLoading]);
+    const start = (next: DocumentDraft) => {
+      if (cancelled) return;
+      setDraft(next);
+      setSaved(JSON.stringify(fresh));
+      setActivity(null);
+      setClientResponse(null);
+      setMissing(false);
+      setLoading(false);
+    };
+    if (!prefillCustomerId) {
+      start(fresh);
+    } else {
+      getCustomer(prefillCustomerId)
+        .then((detail) => start(withCustomer(fresh, detail.customer)))
+        .catch(() => start(fresh));
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [kind, id, profile, profileLoading, prefillCustomerId]);
 
   useEffect(() => {
     if (!id) return;
@@ -36,9 +83,7 @@ export function useDocumentEditor(
     setLoading(true);
     getDocument(kind, id)
       .then((loaded) => {
-        if (cancelled) return;
-        setDraft(loaded);
-        setSaved(JSON.stringify(loaded));
+        if (!cancelled) apply(loaded);
       })
       .catch((error: Error) => {
         if (cancelled) return;
@@ -51,21 +96,25 @@ export function useDocumentEditor(
     return () => {
       cancelled = true;
     };
-  }, [kind, id]);
+  }, [kind, id, apply]);
 
   const setField = useCallback(<K extends EditableField>(field: K, value: DocumentDraft[K]) => {
     setDraft((d) => (d ? { ...d, [field]: value } : d));
   }, []);
 
   const setClient = useCallback((field: keyof Party, value: string) => {
-    setDraft((d) => (d ? { ...d, client: { ...d.client, [field]: value } } : d));
+    setDraft((d) => {
+      if (!d) return d;
+      const renamed = field === 'name' && value.trim() !== d.client.name.trim();
+      return { ...d, client: { ...d.client, [field]: value }, customerId: renamed ? undefined : d.customerId };
+    });
   }, []);
 
-  const fillClient = useCallback((client: Party) => {
-    setDraft((d) => (d ? { ...d, client: { ...client } } : d));
+  const fillCustomer = useCallback((customer: Customer) => {
+    setDraft((d) => (d ? withCustomer(d, customer) : d));
   }, []);
 
-  const updateItem = useCallback((itemId: string, patch: Partial<Omit<LineItem, 'id' | 'amount'>>) => {
+  const updateItem = useCallback((itemId: string, patch: ItemPatch) => {
     setDraft((d) =>
       d
         ? {
@@ -80,12 +129,32 @@ export function useDocumentEditor(
     );
   }, []);
 
+  const fillItem = useCallback((itemId: string, catalogItem: CatalogItem) => {
+    setDraft((d) =>
+      d ? { ...d, items: d.items.map((item) => (item.id === itemId ? lineFromCatalog(item, catalogItem) : item)) } : d
+    );
+  }, []);
+
   const addItem = useCallback(() => {
-    setDraft((d) => (d ? { ...d, items: [...d.items, newLineItem()] } : d));
+    setDraft((d) => (d ? { ...d, items: [...d.items, newLineItem(d.tax)] } : d));
   }, []);
 
   const removeItem = useCallback((itemId: string) => {
     setDraft((d) => (d && d.items.length > 1 ? { ...d, items: d.items.filter((item) => item.id !== itemId) } : d));
+  }, []);
+
+  const applyTaxRate = useCallback((rate: number) => {
+    setDraft((d) => (d ? { ...d, tax: rate, items: d.items.map((item) => ({ ...item, taxRate: rate })) } : d));
+  }, []);
+
+  const setShareUrl = useCallback((shareUrl: string | null) => {
+    setActivity((current) => ({
+      views: { count: 0, firstAt: null, lastAt: null },
+      lastEmail: null,
+      scheduledEmail: null,
+      ...current,
+      shareUrl,
+    }));
   }, []);
 
   const markStatus = useCallback((status: DocumentStatus) => {
@@ -104,8 +173,7 @@ export function useDocumentEditor(
     setSaving(true);
     try {
       const result = await saveDocument(draft, id);
-      setDraft(result.draft);
-      setSaved(JSON.stringify(result.draft));
+      apply(result);
       notify.success(id ? 'Changes saved' : `${result.draft.number} created`);
       return result.id;
     } catch (error) {
@@ -114,21 +182,27 @@ export function useDocumentEditor(
     } finally {
       setSaving(false);
     }
-  }, [draft, id]);
+  }, [draft, id, apply]);
 
   return {
     draft,
+    activity,
+    clientResponse,
     loading,
     saving,
     missing,
     dirty,
     setField,
     setClient,
-    fillClient,
+    fillCustomer,
     updateItem,
+    fillItem,
     addItem,
     removeItem,
+    applyTaxRate,
     markStatus,
+    setShareUrl,
+    apply,
     save,
   };
 }

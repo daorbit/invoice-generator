@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Box, Button } from '@mantine/core';
+import { Button } from '@mantine/core';
 import { FileText, Plus, ReceiptText } from 'lucide-react';
+import { SectionPage } from '@/components/layout/SectionPage';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DocsButton } from '@/components/ui/DocsButton';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -21,7 +22,6 @@ import { SetupNotice } from './documents/SetupNotice';
 import { DocumentsToolbar } from './documents/DocumentsToolbar';
 import { DocumentList } from './documents/DocumentList';
 import { DeleteDocumentModal } from './documents/DeleteDocumentModal';
-import classes from './DocumentsPage.module.css';
 
 const VIEW_PARAM = 'view';
 
@@ -50,7 +50,7 @@ export function DocumentsPage() {
   const isEmpty = !list.loading && list.items.length === 0;
 
   return (
-    <Box className={classes.page}>
+    <SectionPage>
       <PageHeader
         title="Invoices"
         description="Quotations and invoices for your leads, with what is paid and what is still due."
@@ -118,6 +118,6 @@ export function DocumentsPage() {
         onCancel={docActions.cancelDelete}
         onConfirm={docActions.confirmDelete}
       />
-    </Box>
+    </SectionPage>
   );
 }

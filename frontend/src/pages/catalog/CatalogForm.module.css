@@ -1,0 +1,32 @@
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-sm);
+  padding-block: 16px;
+}
+
+.section:first-child {
+  padding-top: 0;
+}
+
+.section + .section {
+  border-top: 1px solid var(--border);
+}
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
+.footer {
+  margin-top: 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}

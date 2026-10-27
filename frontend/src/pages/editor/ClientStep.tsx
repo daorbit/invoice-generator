@@ -1,36 +1,53 @@
+import { useState } from 'react';
 import { Autocomplete, SimpleGrid, TextInput, Textarea } from '@mantine/core';
 import { UserRound } from 'lucide-react';
-import { useRecentClients } from '@/hooks/useRecentClients';
+import { listCustomers } from '@/api/catalog';
+import { useSearchOptions } from '@/hooks/useSearchOptions';
+import { GSTIN_PATTERN } from '@/lib/gst';
 import type { DocumentDraft } from '@/types/document';
 import { EditorStep } from './EditorStep';
+import { PickerOption } from './PickerOption';
 import type { ClientActions } from './types';
 
-export function ClientStep({ draft, setClient, fillClient }: { draft: DocumentDraft } & ClientActions) {
-  const clients = useRecentClients();
+const GSTIN_LENGTH = 15;
+
+export function ClientStep({ draft, setClient, fillCustomer }: { draft: DocumentDraft } & ClientActions) {
   const { client } = draft;
+  const [focused, setFocused] = useState(false);
+  const customers = useSearchOptions(listCustomers, client.name, focused);
+  const gstinInvalid = client.gstin?.length === GSTIN_LENGTH && !GSTIN_PATTERN.test(client.gstin);
 
   const pick = (name: string) => {
-    const match = clients.find((entry) => entry.name === name);
-    if (match) fillClient(match);
+    const match = customers.find((entry) => entry.name === name);
+    if (match) fillCustomer(match);
   };
 
+  const description = !client.name.trim()
+    ? 'Pick a saved customer or type a new name.'
+    : draft.customerId
+      ? 'From your customers.'
+      : 'New customer. Added to Customers when you save.';
+
   return (
-    <EditorStep
-      index={1}
-      title="Who is it for?"
-      hint={clients.length ? 'Type to pick a past client, or add someone new.' : 'Add the person or company you are billing.'}
-      done={Boolean(client.name.trim())}
-    >
+    <EditorStep index={1} title="Who is it for?" hint="Pick a customer, or add someone new." done={Boolean(client.name.trim())}>
       <Autocomplete
-        label="Name or company"
+        label="Customer"
+        description={description}
         placeholder="Acme Pvt Ltd"
         required
         leftSection={<UserRound size={15} />}
-        data={clients.map((entry) => entry.name)}
+        data={customers.map((entry) => entry.name)}
+        filter={({ options }) => options}
         limit={8}
         value={client.name}
         onChange={(value) => setClient('name', value)}
         onOptionSubmit={pick}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        renderOption={({ option }) => {
+          const match = customers.find((entry) => entry.name === option.value);
+          return <PickerOption title={option.value} detail={[match?.email, match?.gstin].filter(Boolean).join(' · ')} />;
+        }}
       />
       <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
         <TextInput
@@ -58,7 +75,8 @@ export function ClientStep({ draft, setClient, fillClient }: { draft: DocumentDr
         <TextInput
           label="GSTIN"
           placeholder="Only for GST-registered clients"
-          maxLength={15}
+          maxLength={GSTIN_LENGTH}
+          error={gstinInvalid ? 'This GSTIN does not look right' : undefined}
           value={client.gstin ?? ''}
           onChange={(e) => setClient('gstin', e.currentTarget.value.toUpperCase())}
         />

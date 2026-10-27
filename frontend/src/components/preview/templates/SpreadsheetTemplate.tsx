@@ -1,5 +1,6 @@
 import type { DocumentView } from '../useDocumentView';
 import { UpiQr, pageClasses } from './PageShell';
+import { ItemText } from './Extras';
 import classes from './Spreadsheet.module.css';
 
 export function SpreadsheetTemplate({ view }: { view: DocumentView }) {
@@ -56,8 +57,8 @@ export function SpreadsheetTemplate({ view }: { view: DocumentView }) {
             {view.items.map((item, index) => (
               <tr key={item.id}>
                 <td className={classes.index}>{index + 1}</td>
-                <td>{item.description}</td>
-                <td className={classes.num}>{item.quantity}</td>
+                <td><ItemText item={item} view={view} /></td>
+                <td className={classes.num}>{view.qty(item)}</td>
                 <td className={classes.num}>{view.money(item.rate)}</td>
                 <td className={classes.num}>{view.money(item.amount)}</td>
               </tr>

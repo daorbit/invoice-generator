@@ -14,9 +14,9 @@ import { Notifications } from '@mantine/notifications';
 import { App } from '@/app/App';
 import { readHostTheme, themeFromHost } from '@/app/themeParams';
 import { applyHostTokens } from '@/app/hostTokens';
-import { BOOT_SEARCH } from '@/lib/bootParams';
+import { BOOT_SEARCH, PUBLIC_TOKEN } from '@/lib/bootParams';
 
-const host = readHostTheme(BOOT_SEARCH);
+const host = readHostTheme(PUBLIC_TOKEN ? '?mode=light' : BOOT_SEARCH);
 applyHostTokens(host);
 const theme = themeFromHost(host);
 const { colorScheme } = host;

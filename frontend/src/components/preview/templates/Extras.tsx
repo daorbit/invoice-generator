@@ -1,6 +1,17 @@
+import type { LineItem } from '@/types/document';
 import type { DocumentView, Row } from '../useDocumentView';
 import { UpiQr } from './PageShell';
 import classes from './Extras.module.css';
+
+export function ItemText({ item, view }: { item: LineItem; view: DocumentView }) {
+  const meta = view.itemMeta(item);
+  return (
+    <>
+      <span className={classes.itemName}>{item.description}</span>
+      {meta && <span className={classes.itemMeta}>{meta}</span>}
+    </>
+  );
+}
 
 export function DetailRows({ rows }: { rows: Row[] }) {
   return (

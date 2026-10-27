@@ -1,4 +1,4 @@
-import { Button, Group, Modal, Text } from '@mantine/core';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { KIND_META } from '@/lib/documentMeta';
 import type { DocumentSummary } from '@/types/document';
 
@@ -13,18 +13,14 @@ export function DeleteDocumentModal({ doc, deleting, onCancel, onConfirm }: Prop
   const label = doc ? KIND_META[doc.kind].singular.toLowerCase() : '';
 
   return (
-    <Modal opened={Boolean(doc)} onClose={onCancel} title={`Delete this ${label}?`} size="sm">
-      <Text size="sm" c="dimmed">
-        {doc?.number} will be removed for everyone in this workspace. This cannot be undone.
-      </Text>
-      <Group justify="flex-end" mt="lg" gap="sm">
-        <Button variant="default" onClick={onCancel} disabled={deleting}>
-          Cancel
-        </Button>
-        <Button color="red" onClick={onConfirm} loading={deleting}>
-          Delete
-        </Button>
-      </Group>
-    </Modal>
+    <ConfirmModal
+      opened={Boolean(doc)}
+      title={`Delete this ${label}?`}
+      body={`${doc?.number ?? ''} will be removed for everyone in this workspace. This cannot be undone.`}
+      confirmLabel="Delete"
+      busy={deleting}
+      onCancel={onCancel}
+      onConfirm={onConfirm}
+    />
   );
 }

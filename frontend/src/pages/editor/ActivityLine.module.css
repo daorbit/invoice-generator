@@ -1,0 +1,12 @@
+.line {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 0;
+}
+
+.item + .item::before {
+  content: '•';
+  margin: 0 8px;
+  color: var(--muted);
+}

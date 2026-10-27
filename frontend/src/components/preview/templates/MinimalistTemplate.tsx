@@ -1,5 +1,6 @@
 import type { DocumentView } from '../useDocumentView';
 import { UpiQr, pageClasses } from './PageShell';
+import { ItemText } from './Extras';
 import classes from './Minimalist.module.css';
 
 export function MinimalistTemplate({ view }: { view: DocumentView }) {
@@ -59,8 +60,8 @@ export function MinimalistTemplate({ view }: { view: DocumentView }) {
         <tbody>
           {view.items.map((item) => (
             <tr key={item.id}>
-              <td>{item.description}</td>
-              <td className={classes.num}>{item.quantity}</td>
+              <td><ItemText item={item} view={view} /></td>
+              <td className={classes.num}>{view.qty(item)}</td>
               <td className={classes.num}>{view.money(item.rate)}</td>
               <td className={classes.num}>{view.money(item.amount)}</td>
             </tr>

@@ -2,7 +2,7 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { WORKSPACE_ID } from '../lib/bootParams';
 import { ensureWorkspaceToken, refreshWorkspaceToken } from '../lib/workspaceToken';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 type RetriableConfig = InternalAxiosRequestConfig & { tokenRetried?: boolean };
 
@@ -45,3 +45,11 @@ export const handleApiError = (error: unknown): string => {
   }
   return error instanceof Error ? error.message : 'An unexpected error occurred';
 };
+
+export async function call<T>(request: () => Promise<{ data: T }>): Promise<T> {
+  try {
+    return (await request()).data;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}

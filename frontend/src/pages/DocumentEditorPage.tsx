@@ -1,7 +1,7 @@
-import { Suspense, lazy, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Suspense, lazy, useCallback, useRef, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ActionIcon, Box, Button, Skeleton, Tooltip } from '@mantine/core';
-import { ArrowLeft, Download, Eye, FileQuestion } from 'lucide-react';
+import { ArrowLeft, Download, Eye, FileQuestion, Send } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DocsButton } from '@/components/ui/DocsButton';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -12,6 +12,7 @@ import { useHostPhone } from '@/hooks/useHostPhone';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { useDocumentEditor } from '@/hooks/useDocumentEditor';
 import { usePdfDownload } from '@/hooks/usePdfDownload';
+import { useShareActions } from '@/hooks/useShareActions';
 import { IS_EMBEDDED } from '@/lib/bootParams';
 import { DOCS } from '@/lib/docs';
 import { DOCUMENT_PATH } from '@/lib/documentMapping';
@@ -24,19 +25,23 @@ import { PricingStep } from './editor/PricingStep';
 import { NotesStep } from './editor/NotesStep';
 import { PreviewCanvas } from './editor/PreviewCanvas';
 import { StatusMenu } from './editor/StatusMenu';
+import { ActivityLine } from './editor/ActivityLine';
+import { ShareDialog } from './editor/share/ShareDialog';
 import classes from './DocumentEditorPage.module.css';
 
 const PreviewStudio = lazy(() => import('@/components/preview/PreviewStudio'));
 
 export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
   const { id } = useParams<{ id: string }>();
+  const [params] = useSearchParams();
   const navigate = useNavigate();
   const hostPhone = useHostPhone();
   const { profile, loading: profileLoading } = useBusinessProfile();
-  const editor = useDocumentEditor(kind, id, profile, profileLoading);
+  const editor = useDocumentEditor(kind, id, profile, profileLoading, id ? null : params.get('customer'));
   const pdfRef = useRef<HTMLDivElement>(null);
   const pdf = usePdfDownload(pdfRef);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const meta = KIND_META[kind];
   const backTo = kind === 'quotation' ? '/?view=quotations' : '/';
   const { draft } = editor;
@@ -45,6 +50,17 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
     const savedId = await editor.save();
     if (savedId && !id) navigate(`${DOCUMENT_PATH[kind]}/${savedId}`, { replace: true });
   };
+
+  const ensureSaved = useCallback(async () => (editor.dirty || !id ? editor.save() : id), [editor, id]);
+  const renderPdf = useCallback(() => pdf.dataUri(draft?.number || meta.singular), [pdf, draft?.number, meta.singular]);
+
+  const share = useShareActions({
+    kind,
+    ensureSaved,
+    renderPdf,
+    onLoaded: editor.apply,
+    onShareUrl: editor.setShareUrl,
+  });
 
   const download = () => void pdf.download(draft?.number || meta.singular);
   const openPreview = () => setPreviewOpen(true);
@@ -71,7 +87,11 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
   }
 
   const title = id ? `${meta.singular} ${draft?.number ?? ''}` : `New ${meta.singular.toLowerCase()}`;
-  const description = id ? draft?.client.name || meta.singular : 'Fill in the steps and watch it come together on the right.';
+  const description = id ? (
+    <ActivityLine client={draft?.client.name ?? ''} activity={editor.activity} response={editor.clientResponse} />
+  ) : (
+    'Fill in the steps and watch it come together on the right.'
+  );
 
   return (
     <BrandLogoProvider logo={profile?.logo ?? ''}>
@@ -99,6 +119,11 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
             <Button variant="default" leftSection={<Eye size={16} />} disabled={!draft} onClick={openPreview}>
               Preview
             </Button>
+            <Tooltip label={`Create the ${meta.singular.toLowerCase()} first`} withArrow disabled={Boolean(id)}>
+              <Button variant="default" leftSection={<Send size={15} />} disabled={!draft || !id} onClick={() => setShareOpen(true)}>
+                Share
+              </Button>
+            </Tooltip>
             <Button loading={editor.saving} disabled={!draft || (Boolean(id) && !editor.dirty)} onClick={() => void save()}>
               {id ? 'Save changes' : `Create ${meta.singular.toLowerCase()}`}
             </Button>
@@ -117,15 +142,16 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
         <>
           <div className={classes.workspace}>
             <div className={classes.steps}>
-              <ClientStep draft={draft} setClient={editor.setClient} fillClient={editor.fillClient} />
+              <ClientStep draft={draft} setClient={editor.setClient} fillCustomer={editor.fillCustomer} />
               <ItemsStep
                 draft={draft}
                 updateItem={editor.updateItem}
+                fillItem={editor.fillItem}
                 addItem={editor.addItem}
                 removeItem={editor.removeItem}
               />
               <ScheduleStep draft={draft} setField={editor.setField} />
-              <PricingStep draft={draft} setField={editor.setField} />
+              <PricingStep draft={draft} setField={editor.setField} applyTaxRate={editor.applyTaxRate} />
               <NotesStep draft={draft} setField={editor.setField} />
             </div>
             <PreviewCanvas draft={draft} onDesign={openPreview} />
@@ -145,6 +171,17 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
                 onDownload={download}
               />
             </Suspense>
+          )}
+
+          {id && (
+            <ShareDialog
+              opened={shareOpen}
+              onClose={() => setShareOpen(false)}
+              draft={draft}
+              activity={editor.activity}
+              dirty={editor.dirty}
+              actions={share}
+            />
           )}
         </>
       )}

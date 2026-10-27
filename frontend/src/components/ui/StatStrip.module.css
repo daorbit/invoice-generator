@@ -8,6 +8,14 @@
   overflow: hidden;
 }
 
+.strip[data-count='3'] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.strip[data-count='5'] {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .cell {
   display: flex;
   flex-direction: column;
@@ -41,18 +49,28 @@
   color: var(--green);
 }
 
+.value[data-tone='warn'] {
+  color: var(--amber);
+}
+
 .hint {
   font-size: 12px;
   color: var(--muted);
 }
 
 @container (max-width: 760px) {
-  .strip {
+  .strip,
+  .strip[data-count='3'],
+  .strip[data-count='5'] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .cell:nth-child(3) {
+  .cell + .cell {
     border-left: 0;
+  }
+
+  .cell:nth-child(even) {
+    border-left: 1px solid var(--border);
   }
 
   .cell:nth-child(n + 3) {

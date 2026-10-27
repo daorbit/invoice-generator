@@ -4,10 +4,12 @@ import { useBrandLogo } from './BrandLogo';
 import { amountInWords } from '@/lib/amountInWords';
 import { KIND_META } from '@/lib/documentMeta';
 import { formatDate, formatMoney } from '@/lib/format';
+import { isGstDocument, placeOfSupply, stateLabel } from '@/lib/gst';
+import { lineMeta, totalRows, type Row } from '@/lib/taxRows';
 import { computeTotals, type DraftTotals } from '@/lib/totals';
 import type { DocumentDraft, LineItem, Party } from '@/types/document';
 
-export type Row = [string, string];
+export type { Row };
 
 export interface DocumentView {
   draft: DocumentDraft;
@@ -36,6 +38,8 @@ export interface DocumentView {
   termsLabel: string;
   stamp: { label: string; tone: 'paid' | 'cancelled' } | null;
   money: (value: number) => string;
+  qty: (item: LineItem) => string;
+  itemMeta: (item: LineItem) => string;
 }
 
 function paymentTerms(issue: string | null, due: string | null): string {
@@ -54,6 +58,19 @@ function heading(draft: DocumentDraft): string {
   return draft.from.gstin ? 'Tax Invoice' : 'Invoice';
 }
 
+function gstMeta(draft: DocumentDraft): Row[] {
+  if (!isGstDocument(draft)) return [];
+  return [
+    ['Place of Supply', stateLabel(placeOfSupply(draft))],
+    ['Reverse Charge', draft.reverseCharge ? 'Yes' : ''],
+    ['Supply Type', draft.exportUnderLut ? 'Export under LUT' : ''],
+  ];
+}
+
+function quantity(item: LineItem): string {
+  return item.unit ? `${item.quantity} ${item.unit}` : String(item.quantity);
+}
+
 export function useDocumentView(draft: DocumentDraft): DocumentView {
   const meta = KIND_META[draft.kind];
   const brandLogo = useBrandLogo();
@@ -67,14 +84,6 @@ export function useDocumentView(draft: DocumentDraft): DocumentView {
     currency: draft.currency,
     note: draft.number || 'Invoice',
   });
-
-  const totalRows: Row[] = [['Sub Total', money(totals.subtotal)]];
-  if (totals.discountAmount > 0) {
-    const rate = draft.discountType === 'percentage' ? ` (${draft.discount}%)` : '';
-    totalRows.push([`Discount${rate}`, `−${money(totals.discountAmount)}`]);
-  }
-  if (totals.taxAmount > 0) totalRows.push([`Tax (${draft.tax}%)`, money(totals.taxAmount)]);
-  if (draft.shipping > 0) totalRows.push(['Shipping', money(draft.shipping)]);
 
   const headlineAmount = isInvoice ? totals.balanceDue : totals.total;
   const stampTone = isInvoice && (draft.status === 'paid' || draft.status === 'cancelled') ? draft.status : null;
@@ -97,16 +106,18 @@ export function useDocumentView(draft: DocumentDraft): DocumentView {
             ['Terms', paymentTerms(draft.issueDate, draft.dueDate)],
             ['Due Date', formatDate(draft.dueDate)],
             ['P.O.#', draft.reference],
+            ...gstMeta(draft),
           ]
         : [
             ['Quote Date', formatDate(draft.issueDate)],
             ['Valid Until', formatDate(draft.dueDate)],
             ['Reference', draft.reference],
+            ...gstMeta(draft),
           ]
     ),
     items: draft.items.filter((item) => item.description || item.amount),
     totals,
-    totalRows,
+    totalRows: totalRows(draft, totals, money),
     headlineLabel: isInvoice ? 'Balance Due' : 'Quote Total',
     headline: money(headlineAmount),
     dueText: draft.dueDate ? `${isInvoice ? 'Due' : 'Valid until'} ${formatDate(draft.dueDate)}` : '',
@@ -127,5 +138,7 @@ export function useDocumentView(draft: DocumentDraft): DocumentView {
     termsLabel: isInvoice ? 'Terms & Conditions' : 'Payment Terms',
     stamp: stampTone ? { label: stampTone === 'paid' ? 'Paid' : 'Cancelled', tone: stampTone } : null,
     money,
+    qty: quantity,
+    itemMeta: lineMeta(draft),
   };
 }

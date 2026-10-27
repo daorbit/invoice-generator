@@ -3,11 +3,15 @@ import type {
   DocumentKind,
   DocumentSummary,
   InvoiceRecord,
+  LineItem,
+  LoadedDocument,
   Party,
   QuotationRecord,
 } from '@/types/document';
 
 const EMPTY_PARTY: Party = { name: '', email: '', address: '', phone: '' };
+
+type RecordFields = InvoiceRecord['invoice'] | QuotationRecord['quotation'];
 
 function dateOnly(value: string | null | undefined): string | null {
   return value ? value.slice(0, 10) : null;
@@ -17,8 +21,27 @@ function party(value: Party | undefined): Party {
   return { ...EMPTY_PARTY, ...value };
 }
 
-function design(doc: InvoiceRecord['invoice'] | QuotationRecord['quotation']) {
+function items(doc: RecordFields): LineItem[] {
+  const legacy = doc.taxMode !== 'line';
+  return doc.items.map((item) => ({ ...item, taxRate: legacy ? doc.tax : item.taxRate ?? doc.tax ?? 0 }));
+}
+
+function shared(doc: RecordFields) {
   return {
+    items: items(doc),
+    currency: doc.currency,
+    tax: doc.tax,
+    discount: doc.discount,
+    discountType: doc.discountType,
+    shipping: doc.shipping,
+    pricesIncludeTax: doc.pricesIncludeTax ?? false,
+    roundOff: doc.roundOff ?? false,
+    placeOfSupply: doc.placeOfSupply ?? '',
+    reverseCharge: doc.reverseCharge ?? false,
+    exportUnderLut: doc.exportUnderLut ?? false,
+    customerId: doc.customerId,
+    notes: doc.notes ?? '',
+    logo: doc.logo,
     template: doc.template ?? 'classic',
     accent: doc.accent ?? 'blue',
     payment: doc.payment,
@@ -36,17 +59,9 @@ export function invoiceToDraft(record: InvoiceRecord): DocumentDraft {
     reference: doc.poNumber ?? '',
     from: party(doc.from),
     client: party(doc.billTo),
-    items: doc.items,
-    currency: doc.currency,
-    tax: doc.tax,
-    discount: doc.discount,
-    discountType: doc.discountType,
-    shipping: doc.shipping,
     amountPaid: doc.amountPaid,
-    notes: doc.notes ?? '',
     terms: doc.terms ?? '',
-    logo: doc.logo,
-    ...design(doc),
+    ...shared(doc),
   };
 }
 
@@ -61,28 +76,51 @@ export function quotationToDraft(record: QuotationRecord): DocumentDraft {
     reference: doc.referenceNumber ?? '',
     from: party(doc.from),
     client: party(doc.quoteTo),
-    items: doc.items,
-    currency: doc.currency,
-    tax: doc.tax,
-    discount: doc.discount,
-    discountType: doc.discountType,
-    shipping: doc.shipping,
     amountPaid: 0,
-    notes: doc.notes ?? '',
     terms: doc.paymentTerms ?? doc.terms ?? '',
-    logo: doc.logo,
-    ...design(doc),
+    ...shared(doc),
+  };
+}
+
+export function recordToLoaded(kind: DocumentKind, record: InvoiceRecord | QuotationRecord): LoadedDocument {
+  if (kind === 'invoice') {
+    const invoice = record as InvoiceRecord;
+    return { id: invoice.id, draft: invoiceToDraft(invoice), activity: invoice.activity ?? null, clientResponse: null };
+  }
+  const quotation = record as QuotationRecord;
+  return {
+    id: quotation.id,
+    draft: quotationToDraft(quotation),
+    activity: quotation.activity ?? null,
+    clientResponse: quotation.clientResponse ?? null,
   };
 }
 
 function pricing(draft: DocumentDraft) {
   return {
-    items: draft.items,
+    items: draft.items.map(({ id, description, quantity, rate, amount, taxRate, hsn, unit, itemId }) => ({
+      id,
+      description,
+      quantity,
+      rate,
+      amount,
+      taxRate,
+      hsn,
+      unit,
+      itemId,
+    })),
     currency: draft.currency,
     tax: draft.tax,
+    taxMode: 'line',
     discount: draft.discount,
     discountType: draft.discountType,
     shipping: draft.shipping,
+    pricesIncludeTax: draft.pricesIncludeTax,
+    roundOff: draft.roundOff,
+    placeOfSupply: draft.placeOfSupply,
+    reverseCharge: draft.reverseCharge,
+    exportUnderLut: draft.exportUnderLut,
+    customerId: draft.customerId,
     notes: draft.notes,
     logo: draft.logo,
     template: draft.template,

@@ -48,6 +48,16 @@ export interface LineItem {
   quantity: number;
   rate: number;
   amount: number;
+  taxRate: number;
+  hsn?: string;
+  unit?: string;
+  itemId?: string;
+}
+
+export interface TaxLine {
+  rate: number;
+  taxable: number;
+  tax: number;
 }
 
 interface PricingFields extends DesignFields {
@@ -57,10 +67,22 @@ interface PricingFields extends DesignFields {
   discountType: DiscountType;
   shipping: number;
   currency: string;
+  taxMode?: 'document' | 'line';
+  pricesIncludeTax?: boolean;
+  roundOff?: boolean;
   subtotal?: number;
+  taxableAmount?: number;
   taxAmount?: number;
+  taxLines?: TaxLine[];
   discountAmount?: number;
+  roundOffAmount?: number;
   total?: number;
+  placeOfSupply?: string;
+  supplyState?: string;
+  interState?: boolean;
+  reverseCharge?: boolean;
+  exportUnderLut?: boolean;
+  customerId?: string;
 }
 
 export interface InvoiceFields extends PricingFields {
@@ -73,6 +95,7 @@ export interface InvoiceFields extends PricingFields {
   billTo: Party;
   amountPaid: number;
   balanceDue?: number;
+  paidAt?: string | null;
   notes?: string;
   terms?: string;
 }
@@ -91,10 +114,30 @@ export interface QuotationFields extends PricingFields {
   paymentTerms?: string;
 }
 
+export interface EmailStamp {
+  to: string[];
+  at: string;
+}
+
+export interface DocumentActivity {
+  shareUrl: string | null;
+  views: { count: number; firstAt: string | null; lastAt: string | null };
+  lastEmail: EmailStamp | null;
+  scheduledEmail: EmailStamp | null;
+}
+
+export interface ClientResponse {
+  decision: 'accepted' | 'rejected';
+  name: string;
+  comment: string;
+  at: string;
+}
+
 export interface InvoiceRecord {
   id: string;
   invoice: InvoiceFields;
   status: InvoiceStatus;
+  activity?: DocumentActivity;
   createdAt: string;
   updatedAt: string;
 }
@@ -103,6 +146,8 @@ export interface QuotationRecord {
   id: string;
   quotation: QuotationFields;
   convertedInvoiceId?: string;
+  clientResponse?: ClientResponse | null;
+  activity?: DocumentActivity;
   createdAt: string;
   updatedAt: string;
 }
@@ -116,6 +161,7 @@ export interface DocumentDraft {
   reference: string;
   from: Party;
   client: Party;
+  customerId?: string;
   items: LineItem[];
   currency: string;
   tax: number;
@@ -123,12 +169,24 @@ export interface DocumentDraft {
   discountType: DiscountType;
   shipping: number;
   amountPaid: number;
+  pricesIncludeTax: boolean;
+  roundOff: boolean;
+  placeOfSupply: string;
+  reverseCharge: boolean;
+  exportUnderLut: boolean;
   notes: string;
   terms: string;
   logo?: string;
   template: TemplateId;
   accent: AccentId;
   payment?: PaymentDetails;
+}
+
+export interface LoadedDocument {
+  id: string;
+  draft: DocumentDraft;
+  activity: DocumentActivity | null;
+  clientResponse: ClientResponse | null;
 }
 
 export interface DocumentSummary {
@@ -163,4 +221,13 @@ export interface DashboardStats {
   invoices: { total: number; paid: number; unpaid: number; recent: number };
   quotations: { total: number; pending: number; accepted: number; rejected: number; recent: number };
   revenue: { total: number; paid: number; pending: number };
+}
+
+export interface EmailRequest {
+  to: string[];
+  cc: string[];
+  subject: string;
+  message: string;
+  pdf?: string;
+  sendAt?: string;
 }

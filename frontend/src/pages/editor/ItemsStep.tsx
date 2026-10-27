@@ -1,27 +1,27 @@
-import { ActionIcon, Button, NumberInput, TextInput } from '@mantine/core';
-import { Plus, X } from 'lucide-react';
+import { Button } from '@mantine/core';
+import { Plus } from 'lucide-react';
 import { formatMoney } from '@/lib/format';
+import { isGstDocument, taxRatesFor } from '@/lib/gst';
 import { computeTotals } from '@/lib/totals';
 import type { DocumentDraft } from '@/types/document';
 import { EditorStep } from './EditorStep';
+import { ItemLine } from './ItemLine';
 import type { ItemActions } from './types';
 import classes from './ItemsStep.module.css';
 
 const MAX_ITEMS = 200;
 
-function toNumber(value: number | string): number {
-  return typeof value === 'number' ? value : 0;
-}
-
-export function ItemsStep({ draft, updateItem, addItem, removeItem }: { draft: DocumentDraft } & ItemActions) {
+export function ItemsStep({ draft, updateItem, fillItem, addItem, removeItem }: { draft: DocumentDraft } & ItemActions) {
   const single = draft.items.length === 1;
   const subtotal = computeTotals(draft).subtotal;
+  const gst = isGstDocument(draft);
+  const rates = taxRatesFor(draft);
 
   return (
     <EditorStep
       index={2}
       title="What are you billing for?"
-      hint="One line per product or service. Amounts work out as you type."
+      hint={gst ? 'Pick a saved item or type one. Add the HSN/SAC code and GST rate for each line.' : 'Pick a saved item or type one. Amounts work out as you type.'}
       done={subtotal > 0}
     >
       <div className={classes.table}>
@@ -33,40 +33,18 @@ export function ItemsStep({ draft, updateItem, addItem, removeItem }: { draft: D
           <span />
         </div>
         {draft.items.map((item) => (
-          <div key={item.id} className={classes.row}>
-            <TextInput
-              aria-label="Item"
-              placeholder="Website design, 5 pages"
-              value={item.description}
-              onChange={(e) => updateItem(item.id, { description: e.currentTarget.value })}
-            />
-            <NumberInput
-              aria-label="Quantity"
-              min={0}
-              hideControls
-              value={item.quantity}
-              onChange={(value) => updateItem(item.id, { quantity: toNumber(value) })}
-            />
-            <NumberInput
-              aria-label="Rate"
-              min={0}
-              decimalScale={2}
-              thousandSeparator=","
-              hideControls
-              value={item.rate}
-              onChange={(value) => updateItem(item.id, { rate: toNumber(value) })}
-            />
-            <span className={classes.amount}>{formatMoney(item.amount, draft.currency)}</span>
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              aria-label="Remove item"
-              disabled={single}
-              onClick={() => removeItem(item.id)}
-            >
-              <X size={15} />
-            </ActionIcon>
-          </div>
+          <ItemLine
+            key={item.id}
+            item={item}
+            currency={draft.currency}
+            rates={rates}
+            gst={gst}
+            zeroRated={draft.exportUnderLut}
+            removable={!single}
+            updateItem={updateItem}
+            fillItem={fillItem}
+            removeItem={removeItem}
+          />
         ))}
       </div>
       <div className={classes.footer}>
