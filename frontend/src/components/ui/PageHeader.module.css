@@ -1,0 +1,137 @@
+.root {
+  container-type: inline-size;
+  margin-bottom: var(--mantine-spacing-xl);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-md);
+}
+
+.main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--mantine-spacing-sm);
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  letter-spacing: -0.02em;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--mantine-spacing-sm);
+}
+
+@media (max-width: 48em) {
+  .title {
+    font-size: 1.5rem;
+  }
+}
+
+@container (max-width: 560px) {
+  .root {
+    margin-bottom: var(--mantine-spacing-lg);
+  }
+
+  .row {
+    gap: var(--mantine-spacing-sm);
+  }
+
+  .row:not(:has(.actions :global(.mantine-Button-root))) {
+    flex-wrap: nowrap;
+  }
+
+  .main {
+    flex-basis: 0;
+  }
+
+  .actions:has(:global(.mantine-Button-root)) {
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+  }
+
+  .actions > :global(.mantine-Button-root),
+  .actions > span:has(> :global(.mantine-Button-root)) {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .actions > span > :global(.mantine-Button-root) {
+    width: 100%;
+  }
+}
+
+@media (max-width: 48em) {
+  :global(html[data-embedded]) .root {
+    margin-bottom: var(--mantine-spacing-md);
+  }
+
+  :global(html[data-embedded]) .root:not([data-leading]) .main {
+    display: none;
+  }
+
+  :global(html[data-embedded]) .root:not([data-leading]) .description {
+    display: none;
+  }
+
+  :global(html[data-embedded]) .root[data-leading] .row {
+    flex-wrap: wrap;
+  }
+
+  :global(html[data-embedded]) .root[data-leading] .main {
+    flex-basis: 100%;
+    align-items: center;
+  }
+
+  :global(html[data-embedded]) .title {
+    font-size: 1.0625rem;
+    line-height: 1.3;
+  }
+
+  :global(html[data-embedded]) .description {
+    margin-top: 2px;
+    font-size: 12px;
+  }
+
+  :global(html[data-embedded]) .actions,
+  :global(html[data-embedded]) .actions:has(:global(.mantine-Button-root)) {
+    width: calc(100% + var(--m-gutter, 16px) * 2);
+    margin-inline: calc(var(--m-gutter, 16px) * -1);
+    padding: 2px var(--m-gutter, 16px);
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  :global(html[data-embedded]) .actions::-webkit-scrollbar {
+    display: none;
+  }
+
+  :global(html[data-embedded]) .actions > *,
+  :global(html[data-embedded]) .actions > :global(.mantine-Button-root),
+  :global(html[data-embedded]) .actions > span:has(> :global(.mantine-Button-root)) {
+    flex: 0 0 auto;
+    min-width: auto;
+  }
+
+  :global(html[data-embedded]) .actions :global(.mantine-Button-root) {
+    border-radius: 9px;
+  }
+}

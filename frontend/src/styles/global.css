@@ -1,0 +1,59 @@
+:root {
+  font-family: var(--font);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--border-strong);
+  border-radius: 6px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  background-color: var(--bg);
+}
+
+html,
+body {
+  overflow: hidden;
+}
+
+#root {
+  overflow-y: auto;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  color: var(--mantine-color-text);
+}
+
+body[data-mantine-scroll-locked] {
+  padding-right: 0 !important;
+  margin-right: 0 !important;
+}
+
+html[data-host-bg='textured'],
+html[data-host-bg='textured'] body,
+html[data-host-bg='textured'] #root {
+  background: transparent !important;
+  background-color: transparent !important;
+}

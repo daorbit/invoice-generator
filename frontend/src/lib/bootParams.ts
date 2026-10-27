@@ -15,9 +15,12 @@ export const IS_EMBEDDED = params.get('embedded') === '1';
 
 export const WORKSPACE_TOKEN = params.get('wt') ?? '';
 
-export type HostColorScheme = 'light' | 'dark' | 'auto';
+export const HOST_TEXTURED_BG = IS_EMBEDDED && params.get('bg') === 'textured';
 
-export const HOST_COLOR_SCHEME: HostColorScheme = (() => {
-  const mode = params.get('mode');
-  return mode === 'light' || mode === 'dark' ? mode : 'auto';
+export const HOST_BG_WASH: string | null = (() => {
+  if (!HOST_TEXTURED_BG) return null;
+  const raw = params.get('bgwash');
+  if (!raw || raw.length > 4000) return null;
+  if (/url\(|expression|image-set|[;{}<>@\\]/i.test(raw)) return null;
+  return raw;
 })();

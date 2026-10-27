@@ -1,5 +1,3 @@
-import type { CompanyInfo } from './invoice';
-
 export interface BusinessProfile {
   businessName: string;
   email: string;
@@ -18,11 +16,4 @@ export interface BusinessProfile {
 export interface BusinessProfileResponse {
   profile: BusinessProfile;
   complete: boolean;
-}
-
-export interface BusinessDefaults {
-  from: CompanyInfo;
-  currency: string;
-  notes: string;
-  terms: string;
 }

@@ -1,0 +1,36 @@
+.root {
+  width: 240px;
+}
+
+.input {
+  height: 34px;
+  min-height: 34px;
+  border: 1px solid var(--border) !important;
+  border-radius: 999px;
+  background: var(--surface) !important;
+  font-size: 13.5px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input:hover {
+  border-color: var(--border-strong) !important;
+}
+
+.input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.section {
+  color: var(--muted);
+}
+
+.clear {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+  color: var(--text-2);
+}

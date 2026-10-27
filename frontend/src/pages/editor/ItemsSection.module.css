@@ -1,0 +1,50 @@
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 84px 120px 110px 34px;
+  align-items: center;
+  gap: 8px;
+  padding-block: 6px;
+}
+
+.row + .row {
+  border-top: 1px solid var(--border);
+}
+
+.head {
+  padding-block: 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.amount {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text);
+}
+
+.right {
+  text-align: right;
+}
+
+.add {
+  align-self: flex-start;
+}
+
+@container (max-width: 560px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) 70px 96px 34px;
+  }
+
+  .amount,
+  .amountHead {
+    display: none;
+  }
+}

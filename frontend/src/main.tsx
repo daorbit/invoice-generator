@@ -5,27 +5,30 @@ import '@/styles/fonts.css';
 import '@/styles/tokens.css';
 import '@/styles/mantine-overrides.css';
 import '@/styles/dropdown.css';
+import '@/styles/global.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { Provider } from 'react-redux';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
-import { theme } from '@/app/theme';
-import { HOST_COLOR_SCHEME } from '@/lib/bootParams';
-import { store } from './store/store';
-import App from './App';
+import { App } from '@/app/App';
+import { readHostTheme, themeFromHost } from '@/app/themeParams';
+import { applyHostTokens } from '@/app/hostTokens';
+import { BOOT_SEARCH } from '@/lib/bootParams';
+
+const host = readHostTheme(BOOT_SEARCH);
+applyHostTokens(host);
+const theme = themeFromHost(host);
+const { colorScheme } = host;
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <MantineProvider
       theme={theme}
-      defaultColorScheme={HOST_COLOR_SCHEME}
-      forceColorScheme={HOST_COLOR_SCHEME === 'auto' ? undefined : HOST_COLOR_SCHEME}
+      defaultColorScheme={colorScheme}
+      forceColorScheme={colorScheme === 'auto' ? undefined : colorScheme}
     >
       <Notifications position="top-center" limit={3} />
-      <Provider store={store}>
-        <App />
-      </Provider>
+      <App />
     </MantineProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );

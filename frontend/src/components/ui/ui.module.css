@@ -1,0 +1,40 @@
+.pill {
+  --pill: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  line-height: 16px;
+  white-space: nowrap;
+  color: var(--pill);
+  background: color-mix(in srgb, var(--pill) 13%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pill) 30%, transparent);
+}
+
+.pill[data-tone='live'] {
+  --pill: var(--accent);
+}
+
+.pill[data-tone='warn'] {
+  --pill: var(--mantine-color-yellow-5);
+}
+
+.pill[data-tone='good'] {
+  --pill: var(--green);
+}
+
+.pill[data-tone='bad'] {
+  --pill: var(--mantine-color-red-6);
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}

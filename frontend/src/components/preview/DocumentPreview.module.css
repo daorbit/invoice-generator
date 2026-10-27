@@ -1,0 +1,155 @@
+.sheet {
+  color-scheme: light;
+  width: 100%;
+  padding: 36px 36px 40px;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1a1b1e;
+  font-family: var(--font);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.logo {
+  max-width: 140px;
+  max-height: 56px;
+  margin-bottom: 10px;
+  object-fit: contain;
+}
+
+.business {
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.muted {
+  color: #6d737e;
+  white-space: pre-line;
+}
+
+.heading {
+  text-align: right;
+}
+
+.kind {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1a1b1e;
+}
+
+.number {
+  margin-top: 2px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.parties {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  padding-block: 20px;
+}
+
+.label {
+  margin-bottom: 4px;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6d737e;
+}
+
+.clientName {
+  font-weight: 600;
+}
+
+.dates {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 4px 16px;
+  align-content: start;
+}
+
+.dateLabel {
+  color: #6d737e;
+}
+
+.dateValue {
+  text-align: right;
+  font-weight: 500;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 8px 0;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  color: #6d737e;
+}
+
+.table td {
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f3f5;
+  vertical-align: top;
+}
+
+.table .num {
+  width: 90px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 14px;
+}
+
+.totals {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 6px 28px;
+  min-width: 220px;
+  font-variant-numeric: tabular-nums;
+}
+
+.totals > :nth-child(even) {
+  text-align: right;
+}
+
+.grand {
+  padding-top: 8px;
+  border-top: 1px solid #dee2e6;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.footer {
+  display: grid;
+  gap: 14px;
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid #e9ecef;
+}
+
+.text {
+  white-space: pre-line;
+  color: #495057;
+}

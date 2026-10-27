@@ -30,34 +30,37 @@ Same layout as `da-forms/backend`.
 - Models: `Invoice`, `Quotation` (shared parts in `models/document-parts.ts`), `Counter` (per workspace and kind) and `BusinessProfile`. Every query includes `workspaceId`, and unique indexes cover `{workspaceId, invoiceNumber}` and `{workspaceId, quotationNumber}`.
 - Input never reaches a model unread: `lib/document-input.ts` whitelists fields, caps lengths, item count (200) and the logo size, and recomputes each line amount. `lib/totals.ts` computes subtotal, tax, discount and total on the server, using the editor's rules.
 - Numbers: a blank number on create, every duplicate and every conversion take the next value from `services/numbering.service.ts` (`<prefix>-0001`, the prefix from the business profile).
-- Response shapes match what the old screens expect (`lib/serialize.ts`): `{ id, invoice, status, createdAt, updatedAt }`, `{ id, quotation, … }`, and lists as `{ invoices|quotations, total, page, limit, totalPages }`. Dashboard routes wrap results in `{ success, data }`.
+- Response shapes (`lib/serialize.ts`), read by `frontend/src/lib/documentMapping.ts`: `{ id, invoice, status, createdAt, updatedAt }`, `{ id, quotation, … }`, and lists as `{ invoices|quotations, total, page, limit, totalPages }`. Dashboard routes wrap results in `{ success, data }`.
 - Errors throw `HttpError` (`lib/http-error.ts`). Ids that are not ObjectIds, and documents from another workspace, answer 404.
 
 ## Frontend (`frontend/src`)
 
-- `main.tsx`: Mantine (`app/theme.ts`, color scheme forced from the host's `mode`) around the Redux provider and `App`.
-- `App.tsx`: without a workspace id in the path it shows `OpenFromQuantalog`. Otherwise it routes `/` (dashboard), `/invoice` and `/quotation` under `basename=/<workspaceId>`.
-- `api/client.ts`: axios against `/api/workspaces/<workspaceId>`, with the workspace token on every request and one retry after a token refresh.
-- `hooks/useBusinessDefaults.ts` fills a fresh draft's "From" details, currency, notes and terms from the business profile.
-- The screens are still the old MUI ones (`pages/*`, `components/DocumentGenerator/*`, `app/legacyTheme.ts`) and are being redesigned in Mantine. `app/theme.ts` and `styles/*` are copies of da-forms', which match `real-ana-fe`; keep all three in step. Toasts go through `lib/notify.ts`. `@/` points to `src`.
-- PDFs are made in the browser with `html2pdf.js`, which is imported dynamically on download.
+All Mantine, built from the same pieces as da-forms so the frame reads as part of Quantalog. MUI, Redux and recharts are gone; don't bring them back.
+
+- `main.tsx`: reads the host theme from the boot URL (`app/themeParams.ts`, `app/hostTokens.ts`, `lib/color.ts`, copied from da-forms), then renders Mantine with `app/theme.ts` and the top-center `Notifications`.
+- `app/App.tsx`: without a workspace id in the path it shows `OpenFromQuantalog`. Otherwise, under `basename=/<workspaceId>`: `/` (`DocumentsPage`, `?view=quotations` for the quotations tab), `/invoices/new|:id` and `/quotations/new|:id` (`DocumentEditorPage`).
+- `components/ui/*` are da-forms' building blocks: `PageHeader`, `DocsButton`, `HostNotificationsBell`, `EmptyState`, `SegmentedTabs`, `SearchField`, `StatusPill`, `toolbar.module.css`. Every page header shows the Docs button and, when embedded, the bell.
+- `pages/DocumentsPage.tsx` with `pages/documents/*`: summary strip (paid, outstanding, invoices, open quotations), setup notice while the business profile is incomplete, invoice and quotation tabs, status menu, search, grouped hairline rows with a row menu (open, duplicate, convert, mark as, delete), pagination.
+- `pages/DocumentEditorPage.tsx` with `pages/editor/*`: grouped sections (From from the business profile, details, client, items, tax, discount and payment, notes and terms) beside a live preview (`components/preview/DocumentPreview.tsx`, always a white sheet). Saving a new document assigns its number and moves to its URL. The status menu saves straight away.
+- Data: `api/documents.ts` and `api/workspace.ts` (axios in `api/client.ts`, workspace token on every call, one retry after a refresh). `lib/documentMapping.ts` turns invoice and quotation records into one `DocumentDraft` and back. `lib/totals.ts` mirrors the server's totals. Hooks: `useDocumentList`, `useDocumentEditor`, `useDocumentActions`, `useDashboardStats`, `useBusinessProfile` (cached once per load), `usePdfDownload` (imports `html2pdf.js` only when clicked).
+- `lib/hostMessages.ts` talks to Quantalog: `openBusinessDetails` opens the Invoicing panel in Apps, and `requestOpenNotifications` opens the bell.
+- `app/theme.ts` and `styles/*` are copies of da-forms', which match `real-ana-fe`; keep all three in step. Toasts go through `lib/notify.ts`. `@/` points to `src`.
 
 ## Roadmap
 
-1. Redesign every screen in Mantine: the list and dashboard, the editor with a live preview, and the client book. Add `HostNotificationsBell` and a Docs button to each embedded header. Remove a screen's MUI code in the same change, then drop `@mui/*`, `@emotion/*` and `legacyTheme`.
-2. Open, edit and delete saved documents from the dashboard (the old Edit and View buttons do nothing). Leave the number blank on new documents, so workspace numbering always applies.
-3. Scope the Redux drafts kept in `localStorage` by workspace id.
-4. GST invoices: HSN/SAC per line, CGST/SGST or IGST by place of supply, numbering by financial year.
-5. Payment links through the workspace's gateways, and paid status from their webhooks.
-6. Send quotations and invoices by email, through the workspace's email app.
-7. Overdue reminders inside an existing cron tick (`/api/cron/*` with `Bearer CRON_SECRET`; the Cloudflare account is at its trigger limit).
-8. Plan limits through Quantalog (`/api/internal/invoices/*`), and paid revenue fed back into Quantalog analytics by lead source.
-9. Docs page `quantalog-lp/src/content/docs/quantalog-invoicing.tsx`, and an entry in the landing page Apps carousel.
+1. A client book, so a client picked once is filled in on the next document, and creating a quotation straight from a da-forms lead.
+2. Warn before leaving the editor with unsaved changes, and a logo from Quantalog Branding on the preview.
+3. GST invoices: HSN/SAC per line, CGST/SGST or IGST by place of supply, numbering by financial year.
+4. Payment links through the workspace's gateways, and paid status from their webhooks.
+5. Send quotations and invoices by email, through the workspace's email app.
+6. Overdue reminders inside an existing cron tick (`/api/cron/*` with `Bearer CRON_SECRET`; the Cloudflare account is at its trigger limit).
+7. Plan limits through Quantalog (`/api/internal/invoices/*`), and paid revenue fed back into Quantalog analytics by lead source.
+8. Docs page `quantalog-lp/src/content/docs/quantalog-invoicing.tsx`, and an entry in the landing page Apps carousel.
 
 ## Rules
 
 1. No comments in any code file, including CSS.
-2. No inline CSS. Use Mantine props, CSS modules and the shared token files. No new MUI code: everything new or redesigned is Mantine.
+2. No inline CSS. Use Mantine props, CSS modules and the shared token files. Mantine only.
 3. Split code into components, hooks, services and utilities. Never put a whole feature in one file.
 4. Before writing anything new, search this repo, then `../da-forms`, then `../real-time-analytics` for an existing helper, component or style, and reuse it.
 5. Design rules from `../CLAUDE.md`:

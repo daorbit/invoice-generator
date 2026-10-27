@@ -4,7 +4,7 @@ Invoices and quotations for Quantalog workspaces.
 
 | Folder | What it is |
 |---|---|
-| `frontend` | React 19, Vite, Mantine (redesign in progress, old screens still MUI) |
+| `frontend` | React 19, Vite, Mantine, embedded in Quantalog at `/app/invoices` |
 | `backend` | Express 4, Mongoose 9, TypeScript ESM, Vercel serverless |
 
 ## Run locally
