@@ -84,7 +84,7 @@ export function ScheduleStep({ draft, setField }: SectionProps) {
         >
           {moreOpen ? 'Fewer details' : `${meta.singular} number and ${meta.referenceLabel.toLowerCase()}`}
         </Button>
-        <Collapse in={moreOpen}>
+        <Collapse expanded={moreOpen}>
           <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm" mt="sm">
             <TextInput
               label={`${meta.singular} number`}
