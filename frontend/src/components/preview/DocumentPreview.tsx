@@ -1,48 +1,29 @@
-import { forwardRef } from 'react';
-import { useUpiQr } from '@/hooks/useUpiQr';
-import { computeTotals } from '@/lib/totals';
-import type { DocumentDraft } from '@/types/document';
-import { PreviewHeader } from './PreviewHeader';
-import { PreviewParties } from './PreviewParties';
-import { PreviewItems } from './PreviewItems';
-import { PreviewSummary } from './PreviewSummary';
-import { PreviewPayment } from './PreviewPayment';
-import { PreviewFooter } from './PreviewFooter';
-import classes from './DocumentPreview.module.css';
+import { forwardRef, type ComponentType } from 'react';
+import type { DocumentDraft, TemplateId } from '@/types/document';
+import { useDocumentView, type DocumentView } from './useDocumentView';
+import { PageShell } from './templates/PageShell';
+import { StandardTemplate } from './templates/StandardTemplate';
+import { SpreadsheetTemplate } from './templates/SpreadsheetTemplate';
+import { MinimalistTemplate } from './templates/MinimalistTemplate';
+import { GrandTemplate } from './templates/GrandTemplate';
 
-const STAMPS: Partial<Record<DocumentDraft['status'], { label: string; tone: string }>> = {
-  paid: { label: 'Paid', tone: 'paid' },
-  cancelled: { label: 'Cancelled', tone: 'cancelled' },
+const TEMPLATES: Record<TemplateId, ComponentType<{ view: DocumentView }>> = {
+  classic: StandardTemplate,
+  modern: SpreadsheetTemplate,
+  minimal: MinimalistTemplate,
+  bold: GrandTemplate,
 };
 
 export const DocumentPreview = forwardRef<HTMLDivElement, { draft: DocumentDraft }>(function DocumentPreview(
   { draft },
   ref
 ) {
-  const totals = computeTotals(draft);
-  const isInvoice = draft.kind === 'invoice';
-  const qr = useUpiQr({
-    upiId: isInvoice ? draft.payment?.upiId : undefined,
-    payee: draft.from.name,
-    amount: totals.balanceDue,
-    currency: draft.currency,
-    note: draft.number || 'Invoice',
-  });
-  const stamp = isInvoice ? STAMPS[draft.status] : undefined;
+  const view = useDocumentView(draft);
+  const Template = TEMPLATES[draft.template] ?? StandardTemplate;
 
   return (
-    <div ref={ref} className={classes.sheet} data-template={draft.template} data-accent={draft.accent}>
-      {stamp && (
-        <span className={classes.stamp} data-tone={stamp.tone}>
-          {stamp.label}
-        </span>
-      )}
-      <PreviewHeader draft={draft} />
-      <PreviewParties draft={draft} />
-      <PreviewItems draft={draft} />
-      <PreviewSummary draft={draft} totals={totals} />
-      {isInvoice && draft.payment && <PreviewPayment payment={draft.payment} qr={qr} />}
-      <PreviewFooter draft={draft} />
-    </div>
+    <PageShell ref={ref} view={view}>
+      <Template view={view} />
+    </PageShell>
   );
 });

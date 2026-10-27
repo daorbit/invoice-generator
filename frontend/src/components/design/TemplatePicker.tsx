@@ -23,6 +23,7 @@ export function TemplatePicker({ value, accent, onChange }: Props) {
         >
           <div className={classes.thumb} data-template={option.id} data-accent={accent} aria-hidden>
             <div className={classes.thumbHead}>
+              <span className={classes.thumbLogo} />
               <span className={classes.thumbTitle} />
             </div>
             <span className={classes.thumbRule} />

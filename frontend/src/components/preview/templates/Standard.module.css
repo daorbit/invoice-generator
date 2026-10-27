@@ -1,0 +1,241 @@
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.org {
+  max-width: 300px;
+}
+
+.logo {
+  display: block;
+  max-width: 170px;
+  max-height: 64px;
+  margin-bottom: 14px;
+  object-fit: contain;
+}
+
+.orgName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.lines {
+  white-space: pre-line;
+  color: var(--muted);
+}
+
+.strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.titleBlock {
+  text-align: right;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.number {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.balanceLabel {
+  margin-top: 22px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.balance {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.info {
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+  margin-top: 36px;
+}
+
+.label {
+  margin-bottom: 4px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.clientName {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 6px 28px;
+  align-content: start;
+  margin: 0;
+}
+
+.metaRow {
+  display: contents;
+}
+
+.meta dt {
+  text-align: right;
+  color: var(--muted);
+}
+
+.meta dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.items {
+  width: 100%;
+  margin-top: 28px;
+  border-collapse: collapse;
+}
+
+.items th {
+  padding: 8px 10px;
+  background: var(--doc-accent);
+  color: #ffffff;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.items td {
+  padding: 11px 10px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+  color: var(--ink);
+}
+
+.items .index {
+  width: 30px;
+}
+
+.items .num {
+  width: 96px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 32px;
+  margin-top: 18px;
+}
+
+.words {
+  font-style: italic;
+  color: var(--ink);
+}
+
+.totals {
+  display: flex;
+  flex-direction: column;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.totalRow span:last-child {
+  color: var(--ink);
+}
+
+.grandRow {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.dueRow {
+  margin-top: 4px;
+  padding-block: 9px;
+  background: var(--tint);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.payment {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 28px;
+}
+
+.paymentRows {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 16px;
+  margin: 0;
+}
+
+.paymentRows dt {
+  color: var(--muted);
+}
+
+.paymentRows dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+.footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  gap: 32px;
+  margin-top: 32px;
+}
+
+.note + .note {
+  margin-top: 14px;
+}
+
+.noteText {
+  white-space: pre-line;
+  color: var(--text);
+}
+
+.signature {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 80px;
+  text-align: center;
+}
+
+.signLine {
+  padding-top: 6px;
+  border-top: 1px solid var(--ink);
+  color: var(--ink);
+}

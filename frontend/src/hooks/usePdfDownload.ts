@@ -1,7 +1,7 @@
 import { useCallback, useState, type RefObject } from 'react';
 import { notify } from '@/lib/notify';
 
-const MARGIN_MM = 10;
+const MARGIN_MM = 0;
 
 export function usePdfDownload(target: RefObject<HTMLElement | null>) {
   const [downloading, setDownloading] = useState(false);

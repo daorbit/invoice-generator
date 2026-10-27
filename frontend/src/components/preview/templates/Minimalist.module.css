@@ -1,0 +1,200 @@
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+.title {
+  font-size: 40px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.number {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.logo {
+  display: block;
+  max-width: 150px;
+  max-height: 56px;
+  object-fit: contain;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 28px;
+  margin-top: 48px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.label {
+  margin-bottom: 6px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.lines {
+  white-space: pre-line;
+  color: var(--muted);
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 12px;
+  margin: 0;
+}
+
+.metaRow {
+  display: contents;
+}
+
+.meta dt {
+  color: var(--muted);
+}
+
+.meta dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+.amount {
+  font-size: 26px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  color: var(--doc-accent);
+}
+
+.due {
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.items {
+  width: 100%;
+  margin-top: 28px;
+  border-collapse: collapse;
+}
+
+.items th {
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--faint);
+}
+
+.items td {
+  padding: 14px 0;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: top;
+  color: var(--ink);
+}
+
+.items .num {
+  width: 100px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.totals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 260px;
+  margin: 24px 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--muted);
+}
+
+.totalRow span:last-child {
+  color: var(--ink);
+}
+
+.grandRow {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.grandRow span:last-child {
+  font-weight: 600;
+}
+
+.words {
+  margin-top: 14px;
+  text-align: right;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.payment {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+}
+
+.footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  gap: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+}
+
+.noteText {
+  white-space: pre-line;
+  color: var(--text);
+}
+
+.noteText + .label {
+  margin-top: 14px;
+}
+
+.signature {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 70px;
+  text-align: right;
+}
+
+.signLine {
+  padding-top: 6px;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+}

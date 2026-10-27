@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Button, Menu } from '@mantine/core';
+import { Loader, Menu, UnstyledButton } from '@mantine/core';
 import { Check, ChevronDown } from 'lucide-react';
 import { setDocumentStatus } from '@/api/documents';
-import { StatusPill } from '@/components/ui/StatusPill';
 import { STATUSES, STATUS_META } from '@/lib/documentMeta';
 import { notify } from '@/lib/notify';
 import type { DocumentKind, DocumentStatus } from '@/types/document';
+import classes from './StatusMenu.module.css';
 
 interface Props {
   kind: DocumentKind;
@@ -16,6 +16,7 @@ interface Props {
 
 export function StatusMenu({ kind, id, status, onChange }: Props) {
   const [saving, setSaving] = useState(false);
+  const current = STATUS_META[status];
 
   const change = async (next: DocumentStatus) => {
     setSaving(true);
@@ -31,11 +32,13 @@ export function StatusMenu({ kind, id, status, onChange }: Props) {
   };
 
   return (
-    <Menu position="bottom-end" width={180}>
+    <Menu position="bottom-end" width={190}>
       <Menu.Target>
-        <Button variant="default" loading={saving} rightSection={<ChevronDown size={14} />}>
-          <StatusPill tone={STATUS_META[status].tone} label={STATUS_META[status].label} />
-        </Button>
+        <UnstyledButton className={classes.trigger} data-tone={current.tone} disabled={saving} aria-label="Change status">
+          {saving ? <Loader size={12} color="currentColor" /> : <span className={classes.dot} aria-hidden />}
+          {current.label}
+          <ChevronDown size={14} className={classes.chevron} />
+        </UnstyledButton>
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Label>Mark as</Menu.Label>
@@ -46,7 +49,10 @@ export function StatusMenu({ kind, id, status, onChange }: Props) {
             rightSection={value === status ? <Check size={14} /> : undefined}
             onClick={() => void change(value)}
           >
-            {STATUS_META[value].label}
+            <span className={classes.option}>
+              <span className={classes.optionDot} data-tone={STATUS_META[value].tone} aria-hidden />
+              {STATUS_META[value].label}
+            </span>
           </Menu.Item>
         ))}
       </Menu.Dropdown>

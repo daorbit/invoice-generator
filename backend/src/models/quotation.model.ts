@@ -1,4 +1,4 @@
-import { Schema, model, type InferSchemaType } from 'mongoose';
+import { Schema, model, type InferSchemaType, type Types } from 'mongoose';
 import { designFields, partySchema, pricingFields } from './document-parts.js';
 
 export const QUOTATION_STATUSES = ['draft', 'sent', 'accepted', 'rejected', 'expired'] as const;
@@ -31,7 +31,7 @@ quotationSchema.index({ workspaceId: 1, status: 1, createdAt: -1 });
 quotationSchema.index({ workspaceId: 1, quotationNumber: 1 }, { unique: true });
 
 export type QuotationDocument = InferSchemaType<typeof quotationSchema> & {
-  _id: Schema.Types.ObjectId;
+  _id: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 };

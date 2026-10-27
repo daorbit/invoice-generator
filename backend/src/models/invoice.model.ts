@@ -1,4 +1,4 @@
-import { Schema, model, type InferSchemaType } from 'mongoose';
+import { Schema, model, type InferSchemaType, type Types } from 'mongoose';
 import { designFields, partySchema, pricingFields } from './document-parts.js';
 
 export const INVOICE_STATUSES = ['draft', 'sent', 'paid', 'overdue', 'cancelled'] as const;
@@ -33,7 +33,7 @@ invoiceSchema.index({ workspaceId: 1, status: 1, createdAt: -1 });
 invoiceSchema.index({ workspaceId: 1, invoiceNumber: 1 }, { unique: true });
 
 export type InvoiceDocument = InferSchemaType<typeof invoiceSchema> & {
-  _id: Schema.Types.ObjectId;
+  _id: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 };

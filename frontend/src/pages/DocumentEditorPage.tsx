@@ -1,7 +1,7 @@
 import { Suspense, lazy, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ActionIcon, Box, Button, Skeleton, Tooltip } from '@mantine/core';
-import { ArrowLeft, Eye, FileQuestion } from 'lucide-react';
+import { ArrowLeft, Download, Eye, FileQuestion } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DocsButton } from '@/components/ui/DocsButton';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -21,7 +21,7 @@ import { ItemsStep } from './editor/ItemsStep';
 import { ScheduleStep } from './editor/ScheduleStep';
 import { PricingStep } from './editor/PricingStep';
 import { NotesStep } from './editor/NotesStep';
-import { EditorSummary } from './editor/EditorSummary';
+import { PreviewCanvas } from './editor/PreviewCanvas';
 import { StatusMenu } from './editor/StatusMenu';
 import classes from './DocumentEditorPage.module.css';
 
@@ -46,6 +46,7 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
   };
 
   const download = () => void pdf.download(draft?.number || meta.singular);
+  const openPreview = () => setPreviewOpen(true);
 
   const back = (
     <Tooltip label={`All ${meta.plural.toLowerCase()}`} withArrow>
@@ -69,9 +70,7 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
   }
 
   const title = id ? `${meta.singular} ${draft?.number ?? ''}` : `New ${meta.singular.toLowerCase()}`;
-  const description = id
-    ? draft?.client.name || meta.singular
-    : 'Five quick steps. Preview and pick a design whenever you like.';
+  const description = id ? draft?.client.name || meta.singular : 'Fill in the steps and watch it come together on the right.';
 
   return (
     <Box className={classes.page}>
@@ -82,7 +81,20 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
         actions={
           <>
             {id && draft && <StatusMenu kind={kind} id={id} status={draft.status} onChange={editor.markStatus} />}
-            <Button variant="default" leftSection={<Eye size={16} />} disabled={!draft} onClick={() => setPreviewOpen(true)}>
+            <Tooltip label="Download PDF" withArrow>
+              <ActionIcon
+                variant="default"
+                size="lg"
+                radius="md"
+                aria-label="Download PDF"
+                loading={pdf.downloading}
+                disabled={!draft}
+                onClick={download}
+              >
+                <Download size={17} />
+              </ActionIcon>
+            </Tooltip>
+            <Button variant="default" leftSection={<Eye size={16} />} disabled={!draft} onClick={openPreview}>
               Preview
             </Button>
             <Button loading={editor.saving} disabled={!draft || (Boolean(id) && !editor.dirty)} onClick={() => void save()}>
@@ -96,12 +108,12 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
 
       {editor.loading || !draft ? (
         <div className={classes.loading}>
-          <Skeleton height={140} radius="md" />
-          <Skeleton height={220} radius="md" />
+          <Skeleton height={420} radius="md" />
+          <Skeleton height={560} radius="md" />
         </div>
       ) : (
         <>
-          <div className={classes.layout}>
+          <div className={classes.workspace}>
             <div className={classes.steps}>
               <ClientStep draft={draft} setClient={editor.setClient} fillClient={editor.fillClient} />
               <ItemsStep
@@ -114,12 +126,7 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
               <PricingStep draft={draft} setField={editor.setField} />
               <NotesStep draft={draft} setField={editor.setField} />
             </div>
-            <EditorSummary
-              draft={draft}
-              downloading={pdf.downloading}
-              onPreview={() => setPreviewOpen(true)}
-              onDownload={download}
-            />
+            <PreviewCanvas draft={draft} onDesign={openPreview} />
           </div>
 
           <PdfSource ref={pdfRef} draft={draft} />

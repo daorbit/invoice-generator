@@ -1,0 +1,70 @@
+.page {
+  --ink: #111827;
+  --text: #374151;
+  --muted: #6b7280;
+  --faint: #9ca3af;
+  --rule: #e5e7eb;
+  --soft: #f9fafb;
+  --tint: color-mix(in srgb, var(--doc-accent) 8%, #ffffff);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 1123px;
+  padding: 48px;
+  overflow: hidden;
+  color-scheme: light;
+  background: #ffffff;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 11px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.stamp {
+  position: absolute;
+  top: 210px;
+  right: 56px;
+  z-index: 2;
+  padding: 6px 18px;
+  border: 3px solid currentColor;
+  border-radius: 10px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.2;
+  transform: rotate(-14deg);
+  pointer-events: none;
+}
+
+.stamp[data-tone='paid'] {
+  color: #059669;
+}
+
+.stamp[data-tone='cancelled'] {
+  color: #dc2626;
+}
+
+.push {
+  margin-top: auto;
+}
+
+.qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 104px;
+  font-size: 9.5px;
+  line-height: 1.35;
+  text-align: center;
+  color: var(--muted);
+}
+
+.qr img {
+  width: 88px;
+  height: 88px;
+}

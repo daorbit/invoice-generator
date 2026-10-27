@@ -1,0 +1,220 @@
+.sheet {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  border: 1px solid #d1d5db;
+}
+
+.footerRow {
+  border-top: 1px solid #d1d5db;
+}
+
+.noteText + .label {
+  margin-top: 12px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.row + .row,
+.block {
+  border-top: 1px solid #d1d5db;
+}
+
+.cell {
+  padding: 14px 16px;
+}
+
+.cell + .cell {
+  border-left: 1px solid #d1d5db;
+}
+
+.logo {
+  display: block;
+  max-width: 150px;
+  max-height: 56px;
+  margin-bottom: 10px;
+  object-fit: contain;
+}
+
+.orgName {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.lines {
+  white-space: pre-line;
+  color: var(--muted);
+}
+
+.strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.titleCell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  text-align: right;
+  background: var(--tint);
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--doc-accent);
+}
+
+.number {
+  margin-top: 2px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.label {
+  margin-bottom: 4px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.clientName {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 5px 14px;
+  margin: 0;
+}
+
+.metaRow {
+  display: contents;
+}
+
+.meta dt {
+  color: var(--muted);
+}
+
+.meta dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.items {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.items th,
+.items td {
+  padding: 8px 10px;
+  border-right: 1px solid #d1d5db;
+  border-bottom: 1px solid #d1d5db;
+  text-align: left;
+  vertical-align: top;
+}
+
+.items th:last-child,
+.items td:last-child {
+  border-right: 0;
+}
+
+.items th {
+  background: var(--tint);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.items td {
+  color: var(--ink);
+}
+
+.items .index {
+  width: 34px;
+  text-align: center;
+}
+
+.items .num {
+  width: 100px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+}
+
+.summary > .cell + .cell {
+  padding: 0;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 16px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.totalRow + .totalRow {
+  border-top: 1px solid #e5e7eb;
+}
+
+.grandRow {
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.dueRow {
+  background: var(--doc-accent);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.words {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.paymentCell {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.noteText {
+  white-space: pre-line;
+  color: var(--text);
+}
+
+.signature {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 90px;
+  text-align: right;
+}
+
+.signLine {
+  font-weight: 600;
+  color: var(--ink);
+}
