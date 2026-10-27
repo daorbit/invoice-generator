@@ -1,8 +1,28 @@
 import { Schema, model, type InferSchemaType, type Types } from 'mongoose';
-import { designFields, partySchema, pricingFields } from './document-parts.js';
+import {
+  designFields,
+  gstFields,
+  partySchema,
+  pricingFields,
+  relationFields,
+  sharingFields,
+} from './document-parts.js';
 
 export const QUOTATION_STATUSES = ['draft', 'sent', 'accepted', 'rejected', 'expired'] as const;
 export type QuotationStatus = (typeof QUOTATION_STATUSES)[number];
+
+export const CLIENT_DECISIONS = ['accepted', 'rejected'] as const;
+export type ClientDecision = (typeof CLIENT_DECISIONS)[number];
+
+const clientResponseSchema = new Schema(
+  {
+    decision: { type: String, enum: CLIENT_DECISIONS, required: true },
+    name: { type: String, default: '' },
+    comment: { type: String, default: '' },
+    at: { type: Date, required: true },
+  },
+  { _id: false }
+);
 
 const quotationSchema = new Schema(
   {
@@ -18,10 +38,14 @@ const quotationSchema = new Schema(
     quoteTo: { type: partySchema, default: () => ({}) },
     ...pricingFields,
     ...designFields,
+    ...gstFields,
+    ...relationFields,
+    ...sharingFields,
     notes: { type: String },
     terms: { type: String },
     paymentTerms: { type: String },
     convertedInvoiceId: { type: String },
+    clientResponse: { type: clientResponseSchema },
   },
   { timestamps: true }
 );
@@ -29,6 +53,9 @@ const quotationSchema = new Schema(
 quotationSchema.index({ workspaceId: 1, createdAt: -1 });
 quotationSchema.index({ workspaceId: 1, status: 1, createdAt: -1 });
 quotationSchema.index({ workspaceId: 1, quotationNumber: 1 }, { unique: true });
+quotationSchema.index({ workspaceId: 1, quotationDate: -1 });
+quotationSchema.index({ workspaceId: 1, customerId: 1, createdAt: -1 });
+quotationSchema.index({ shareToken: 1 }, { unique: true, sparse: true });
 
 export type QuotationDocument = InferSchemaType<typeof quotationSchema> & {
   _id: Types.ObjectId;

@@ -26,7 +26,7 @@ export const create: RequestHandler = async (req, res) => {
 };
 
 export const update: RequestHandler = async (req, res) => {
-  res.json(await updateInvoice(workspaceIdOf(req), documentIdOf(req), readInvoiceInput(req.body)));
+  res.json(await updateInvoice(workspaceIdOf(req), actorOf(res), documentIdOf(req), readInvoiceInput(req.body)));
 };
 
 export const remove: RequestHandler = async (req, res) => {

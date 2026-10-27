@@ -1,7 +1,9 @@
-import type { DiscountType, LineItem, Party, PaymentDetails } from '../models/document-parts.js';
+import { isValidObjectId } from 'mongoose';
+import type { DiscountType, LineItem, Party, PaymentDetails, TaxMode } from '../models/document-parts.js';
 import { round2 } from './totals.js';
 import { badRequestError } from './http-error.js';
 import { readAccent, readTemplate } from './design.js';
+import { readStateCode } from './gst.js';
 
 const MAX_TEXT = 500;
 const MAX_LONG_TEXT = 5000;
@@ -11,7 +13,7 @@ const MAX_AMOUNT = 1_000_000_000_000;
 
 type Raw = Record<string, unknown>;
 
-function asObject(value: unknown): Raw {
+export function asObject(value: unknown): Raw {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as Raw) : {};
 }
 
@@ -19,15 +21,32 @@ export function text(value: unknown, max = MAX_TEXT): string {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
 }
 
-function optionalText(value: unknown, max = MAX_TEXT): string | undefined {
+export function optionalText(value: unknown, max = MAX_TEXT): string | undefined {
   const result = text(value, max);
   return result || undefined;
 }
 
-function amount(value: unknown, min = 0, max = MAX_AMOUNT): number {
+export function amount(value: unknown, min = 0, max = MAX_AMOUNT): number {
   const parsed = typeof value === 'string' ? Number(value) : value;
   if (typeof parsed !== 'number' || !Number.isFinite(parsed)) return 0;
   return Math.min(Math.max(parsed, min), max);
+}
+
+export function flag(value: unknown): boolean {
+  return value === true;
+}
+
+export function objectId(value: unknown): string | undefined {
+  return typeof value === 'string' && isValidObjectId(value) ? value : undefined;
+}
+
+export function hsnCode(value: unknown): string | undefined {
+  const digits = text(value, 16).replace(/\D/g, '').slice(0, 8);
+  return digits || undefined;
+}
+
+export function gstin(value: unknown): string | undefined {
+  return optionalText(value, 15)?.toUpperCase();
 }
 
 function date(value: unknown): Date | undefined {
@@ -44,7 +63,7 @@ function party(value: unknown): Party {
     address: text(raw.address, 1000),
     phone: text(raw.phone, 50),
     website: optionalText(raw.website),
-    gstin: optionalText(raw.gstin, 15)?.toUpperCase(),
+    gstin: gstin(raw.gstin),
   };
 }
 
@@ -69,7 +88,7 @@ function design(raw: Raw) {
   };
 }
 
-function lineItems(value: unknown): LineItem[] {
+function lineItems(value: unknown, fallbackRate: number): LineItem[] {
   if (!Array.isArray(value)) return [];
   if (value.length > MAX_ITEMS) throw badRequestError(`A document can have at most ${MAX_ITEMS} items`);
   return value.map((entry, index) => {
@@ -82,6 +101,10 @@ function lineItems(value: unknown): LineItem[] {
       quantity,
       rate,
       amount: round2(quantity * rate),
+      taxRate: raw.taxRate === undefined ? fallbackRate : amount(raw.taxRate, 0, 100),
+      hsn: hsnCode(raw.hsn),
+      unit: optionalText(raw.unit, 16),
+      itemId: objectId(raw.itemId),
     };
   });
 }
@@ -101,14 +124,30 @@ function discountType(value: unknown): DiscountType {
   return value === 'fixed' ? 'fixed' : 'percentage';
 }
 
+function taxMode(value: unknown): TaxMode {
+  return value === 'line' ? 'line' : 'document';
+}
+
 function pricing(raw: Raw) {
+  const tax = amount(raw.tax, 0, 100);
   return {
-    items: lineItems(raw.items),
-    tax: amount(raw.tax, 0, 100),
+    items: lineItems(raw.items, tax),
+    tax,
     discount: amount(raw.discount),
     discountType: discountType(raw.discountType),
     shipping: amount(raw.shipping),
     currency: currency(raw.currency),
+    taxMode: taxMode(raw.taxMode),
+    pricesIncludeTax: flag(raw.pricesIncludeTax),
+    roundOff: flag(raw.roundOff),
+  };
+}
+
+function gst(raw: Raw) {
+  return {
+    placeOfSupply: readStateCode(raw.placeOfSupply) || undefined,
+    reverseCharge: flag(raw.reverseCharge),
+    exportUnderLut: flag(raw.exportUnderLut),
   };
 }
 
@@ -124,7 +163,9 @@ export function readInvoiceInput(body: unknown) {
     from: party(raw.from),
     billTo: party(raw.billTo),
     shipTo,
+    customerId: objectId(raw.customerId),
     ...pricing(raw),
+    ...gst(raw),
     ...design(raw),
     amountPaid: amount(raw.amountPaid),
     notes: optionalText(raw.notes, MAX_LONG_TEXT),
@@ -142,7 +183,9 @@ export function readQuotationInput(body: unknown) {
     referenceNumber: optionalText(raw.referenceNumber, 64),
     from: party(raw.from),
     quoteTo: party(raw.quoteTo),
+    customerId: objectId(raw.customerId),
     ...pricing(raw),
+    ...gst(raw),
     ...design(raw),
     notes: optionalText(raw.notes, MAX_LONG_TEXT),
     terms: optionalText(raw.terms, MAX_LONG_TEXT),

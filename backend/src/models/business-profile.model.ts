@@ -49,6 +49,7 @@ const businessProfileSchema = new Schema(
     accountNumber: { type: String, default: DEFAULT_PROFILE.accountNumber },
     ifsc: { type: String, default: DEFAULT_PROFILE.ifsc },
     upiId: { type: String, default: DEFAULT_PROFILE.upiId },
+    customersSeededAt: { type: Date },
   },
   { timestamps: true }
 );

@@ -7,4 +7,5 @@ export const env = {
   quantalogApiUrl: (process.env.QUANTALOG_API_URL ?? '').replace(/\/$/, ''),
   invoiceServiceSecret: process.env.INVOICE_SERVICE_SECRET ?? '',
   cronSecret: process.env.CRON_SECRET ?? '',
+  publicAppUrl: (process.env.PUBLIC_APP_URL || 'https://invoicing.daorbit.in').replace(/\/$/, ''),
 };

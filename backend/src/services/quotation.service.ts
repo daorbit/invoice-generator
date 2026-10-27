@@ -3,12 +3,14 @@ import { Invoice } from '../models/invoice.model.js';
 import type { QuotationInput } from '../lib/document-input.js';
 import type { ListQuery } from '../lib/list-query.js';
 import { escapeRegex } from '../lib/list-query.js';
-import { computeTotals } from '../lib/totals.js';
 import { notFoundError } from '../lib/http-error.js';
 import { toUpdate } from '../lib/update.js';
 import { toQuotationResponse } from '../lib/serialize.js';
 import { nextDocumentNumber } from './numbering.service.js';
 import { ownedFilter, paginate } from './owned-document.js';
+import { priceDocument } from './document-pricing.js';
+import { ensureCustomer } from './customer.service.js';
+import { COPY_EXCLUDED } from './invoice.service.js';
 
 const LABEL = 'Quotation';
 const LIST_FIELDS = '-logo -workspaceId -createdBy';
@@ -22,8 +24,9 @@ const SORT_FIELD = {
   status: 'status',
 } as const;
 
-function withTotals(input: Omit<QuotationInput, 'quotationNumber'>) {
-  return { ...input, ...computeTotals(input) };
+async function prepare(workspaceId: string, actorId: string | undefined, input: Omit<QuotationInput, 'quotationNumber'>) {
+  const customerId = await ensureCustomer(workspaceId, actorId, input.quoteTo, input.customerId);
+  return { ...input, ...priceDocument(input, input.quoteTo), customerId };
 }
 
 export async function listQuotations(workspaceId: string, query: ListQuery) {
@@ -55,24 +58,27 @@ export async function getQuotation(workspaceId: string, id: string) {
 
 export async function createQuotation(workspaceId: string, actorId: string | undefined, input: QuotationInput) {
   const { quotationNumber, ...rest } = input;
+  const prepared = await prepare(workspaceId, actorId, rest);
   const number = quotationNumber || (await nextDocumentNumber(workspaceId, 'quotation'));
   const doc = await Quotation.create({
     workspaceId,
     createdBy: actorId,
     quotationNumber: number,
-    ...withTotals(rest),
+    ...prepared,
   });
   return toQuotationResponse(doc.toObject());
 }
 
-export async function updateQuotation(workspaceId: string, id: string, input: QuotationInput) {
+export async function updateQuotation(
+  workspaceId: string,
+  actorId: string | undefined,
+  id: string,
+  input: QuotationInput
+) {
+  const filter = ownedFilter(workspaceId, id, LABEL);
   const { quotationNumber, ...rest } = input;
-  const update = { ...withTotals(rest), ...(quotationNumber ? { quotationNumber } : {}) };
-  const doc = await Quotation.findOneAndUpdate(
-    ownedFilter(workspaceId, id, LABEL),
-    toUpdate(update),
-    { new: true }
-  ).lean();
+  const update = { ...(await prepare(workspaceId, actorId, rest)), ...(quotationNumber ? { quotationNumber } : {}) };
+  const doc = await Quotation.findOneAndUpdate(filter, toUpdate(update), { new: true }).lean();
   if (!doc) throw notFoundError(LABEL);
   return toQuotationResponse(doc);
 }
@@ -94,7 +100,7 @@ export async function setQuotationStatus(workspaceId: string, id: string, status
 
 export async function duplicateQuotation(workspaceId: string, actorId: string | undefined, id: string) {
   const source = await Quotation.findOne(ownedFilter(workspaceId, id, LABEL))
-    .select('-_id -createdAt -updatedAt -__v')
+    .select(`${COPY_EXCLUDED} -clientResponse`)
     .lean();
   if (!source) throw notFoundError(LABEL);
   const quotationNumber = await nextDocumentNumber(workspaceId, 'quotation');
@@ -119,7 +125,7 @@ export async function convertQuotation(
   id: string
 ): Promise<ConvertResult> {
   const filter = ownedFilter(workspaceId, id, LABEL);
-  const quotation = await Quotation.findOne(filter).select('-_id -createdAt -updatedAt -__v').lean();
+  const quotation = await Quotation.findOne(filter).select(COPY_EXCLUDED).lean();
   if (!quotation) throw notFoundError(LABEL);
 
   const seenInvoiceId = quotation.convertedInvoiceId ?? undefined;
@@ -141,18 +147,30 @@ export async function convertQuotation(
     logo: quotation.logo,
     from: quotation.from,
     billTo: quotation.quoteTo,
+    customerId: quotation.customerId,
     items: quotation.items,
     tax: quotation.tax,
     discount: quotation.discount,
     discountType: quotation.discountType,
     shipping: quotation.shipping,
     currency: quotation.currency,
+    taxMode: quotation.taxMode,
+    pricesIncludeTax: quotation.pricesIncludeTax,
+    roundOff: quotation.roundOff,
+    placeOfSupply: quotation.placeOfSupply,
+    supplyState: quotation.supplyState,
+    interState: quotation.interState,
+    reverseCharge: quotation.reverseCharge,
+    exportUnderLut: quotation.exportUnderLut,
     template: quotation.template,
     accent: quotation.accent,
     payment: quotation.payment,
     subtotal: quotation.subtotal,
+    taxableAmount: quotation.taxableAmount,
     taxAmount: quotation.taxAmount,
+    taxLines: quotation.taxLines,
     discountAmount: quotation.discountAmount,
+    roundOffAmount: quotation.roundOffAmount,
     total: quotation.total,
     balanceDue: quotation.total,
     notes: quotation.notes,

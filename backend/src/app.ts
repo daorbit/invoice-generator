@@ -11,6 +11,10 @@ export function createApp() {
   app.set('trust proxy', true);
   app.use(cors());
   app.use(
+    ['/api/workspaces/:workspaceId/invoices/:id/email', '/api/workspaces/:workspaceId/quotations/:id/email'],
+    express.json({ limit: '8mb' })
+  );
+  app.use(
     ['/api/workspaces/:workspaceId/invoices', '/api/workspaces/:workspaceId/quotations'],
     express.json({ limit: '4mb' })
   );

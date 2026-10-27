@@ -1,5 +1,12 @@
 import { Schema, model, type InferSchemaType, type Types } from 'mongoose';
-import { designFields, partySchema, pricingFields } from './document-parts.js';
+import {
+  designFields,
+  gstFields,
+  partySchema,
+  pricingFields,
+  relationFields,
+  sharingFields,
+} from './document-parts.js';
 
 export const INVOICE_STATUSES = ['draft', 'sent', 'paid', 'overdue', 'cancelled'] as const;
 export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
@@ -19,8 +26,12 @@ const invoiceSchema = new Schema(
     shipTo: { type: partySchema },
     ...pricingFields,
     ...designFields,
+    ...gstFields,
+    ...relationFields,
+    ...sharingFields,
     amountPaid: { type: Number, default: 0 },
     balanceDue: { type: Number, default: 0 },
+    paidAt: { type: Date },
     notes: { type: String },
     terms: { type: String },
     sourceQuotationId: { type: String },
@@ -31,6 +42,10 @@ const invoiceSchema = new Schema(
 invoiceSchema.index({ workspaceId: 1, createdAt: -1 });
 invoiceSchema.index({ workspaceId: 1, status: 1, createdAt: -1 });
 invoiceSchema.index({ workspaceId: 1, invoiceNumber: 1 }, { unique: true });
+invoiceSchema.index({ workspaceId: 1, invoiceDate: -1 });
+invoiceSchema.index({ workspaceId: 1, paidAt: -1 });
+invoiceSchema.index({ workspaceId: 1, customerId: 1, createdAt: -1 });
+invoiceSchema.index({ shareToken: 1 }, { unique: true, sparse: true });
 
 export type InvoiceDocument = InferSchemaType<typeof invoiceSchema> & {
   _id: Types.ObjectId;

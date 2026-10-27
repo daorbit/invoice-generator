@@ -2,15 +2,18 @@ import { Invoice, type InvoiceStatus } from '../models/invoice.model.js';
 import type { InvoiceInput } from '../lib/document-input.js';
 import type { ListQuery } from '../lib/list-query.js';
 import { escapeRegex } from '../lib/list-query.js';
-import { computeTotals, round2 } from '../lib/totals.js';
+import { round2 } from '../lib/totals.js';
 import { notFoundError } from '../lib/http-error.js';
 import { toUpdate } from '../lib/update.js';
 import { toInvoiceResponse } from '../lib/serialize.js';
 import { nextDocumentNumber } from './numbering.service.js';
 import { ownedFilter, paginate } from './owned-document.js';
+import { priceDocument } from './document-pricing.js';
+import { ensureCustomer } from './customer.service.js';
 
 const LABEL = 'Invoice';
 const LIST_FIELDS = '-logo -workspaceId -createdBy';
+export const COPY_EXCLUDED = '-_id -createdAt -updatedAt -__v -shareToken -views -lastEmail -scheduledEmail';
 
 const SORT_FIELD = {
   date: 'createdAt',
@@ -19,9 +22,10 @@ const SORT_FIELD = {
   status: 'status',
 } as const;
 
-function withTotals(input: Omit<InvoiceInput, 'invoiceNumber'>) {
-  const totals = computeTotals(input);
-  return { ...input, ...totals, balanceDue: round2(totals.total - input.amountPaid) };
+async function prepare(workspaceId: string, actorId: string | undefined, input: Omit<InvoiceInput, 'invoiceNumber'>) {
+  const customerId = await ensureCustomer(workspaceId, actorId, input.billTo, input.customerId);
+  const priced = priceDocument(input, input.billTo);
+  return { ...input, ...priced, customerId, balanceDue: round2(priced.total - input.amountPaid) };
 }
 
 export async function listInvoices(workspaceId: string, query: ListQuery) {
@@ -53,20 +57,22 @@ export async function getInvoice(workspaceId: string, id: string) {
 
 export async function createInvoice(workspaceId: string, actorId: string | undefined, input: InvoiceInput) {
   const { invoiceNumber, ...rest } = input;
+  const prepared = await prepare(workspaceId, actorId, rest);
   const number = invoiceNumber || (await nextDocumentNumber(workspaceId, 'invoice'));
   const doc = await Invoice.create({
     workspaceId,
     createdBy: actorId,
     invoiceNumber: number,
-    ...withTotals(rest),
+    ...prepared,
   });
   return toInvoiceResponse(doc.toObject());
 }
 
-export async function updateInvoice(workspaceId: string, id: string, input: InvoiceInput) {
+export async function updateInvoice(workspaceId: string, actorId: string | undefined, id: string, input: InvoiceInput) {
+  const filter = ownedFilter(workspaceId, id, LABEL);
   const { invoiceNumber, ...rest } = input;
-  const update = { ...withTotals(rest), ...(invoiceNumber ? { invoiceNumber } : {}) };
-  const doc = await Invoice.findOneAndUpdate(ownedFilter(workspaceId, id, LABEL), toUpdate(update), { new: true }).lean();
+  const update = { ...(await prepare(workspaceId, actorId, rest)), ...(invoiceNumber ? { invoiceNumber } : {}) };
+  const doc = await Invoice.findOneAndUpdate(filter, toUpdate(update), { new: true }).lean();
   if (!doc) throw notFoundError(LABEL);
   return toInvoiceResponse(doc);
 }
@@ -77,18 +83,15 @@ export async function deleteInvoice(workspaceId: string, id: string) {
 }
 
 export async function setInvoiceStatus(workspaceId: string, id: string, status: InvoiceStatus) {
-  const doc = await Invoice.findOneAndUpdate(
-    ownedFilter(workspaceId, id, LABEL),
-    { $set: { status } },
-    { new: true }
-  ).lean();
+  const update = status === 'paid' ? { $set: { status, paidAt: new Date() } } : { $set: { status }, $unset: { paidAt: '' } };
+  const doc = await Invoice.findOneAndUpdate(ownedFilter(workspaceId, id, LABEL), update, { new: true }).lean();
   if (!doc) throw notFoundError(LABEL);
   return toInvoiceResponse(doc);
 }
 
 export async function duplicateInvoice(workspaceId: string, actorId: string | undefined, id: string) {
   const source = await Invoice.findOne(ownedFilter(workspaceId, id, LABEL))
-    .select('-_id -createdAt -updatedAt -__v')
+    .select(`${COPY_EXCLUDED} -paidAt`)
     .lean();
   if (!source) throw notFoundError(LABEL);
   const invoiceNumber = await nextDocumentNumber(workspaceId, 'invoice');

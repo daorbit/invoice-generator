@@ -27,7 +27,7 @@ export const create: RequestHandler = async (req, res) => {
 };
 
 export const update: RequestHandler = async (req, res) => {
-  res.json(await updateQuotation(workspaceIdOf(req), documentIdOf(req), readQuotationInput(req.body)));
+  res.json(await updateQuotation(workspaceIdOf(req), actorOf(res), documentIdOf(req), readQuotationInput(req.body)));
 };
 
 export const remove: RequestHandler = async (req, res) => {
