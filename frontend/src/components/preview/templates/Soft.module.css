@@ -1,0 +1,165 @@
+.stack {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: #f2f4f8;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.head b {
+  color: var(--ink);
+}
+
+.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.label {
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.name {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.lines {
+  white-space: pre-line;
+  color: var(--muted);
+}
+
+.due {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.dueAmount {
+  font-weight: 700;
+  color: var(--doc-accent);
+}
+
+.items {
+  flex: 1;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 0 0 10px;
+  border-bottom: 2px solid #ffffff;
+  font-weight: 600;
+  text-align: left;
+  color: var(--ink);
+}
+
+.table td {
+  padding: 13px 0;
+  border-bottom: 2px solid #ffffff;
+  vertical-align: top;
+  color: var(--ink);
+}
+
+.table .num {
+  width: 92px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.totals {
+  width: 300px;
+  margin: 6px 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 11px 0;
+  border-bottom: 2px solid #ffffff;
+  color: var(--text);
+}
+
+.totalRow:last-child {
+  border-bottom: 0;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.words {
+  margin-top: 8px;
+  text-align: right;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.thanks {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.thanksTitle {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.bank {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--doc-accent);
+}
+
+.brandLogo {
+  max-width: 90px;
+  max-height: 26px;
+  object-fit: contain;
+}
+
+.contact {
+  display: flex;
+  gap: 14px;
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+.contact span + span {
+  padding-left: 14px;
+  border-left: 1px solid #d1d5db;
+}

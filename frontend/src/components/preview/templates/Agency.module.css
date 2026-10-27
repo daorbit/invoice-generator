@@ -1,0 +1,247 @@
+.top {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 14px;
+}
+
+.brandCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 210px;
+  padding: 28px;
+  border-radius: 22px;
+  background: var(--doc-accent);
+  color: rgba(255, 255, 255, 0.85);
+  overflow: hidden;
+}
+
+.circleA,
+.circleB {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.circleA {
+  top: -34px;
+  right: -26px;
+  width: 110px;
+  height: 110px;
+}
+
+.circleB {
+  right: 30px;
+  bottom: -70px;
+  width: 150px;
+  height: 150px;
+}
+
+.logoChip {
+  display: inline-grid;
+  place-items: center;
+  align-self: flex-start;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.logo {
+  max-width: 120px;
+  max-height: 36px;
+  object-fit: contain;
+}
+
+.brandName {
+  position: relative;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.brandMeta {
+  position: relative;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 12px 12px 20px;
+  border-radius: 22px;
+  background: #f4f6fa;
+}
+
+.dueCard {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.label {
+  margin-bottom: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dueAmount {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.small {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.client {
+  padding: 0 6px;
+}
+
+.clientName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.lines {
+  white-space: pre-line;
+  color: var(--muted);
+}
+
+.sectionLabel {
+  margin: 26px 0 8px;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 14px 18px;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+}
+
+.details > :nth-child(2) {
+  text-align: center;
+}
+
+.details > :nth-child(3) {
+  text-align: right;
+}
+
+.detailValue {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.table {
+  width: 100%;
+  margin-top: 22px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table th {
+  padding: 0 14px 10px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--muted);
+}
+
+.table td {
+  padding: 14px;
+  background: #f6f7fb;
+  border-bottom: 2px solid #ffffff;
+  vertical-align: top;
+  color: var(--text);
+}
+
+.table tbody tr:first-child td:first-child {
+  border-top-left-radius: 12px;
+}
+
+.table tbody tr:first-child td:last-child {
+  border-top-right-radius: 12px;
+}
+
+.table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+.table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+.table .num {
+  width: 92px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.table .strong {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.totals {
+  margin-top: 18px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.breakdown {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  gap: 3px 28px;
+  margin-bottom: 10px;
+  color: var(--muted);
+}
+
+.breakdownRow {
+  display: contents;
+}
+
+.grand {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--doc-accent);
+}
+
+.terms {
+  padding: 14px 18px;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+}
+
+.termsTitle {
+  margin-bottom: 4px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.bar {
+  height: 8px;
+  margin: 28px -48px -48px;
+  background: var(--doc-accent);
+}

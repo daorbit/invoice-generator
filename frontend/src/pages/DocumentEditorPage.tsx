@@ -7,6 +7,7 @@ import { DocsButton } from '@/components/ui/DocsButton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { HostNotificationsBell } from '@/components/ui/HostNotificationsBell';
 import { PdfSource } from '@/components/preview/PdfSource';
+import { BrandLogoProvider } from '@/components/preview/BrandLogo';
 import { useHostPhone } from '@/hooks/useHostPhone';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { useDocumentEditor } from '@/hooks/useDocumentEditor';
@@ -73,6 +74,7 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
   const description = id ? draft?.client.name || meta.singular : 'Fill in the steps and watch it come together on the right.';
 
   return (
+    <BrandLogoProvider logo={profile?.logo ?? ''}>
     <Box className={classes.page}>
       <PageHeader
         leading={back}
@@ -147,5 +149,6 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
         </>
       )}
     </Box>
+    </BrandLogoProvider>
   );
 }

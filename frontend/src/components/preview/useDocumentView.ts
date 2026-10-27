@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import { useUpiQr } from '@/hooks/useUpiQr';
+import { useBrandLogo } from './BrandLogo';
 import { amountInWords } from '@/lib/amountInWords';
 import { KIND_META } from '@/lib/documentMeta';
 import { formatDate, formatMoney } from '@/lib/format';
@@ -11,6 +12,7 @@ export type Row = [string, string];
 export interface DocumentView {
   draft: DocumentDraft;
   isInvoice: boolean;
+  logo: string;
   heading: string;
   number: string;
   from: Party;
@@ -25,6 +27,9 @@ export interface DocumentView {
   headlineLabel: string;
   headline: string;
   dueText: string;
+  issueDate: string;
+  dueDate: string;
+  dueLabel: string;
   words: string;
   payment: Row[];
   qr: string | null;
@@ -51,6 +56,7 @@ function heading(draft: DocumentDraft): string {
 
 export function useDocumentView(draft: DocumentDraft): DocumentView {
   const meta = KIND_META[draft.kind];
+  const brandLogo = useBrandLogo();
   const isInvoice = draft.kind === 'invoice';
   const totals = computeTotals(draft);
   const money = (value: number) => formatMoney(value, draft.currency);
@@ -76,6 +82,7 @@ export function useDocumentView(draft: DocumentDraft): DocumentView {
   return {
     draft,
     isInvoice,
+    logo: draft.logo || brandLogo,
     heading: heading(draft),
     number: draft.number || 'Draft',
     from: draft.from,
@@ -103,6 +110,9 @@ export function useDocumentView(draft: DocumentDraft): DocumentView {
     headlineLabel: isInvoice ? 'Balance Due' : 'Quote Total',
     headline: money(headlineAmount),
     dueText: draft.dueDate ? `${isInvoice ? 'Due' : 'Valid until'} ${formatDate(draft.dueDate)}` : '',
+    issueDate: formatDate(draft.issueDate),
+    dueDate: formatDate(draft.dueDate),
+    dueLabel: isInvoice ? 'Due date' : 'Valid until',
     words: amountInWords(totals.total, draft.currency),
     payment: isInvoice
       ? filled([

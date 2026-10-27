@@ -79,7 +79,7 @@ export default function PreviewStudio({ opened, draft, downloading, onClose, onT
           </DeviceFrame>
         </div>
         {designOpen && (
-          <DesignPanel template={draft.template} accent={draft.accent} onTemplate={onTemplate} onAccent={onAccent} />
+          <DesignPanel draft={draft} onTemplate={onTemplate} onAccent={onAccent} />
         )}
       </div>
     </StudioModal>

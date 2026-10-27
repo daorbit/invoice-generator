@@ -9,9 +9,9 @@ export function GrandTemplate({ view }: { view: DocumentView }) {
     <>
       <div className={classes.hero}>
         <div>
-          {view.draft.logo && (
+          {view.logo && (
             <span className={classes.logoChip}>
-              <img src={view.draft.logo} alt="" className={classes.logo} />
+              <img src={view.logo} alt="" className={classes.logo} />
             </span>
           )}
           <div className={classes.orgName}>{from.name || 'Your business'}</div>

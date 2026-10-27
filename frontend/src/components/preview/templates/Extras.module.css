@@ -1,0 +1,74 @@
+.label {
+  margin-bottom: 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.payment {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 22px;
+  padding: 16px 18px;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+}
+
+.rows {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 16px;
+  margin: 0;
+}
+
+.row {
+  display: contents;
+}
+
+.rows dt {
+  color: var(--muted);
+}
+
+.rows dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+.notes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  gap: 28px;
+}
+
+.text {
+  white-space: pre-line;
+  color: var(--text);
+}
+
+.text + .label {
+  margin-top: 12px;
+}
+
+.signature {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 72px;
+  text-align: right;
+}
+
+.signLine {
+  padding-top: 6px;
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+}
+
+.words {
+  margin-top: 10px;
+  font-size: 10.5px;
+  text-align: right;
+  color: var(--muted);
+}

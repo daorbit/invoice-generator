@@ -6,7 +6,17 @@ export type DocumentStatus = InvoiceStatus | QuotationStatus;
 
 export type DiscountType = 'percentage' | 'fixed';
 
-export type TemplateId = 'classic' | 'modern' | 'minimal' | 'bold';
+export type TemplateId =
+  | 'classic'
+  | 'modern'
+  | 'minimal'
+  | 'bold'
+  | 'soft'
+  | 'studio'
+  | 'agency'
+  | 'capsule'
+  | 'banner'
+  | 'panel';
 export type AccentId = 'blue' | 'indigo' | 'teal' | 'emerald' | 'amber' | 'crimson' | 'slate';
 
 export interface Party {

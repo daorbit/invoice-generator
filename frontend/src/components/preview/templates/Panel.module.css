@@ -1,0 +1,194 @@
+.panel {
+  padding: 28px;
+  border-radius: 24px;
+  background: #f4f6fa;
+}
+
+.panelTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.logo {
+  max-width: 130px;
+  max-height: 40px;
+  object-fit: contain;
+}
+
+.brandText {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--doc-accent);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.1fr;
+  gap: 20px;
+  margin-top: 22px;
+}
+
+.heading {
+  margin-bottom: 6px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.lines {
+  white-space: pre-line;
+  color: var(--muted);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 8px;
+  margin: 0;
+}
+
+.factRow {
+  display: contents;
+}
+
+.facts dt {
+  color: var(--muted);
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.clientCard {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.clientName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.table {
+  width: 100%;
+  margin-top: 28px;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+}
+
+.table th {
+  padding: 0 16px;
+  font-size: 10.5px;
+  font-weight: 500;
+  text-align: left;
+  color: var(--muted);
+}
+
+.table td {
+  padding: 13px 16px;
+  border-top: 1px solid #e8ebf1;
+  border-bottom: 1px solid #e8ebf1;
+  vertical-align: top;
+  color: var(--text);
+}
+
+.table td:first-child {
+  border-left: 1px solid #e8ebf1;
+  border-radius: 12px 0 0 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.table td:last-child {
+  border-right: 1px solid #e8ebf1;
+  border-radius: 0 12px 12px 0;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.table .num {
+  width: 96px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.totals {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  margin-top: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.breakdownRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  min-width: 240px;
+  color: var(--muted);
+}
+
+.grandLabel {
+  margin-top: 8px;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.grand {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--doc-accent);
+}
+
+.terms {
+  margin-top: 22px;
+}
+
+.termsTitle {
+  margin-bottom: 4px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.termsText {
+  white-space: pre-line;
+  color: var(--faint);
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin: 28px -48px -48px;
+  padding: 28px 48px 32px;
+  background: #f4f6fa;
+}
+
+.footName {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.signLine {
+  min-width: 180px;
+  padding-top: 6px;
+  border-top: 1px solid #d5dae3;
+  text-align: right;
+  color: var(--muted);
+}

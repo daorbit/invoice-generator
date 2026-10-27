@@ -5,6 +5,7 @@ import type { ListQuery } from '../lib/list-query.js';
 import { escapeRegex } from '../lib/list-query.js';
 import { computeTotals } from '../lib/totals.js';
 import { notFoundError } from '../lib/http-error.js';
+import { toUpdate } from '../lib/update.js';
 import { toQuotationResponse } from '../lib/serialize.js';
 import { nextDocumentNumber } from './numbering.service.js';
 import { ownedFilter, paginate } from './owned-document.js';
@@ -69,7 +70,7 @@ export async function updateQuotation(workspaceId: string, id: string, input: Qu
   const update = { ...withTotals(rest), ...(quotationNumber ? { quotationNumber } : {}) };
   const doc = await Quotation.findOneAndUpdate(
     ownedFilter(workspaceId, id, LABEL),
-    { $set: update },
+    toUpdate(update),
     { new: true }
   ).lean();
   if (!doc) throw notFoundError(LABEL);

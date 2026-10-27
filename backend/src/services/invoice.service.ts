@@ -4,6 +4,7 @@ import type { ListQuery } from '../lib/list-query.js';
 import { escapeRegex } from '../lib/list-query.js';
 import { computeTotals, round2 } from '../lib/totals.js';
 import { notFoundError } from '../lib/http-error.js';
+import { toUpdate } from '../lib/update.js';
 import { toInvoiceResponse } from '../lib/serialize.js';
 import { nextDocumentNumber } from './numbering.service.js';
 import { ownedFilter, paginate } from './owned-document.js';
@@ -65,7 +66,7 @@ export async function createInvoice(workspaceId: string, actorId: string | undef
 export async function updateInvoice(workspaceId: string, id: string, input: InvoiceInput) {
   const { invoiceNumber, ...rest } = input;
   const update = { ...withTotals(rest), ...(invoiceNumber ? { invoiceNumber } : {}) };
-  const doc = await Invoice.findOneAndUpdate(ownedFilter(workspaceId, id, LABEL), { $set: update }, { new: true }).lean();
+  const doc = await Invoice.findOneAndUpdate(ownedFilter(workspaceId, id, LABEL), toUpdate(update), { new: true }).lean();
   if (!doc) throw notFoundError(LABEL);
   return toInvoiceResponse(doc);
 }

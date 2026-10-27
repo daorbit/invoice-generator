@@ -1,4 +1,15 @@
-export const TEMPLATES = ['classic', 'modern', 'minimal', 'bold'] as const;
+export const TEMPLATES = [
+  'classic',
+  'modern',
+  'minimal',
+  'bold',
+  'soft',
+  'studio',
+  'agency',
+  'capsule',
+  'banner',
+  'panel',
+] as const;
 export type TemplateId = (typeof TEMPLATES)[number];
 
 export const ACCENTS = ['blue', 'indigo', 'teal', 'emerald', 'amber', 'crimson', 'slate'] as const;

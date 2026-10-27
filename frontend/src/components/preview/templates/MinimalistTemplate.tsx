@@ -12,7 +12,7 @@ export function MinimalistTemplate({ view }: { view: DocumentView }) {
           <div className={classes.title}>{view.heading}</div>
           <div className={classes.number}>{view.number}</div>
         </div>
-        {view.draft.logo && <img src={view.draft.logo} alt="" className={classes.logo} />}
+        {view.logo && <img src={view.logo} alt="" className={classes.logo} />}
       </div>
 
       <div className={classes.columns}>

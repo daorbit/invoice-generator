@@ -9,7 +9,7 @@ export function SpreadsheetTemplate({ view }: { view: DocumentView }) {
     <div className={classes.sheet}>
       <div className={classes.row}>
         <div className={classes.cell}>
-          {view.draft.logo && <img src={view.draft.logo} alt="" className={classes.logo} />}
+          {view.logo && <img src={view.logo} alt="" className={classes.logo} />}
           <div className={classes.orgName}>{from.name || 'Your business'}</div>
           {from.address && <div className={classes.lines}>{from.address}</div>}
           {from.gstin && <div className={classes.strong}>GSTIN {from.gstin}</div>}

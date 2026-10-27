@@ -9,7 +9,7 @@ export function StandardTemplate({ view }: { view: DocumentView }) {
     <>
       <div className={classes.top}>
         <div className={classes.org}>
-          {view.draft.logo && <img src={view.draft.logo} alt="" className={classes.logo} />}
+          {view.logo && <img src={view.logo} alt="" className={classes.logo} />}
           <div className={classes.orgName}>{from.name || 'Your business'}</div>
           {from.address && <div className={classes.lines}>{from.address}</div>}
           {from.gstin && <div className={classes.strong}>GSTIN {from.gstin}</div>}
