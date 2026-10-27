@@ -1,0 +1,350 @@
+:root .mantine-Input-input {
+  border-color: var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+}
+
+:root .mantine-Input-input::placeholder {
+  color: var(--faint);
+}
+
+.mantine-Table-thead .mantine-Table-th {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  border-bottom-color: var(--border);
+}
+
+.mantine-Table-td {
+  border-bottom-color: var(--border);
+  font-variant-numeric: tabular-nums;
+}
+
+.mantine-Table-tbody .mantine-Table-tr:last-child .mantine-Table-td {
+  border-bottom: 0;
+}
+
+.mantine-Table-tbody .mantine-Table-tr:hover {
+  background: color-mix(in srgb, var(--text) 3%, transparent);
+}
+
+.mantine-InputWrapper-label,
+.mantine-Input-label {
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+[data-mantine-color-scheme='dark'] .mantine-Card-root {
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.mantine-SegmentedControl-root {
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  border: 0;
+}
+
+.mantine-SegmentedControl-indicator {
+  display: none;
+}
+
+.mantine-SegmentedControl-label {
+  position: relative;
+  z-index: 0;
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+.mantine-SegmentedControl-root .mantine-SegmentedControl-label[data-active]::before {
+  display: block;
+  z-index: -1;
+  background-color: var(--surface);
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+[data-mantine-color-scheme='dark'] .mantine-SegmentedControl-root .mantine-SegmentedControl-label[data-active]::before {
+  background-color: var(--gray-7);
+  box-shadow: none;
+}
+
+.mantine-SegmentedControl-root .mantine-SegmentedControl-label[data-active] {
+  color: var(--text);
+}
+
+.mantine-ScrollArea-scrollbar {
+  background: transparent !important;
+  padding: 0;
+}
+
+.mantine-ScrollArea-scrollbar[data-orientation='vertical'] {
+  width: 6px;
+}
+
+.mantine-ScrollArea-scrollbar[data-orientation='horizontal'] {
+  height: 6px;
+}
+
+.mantine-Modal-content {
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+.mantine-Modal-header {
+  padding: 20px 24px 8px;
+  background: transparent;
+}
+
+.mantine-Modal-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.mantine-Modal-close,
+.mantine-Drawer-close {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  color: var(--text-2);
+}
+
+.mantine-Modal-close:hover,
+.mantine-Drawer-close:hover {
+  background: color-mix(in srgb, var(--text) 14%, transparent);
+  color: var(--text);
+}
+
+.mantine-Popover-dropdown {
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+.mantine-Menu-dropdown {
+  padding: 5px;
+}
+
+.mantine-Menu-item {
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.mantine-Menu-divider {
+  margin-block: 6px;
+}
+
+.mantine-Menu-label {
+  padding: 6px 10px 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mantine-Menu-item[data-color='red']:where(:hover, :focus, [data-menu-active]) {
+  background: color-mix(in srgb, var(--mantine-color-red-6) 12%, transparent);
+  color: var(--mantine-color-red-4);
+}
+
+[data-mantine-color-scheme='light'] .mantine-Menu-item[data-color='red']:where(:hover, :focus, [data-menu-active]) {
+  background: color-mix(in srgb, var(--mantine-color-red-6) 9%, transparent);
+  color: var(--mantine-color-red-7);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.mantine-Input-input:not(.da-forms-light-surface *):focus,
+.mantine-Input-input:not(.da-forms-light-surface *):focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.mantine-Checkbox-label,
+.mantine-Switch-label,
+.mantine-Radio-label,
+.mantine-Chip-label,
+.mantine-Checkbox-description,
+.mantine-Switch-description,
+.mantine-Radio-description {
+  cursor: pointer;
+}
+
+.mantine-Switch-input:checked + .mantine-Switch-track .mantine-Switch-thumb:not(.da-forms-light-surface *) {
+  background-color: var(--accent-contrast);
+}
+
+.mantine-Switch-input:disabled + .mantine-Switch-track {
+  --switch-bg: var(--surface-2);
+  border-color: var(--border);
+  opacity: 0.5;
+}
+
+.mantine-Switch-input:disabled:checked + .mantine-Switch-track {
+  --switch-bg: var(--switch-color);
+  border-color: transparent;
+}
+
+.mantine-Switch-input:disabled + .mantine-Switch-track .mantine-Switch-thumb {
+  --switch-thumb-bg: var(--text-2);
+}
+
+.mantine-Checkbox-input:not(.da-forms-light-surface *) {
+  background-color: var(--surface);
+  border-color: var(--border-strong);
+}
+
+.mantine-Checkbox-input:checked:not(.da-forms-light-surface *),
+.mantine-Checkbox-input:indeterminate:not(.da-forms-light-surface *) {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  --checkbox-icon-color: #ffffff;
+}
+
+.mantine-Radio-radio:not(.da-forms-light-surface *) {
+  background-color: var(--surface);
+  border-color: var(--border-strong);
+}
+
+.mantine-Radio-radio:checked:not(.da-forms-light-surface *) {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  --radio-icon-color: #ffffff;
+}
+
+.mantine-DatePicker-calendarHeaderLevel,
+.mantine-DatePicker-weekday,
+.mantine-DatePicker-calendarHeaderControl {
+  color: var(--text-2);
+}
+
+.mantine-DatePicker-calendarHeaderLevel:hover,
+.mantine-DatePicker-calendarHeaderControl:hover {
+  background-color: var(--surface-2);
+  color: var(--text);
+}
+
+.mantine-DatePicker-day,
+.mantine-Day-day {
+  color: var(--text);
+  border-radius: 8px;
+}
+
+.mantine-DatePicker-day:hover:not([data-disabled]):not([data-selected]),
+.mantine-Day-day:hover:not([data-disabled]):not([data-selected]) {
+  background-color: var(--surface-2);
+}
+
+.mantine-DatePicker-day[data-weekend],
+.mantine-Day-day[data-weekend] {
+  color: var(--text);
+}
+
+.mantine-DatePicker-day[data-outside],
+.mantine-Day-day[data-outside] {
+  color: var(--muted);
+}
+
+.mantine-DatePicker-day[data-in-range],
+.mantine-Day-day[data-in-range] {
+  background-color: var(--accent-soft);
+  color: var(--text);
+}
+
+.mantine-DatePicker-day[data-in-range]:hover:not([data-disabled]),
+.mantine-Day-day[data-in-range]:hover:not([data-disabled]) {
+  background-color: color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+.mantine-DatePicker-day[data-selected],
+.mantine-DatePicker-day[data-first-in-range],
+.mantine-DatePicker-day[data-last-in-range],
+.mantine-Day-day[data-selected],
+.mantine-Day-day[data-first-in-range],
+.mantine-Day-day[data-last-in-range] {
+  background-color: var(--accent);
+  color: #ffffff;
+}
+
+.mantine-DatePicker-day[data-selected]:hover:not([data-disabled]),
+.mantine-DatePicker-day[data-first-in-range]:hover:not([data-disabled]),
+.mantine-DatePicker-day[data-last-in-range]:hover:not([data-disabled]),
+.mantine-Day-day[data-selected]:hover:not([data-disabled]),
+.mantine-Day-day[data-first-in-range]:hover:not([data-disabled]),
+.mantine-Day-day[data-last-in-range]:hover:not([data-disabled]) {
+  background-color: color-mix(in srgb, var(--accent) 85%, var(--text));
+  color: #ffffff;
+}
+
+.mantine-DatePicker-day[data-disabled],
+.mantine-Day-day[data-disabled] {
+  color: var(--muted);
+  opacity: 0.45;
+}
+
+.skeleton-shimmer[data-visible][data-animate]::after {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--mantine-color-white) 6%, transparent) 40%,
+    color-mix(in srgb, var(--mantine-color-white) 11%, transparent) 50%,
+    color-mix(in srgb, var(--mantine-color-white) 6%, transparent) 60%,
+    transparent 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 220% 100%;
+  animation: skeleton-sweep 1.5s ease-in-out infinite !important;
+}
+
+[data-mantine-color-scheme='light'] .skeleton-shimmer[data-visible][data-animate]::after {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--mantine-color-white) 45%, transparent) 40%,
+    color-mix(in srgb, var(--mantine-color-white) 80%, transparent) 50%,
+    color-mix(in srgb, var(--mantine-color-white) 45%, transparent) 60%,
+    transparent 100%
+  );
+}
+
+@keyframes skeleton-sweep {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer[data-visible][data-animate]::after {
+    background-image: none;
+    animation: none !important;
+  }
+}
+
+[data-motion='off'] .skeleton-shimmer[data-visible][data-animate]::after {
+  background-image: none;
+  animation: none !important;
+}
+
+.mantine-Alert-root {
+  padding: 12px 14px;
+}
+
+.mantine-Alert-title {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.mantine-Alert-message {
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.5;
+}
