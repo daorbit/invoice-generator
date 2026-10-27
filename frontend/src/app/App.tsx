@@ -33,7 +33,8 @@ export function App() {
     <BrowserRouter basename={`/${WORKSPACE_ID}`}>
       <Suspense fallback={null}>
         <Routes>
-          <Route path="/" element={<DocumentsPage />} />
+          <Route path="/" element={<DocumentsPage key="invoices" kind="invoice" />} />
+          <Route path="/quotations" element={<DocumentsPage key="quotations" kind="quotation" />} />
           <Route path="/invoices/new" element={<DocumentEditorPage key="invoice-new" kind="invoice" />} />
           <Route path="/invoices/:id" element={<DocumentEditorPage kind="invoice" />} />
           <Route path="/quotations/new" element={<DocumentEditorPage key="quotation-new" kind="quotation" />} />

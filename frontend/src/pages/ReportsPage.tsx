@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SectionPage } from '@/components/layout/SectionPage';
-import { PageHeader } from '@/components/ui/PageHeader';
 import { DocsButton } from '@/components/ui/DocsButton';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { HostNotificationsBell } from '@/components/ui/HostNotificationsBell';
 import { useHostPhone } from '@/hooks/useHostPhone';
@@ -60,13 +60,11 @@ export function ReportsPage() {
         description={`What you billed, collected and are still owed, in ${currency}.`}
         actions={
           <>
-            {tab !== 'receivables' && <PeriodPicker period={period} range={range} onChange={changePeriod} />}
             {!hostPhone && <DocsButton path={DOCS.invoicing} />}
             {IS_EMBEDDED && <HostNotificationsBell />}
           </>
         }
       />
-
       <div className={classes.tabs}>
         <SegmentedTabs
           ariaLabel="Report"
@@ -74,6 +72,11 @@ export function ReportsPage() {
           onChange={(next) => setParams(next === 'overview' ? {} : { [TAB_PARAM]: next }, { replace: true })}
           data={tabs}
         />
+        {tab === 'receivables' ? (
+          <span className={classes.asOf}>As of today, in {currency}</span>
+        ) : (
+          <PeriodPicker period={period} range={range} onChange={changePeriod} />
+        )}
       </div>
 
       {profile && (

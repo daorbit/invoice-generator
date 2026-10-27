@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Loader, Menu, UnstyledButton } from '@mantine/core';
+import { Button, Loader, Menu } from '@mantine/core';
 import { Check, ChevronDown } from 'lucide-react';
 import { setDocumentStatus } from '@/api/documents';
+import { StatusDot } from '@/components/ui/StatusPill';
 import { STATUSES, STATUS_META } from '@/lib/documentMeta';
 import { notify } from '@/lib/notify';
 import type { DocumentKind, DocumentStatus } from '@/types/document';
@@ -32,27 +33,28 @@ export function StatusMenu({ kind, id, status, onChange }: Props) {
   };
 
   return (
-    <Menu position="bottom-end" width={190}>
+    <Menu position="bottom-end" width={180}>
       <Menu.Target>
-        <UnstyledButton className={classes.trigger} data-tone={current.tone} disabled={saving} aria-label="Change status">
-          {saving ? <Loader size={12} color="currentColor" /> : <span className={classes.dot} aria-hidden />}
+        <Button
+          variant="default"
+          disabled={saving}
+          aria-label={`Status: ${current.label}. Change status`}
+          leftSection={saving ? <Loader size={10} color="currentColor" /> : <StatusDot tone={current.tone} />}
+          rightSection={<ChevronDown size={14} className={classes.chevron} />}
+        >
           {current.label}
-          <ChevronDown size={14} className={classes.chevron} />
-        </UnstyledButton>
+        </Button>
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Label>Mark as</Menu.Label>
         {STATUSES[kind].map((value) => (
           <Menu.Item
             key={value}
-            disabled={value === status}
+            leftSection={<StatusDot tone={STATUS_META[value].tone} />}
             rightSection={value === status ? <Check size={14} /> : undefined}
-            onClick={() => void change(value)}
+            onClick={() => value !== status && void change(value)}
           >
-            <span className={classes.option}>
-              <span className={classes.optionDot} data-tone={STATUS_META[value].tone} aria-hidden />
-              {STATUS_META[value].label}
-            </span>
+            {STATUS_META[value].label}
           </Menu.Item>
         ))}
       </Menu.Dropdown>

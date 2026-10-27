@@ -1,11 +1,15 @@
 .tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 18px;
-  overflow-x: auto;
-  scrollbar-width: none;
 }
 
-.tabs::-webkit-scrollbar {
-  display: none;
+.asOf {
+  font-size: 13px;
+  color: var(--muted);
 }
 
 .periodLabel {

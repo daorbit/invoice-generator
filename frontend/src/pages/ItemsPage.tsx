@@ -47,7 +47,6 @@ export function ItemsPage() {
           </>
         }
       />
-
       <CatalogToolbar
         search={list.search}
         onSearch={list.setSearch}

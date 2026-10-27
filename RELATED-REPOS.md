@@ -69,7 +69,9 @@ Both tokens have the same format (`workspaceId.expiresAt.actorId.signature`, HMA
 - The Invoicing panel in Apps (`InvoicingSettings.tsx`, `invoicesClient.ts`, sharing `createServiceClient` with `formsClient`) saves business details to `PUT /settings` with the workspace token.
 - Workspace deletion calls `DELETE /api/internal/workspaces/:id` (`purgeInvoiceWorkspace` in `real-ana-be/src/infra/http-client/invoice-service.ts`, `Bearer INVOICE_SERVICE_SECRET`).
 
-**invoice-generator → Quantalog**: none yet. Plan limits through `/api/internal/invoices/*` are on its roadmap.
+**invoice-generator → Quantalog** (`QUANTALOG_API_URL`, `Bearer INVOICE_SERVICE_SECRET`)
+- Quotation and invoice emails go through `POST /api/internal/invoices/email/:workspaceId` (`real-ana-be/src/http/routes/invoices-internal.ts`), sent by Quantalog's mailer with the PDF attached and a link to the public page.
+- Public share links (`/p/<token>`) are served by invoice-generator itself, without a token.
 
 ## Who owns what
 
@@ -86,7 +88,7 @@ Both tokens have the same format (`workspaceId.expiresAt.actorId.signature`, HMA
 
 ## Scheduled work
 
-None of the three uses Vercel Cron. Cloudflare Workers in `real-ana-be/workers/*-cron` call cron routes with `Bearer CRON_SECRET`. `sweep-uploads-cron` calls da-forms (`/api/cron/sweep-uploads`, `sweep-payments`, `sweep-partials`). The Cloudflare account is at its trigger limit, so new scheduled work in any repo runs inside an existing worker tick.
+None of the three uses Vercel Cron. Cloudflare Workers in `real-ana-be/workers/*-cron` call cron routes with `Bearer CRON_SECRET`. `sweep-uploads-cron` calls da-forms (`/api/cron/sweep-uploads`, `sweep-payments`, `sweep-partials`) and, every 5 minutes, invoice-generator's `/api/cron/scheduled-emails` through `INVOICES_API_BASE`. The Cloudflare account is at its trigger limit, so new scheduled work in any repo runs inside an existing worker tick.
 
 ## Shared secrets
 

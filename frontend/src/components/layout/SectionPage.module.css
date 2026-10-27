@@ -1,10 +1,21 @@
-.page {
-  container-type: inline-size;
-  padding: 16px 24px 40px;
+.shell {
+  display: grid;
+  grid-template-columns: 212px minmax(0, 1fr);
+  min-height: 100%;
 }
 
-@media (max-width: 48em) {
-  .page {
-    padding: 8px 16px 32px;
+.content {
+  container-type: inline-size;
+  min-width: 0;
+  padding: 24px 28px 40px;
+}
+
+@media (max-width: 56em) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .content {
+    padding: 16px 16px 32px;
   }
 }

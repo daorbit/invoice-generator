@@ -7,10 +7,13 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { StatStrip } from '@/components/ui/StatStrip';
 import { HostNotificationsBell } from '@/components/ui/HostNotificationsBell';
+import { DocsButton } from '@/components/ui/DocsButton';
 import { getCustomer } from '@/api/catalog';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
+import { useHostPhone } from '@/hooks/useHostPhone';
 import { IS_EMBEDDED } from '@/lib/bootParams';
+import { DOCS } from '@/lib/docs';
 import { DOCUMENT_PATH } from '@/lib/documentMapping';
 import { formatMoney } from '@/lib/format';
 import type { DocumentKind } from '@/types/document';
@@ -22,6 +25,7 @@ import classes from './customers/CustomerDetail.module.css';
 export function CustomerDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const hostPhone = useHostPhone();
   const { profile } = useBusinessProfile();
   const { data, loading, failed, reload } = useAsyncData(() => getCustomer(id), id);
   const [editing, setEditing] = useState(false);
@@ -69,6 +73,7 @@ export function CustomerDetailPage() {
             <Button leftSection={<ReceiptText size={15} />} onClick={() => start('invoice')}>
               New invoice
             </Button>
+            {!hostPhone && <DocsButton path={DOCS.invoicing} />}
             {IS_EMBEDDED && <HostNotificationsBell />}
           </>
         }

@@ -53,7 +53,6 @@ export function CustomersPage() {
           </>
         }
       />
-
       <CatalogToolbar
         search={list.search}
         onSearch={list.setSearch}

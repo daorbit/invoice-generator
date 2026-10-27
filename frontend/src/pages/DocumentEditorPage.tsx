@@ -1,7 +1,7 @@
 import { Suspense, lazy, useCallback, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ActionIcon, Box, Button, Skeleton, Tooltip } from '@mantine/core';
-import { ArrowLeft, Download, Eye, FileQuestion, Send } from 'lucide-react';
+import { ArrowLeft, Check, Download, Eye, FileQuestion, Send } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DocsButton } from '@/components/ui/DocsButton';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -43,7 +43,7 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const meta = KIND_META[kind];
-  const backTo = kind === 'quotation' ? '/?view=quotations' : '/';
+  const backTo = kind === 'quotation' ? '/quotations' : '/';
   const { draft } = editor;
 
   const save = async () => {
@@ -103,6 +103,11 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
         actions={
           <>
             {id && draft && <StatusMenu kind={kind} id={id} status={draft.status} onChange={editor.markStatus} />}
+            <Tooltip label="Preview and design" withArrow>
+              <ActionIcon variant="default" size="lg" radius="md" aria-label="Preview" disabled={!draft} onClick={openPreview}>
+                <Eye size={17} />
+              </ActionIcon>
+            </Tooltip>
             <Tooltip label="Download PDF" withArrow>
               <ActionIcon
                 variant="default"
@@ -116,17 +121,20 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
                 <Download size={17} />
               </ActionIcon>
             </Tooltip>
-            <Button variant="default" leftSection={<Eye size={16} />} disabled={!draft} onClick={openPreview}>
-              Preview
-            </Button>
-            <Tooltip label={`Create the ${meta.singular.toLowerCase()} first`} withArrow disabled={Boolean(id)}>
-              <Button variant="default" leftSection={<Send size={15} />} disabled={!draft || !id} onClick={() => setShareOpen(true)}>
+            {id && (
+              <Button variant="default" leftSection={<Send size={15} />} disabled={!draft} onClick={() => setShareOpen(true)}>
                 Share
               </Button>
-            </Tooltip>
-            <Button loading={editor.saving} disabled={!draft || (Boolean(id) && !editor.dirty)} onClick={() => void save()}>
-              {id ? 'Save changes' : `Create ${meta.singular.toLowerCase()}`}
-            </Button>
+            )}
+            {id && !editor.dirty && !editor.saving ? (
+              <Button variant="default" disabled className={classes.saved} leftSection={<Check size={15} />}>
+                Saved
+              </Button>
+            ) : (
+              <Button loading={editor.saving} disabled={!draft} onClick={() => void save()}>
+                {id ? 'Save changes' : `Create ${meta.singular.toLowerCase()}`}
+              </Button>
+            )}
             {!hostPhone && <DocsButton path={DOCS.invoicing} />}
             {IS_EMBEDDED && <HostNotificationsBell />}
           </>
