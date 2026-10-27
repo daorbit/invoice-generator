@@ -55,7 +55,7 @@ All Mantine, built from the same pieces as da-forms so the frame reads as part o
 5. Send quotations and invoices by email, through the workspace's email app.
 6. Overdue reminders inside an existing cron tick (`/api/cron/*` with `Bearer CRON_SECRET`; the Cloudflare account is at its trigger limit).
 7. Plan limits through Quantalog (`/api/internal/invoices/*`), and paid revenue fed back into Quantalog analytics by lead source.
-8. Docs page `quantalog-lp/src/content/docs/quantalog-invoicing.tsx`, and an entry in the landing page Apps carousel.
+8. Keep the user docs (`quantalog-lp/src/content/docs/quantalog-invoicing.tsx`) in step: every new field, status or action updates that page in the same change.
 
 ## Rules
 
