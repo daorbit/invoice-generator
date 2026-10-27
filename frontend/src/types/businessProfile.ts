@@ -1,3 +1,5 @@
+import type { AccentId, TemplateId } from './document';
+
 export interface BusinessProfile {
   businessName: string;
   email: string;
@@ -11,6 +13,14 @@ export interface BusinessProfile {
   paymentTermsDays: number;
   defaultNotes: string;
   defaultTerms: string;
+  logo: string;
+  defaultTemplate: TemplateId;
+  accentColor: AccentId;
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  ifsc: string;
+  upiId: string;
 }
 
 export interface BusinessProfileResponse {

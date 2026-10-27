@@ -1,5 +1,5 @@
 import { Schema, model, type InferSchemaType } from 'mongoose';
-import { partySchema, pricingFields } from './document-parts.js';
+import { designFields, partySchema, pricingFields } from './document-parts.js';
 
 export const QUOTATION_STATUSES = ['draft', 'sent', 'accepted', 'rejected', 'expired'] as const;
 export type QuotationStatus = (typeof QUOTATION_STATUSES)[number];
@@ -17,6 +17,7 @@ const quotationSchema = new Schema(
     from: { type: partySchema, default: () => ({}) },
     quoteTo: { type: partySchema, default: () => ({}) },
     ...pricingFields,
+    ...designFields,
     notes: { type: String },
     terms: { type: String },
     paymentTerms: { type: String },

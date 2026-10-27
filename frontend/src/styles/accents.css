@@ -1,0 +1,27 @@
+[data-accent='blue'] {
+  --doc-accent: #2f6bff;
+}
+
+[data-accent='indigo'] {
+  --doc-accent: #4f46e5;
+}
+
+[data-accent='teal'] {
+  --doc-accent: #0d9488;
+}
+
+[data-accent='emerald'] {
+  --doc-accent: #059669;
+}
+
+[data-accent='amber'] {
+  --doc-accent: #b45309;
+}
+
+[data-accent='crimson'] {
+  --doc-accent: #dc2626;
+}
+
+[data-accent='slate'] {
+  --doc-accent: #334155;
+}

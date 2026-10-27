@@ -17,6 +17,7 @@ import { DOCUMENT_PATH } from '@/lib/documentMapping';
 import { KIND_META } from '@/lib/documentMeta';
 import type { DocumentKind } from '@/types/document';
 import { FromSummary } from './editor/FromSummary';
+import { DesignSection } from './editor/DesignSection';
 import { DetailsSection } from './editor/DetailsSection';
 import { ClientSection } from './editor/ClientSection';
 import { ItemsSection } from './editor/ItemsSection';
@@ -108,6 +109,7 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
         <div className={classes.layout}>
           <div className={classes.form}>
             <FromSummary from={draft.from} />
+            <DesignSection draft={draft} setField={editor.setField} />
             <DetailsSection draft={draft} setField={editor.setField} />
             <ClientSection draft={draft} setClient={editor.setClient} />
             <ItemsSection

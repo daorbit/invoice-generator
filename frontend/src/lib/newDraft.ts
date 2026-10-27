@@ -1,5 +1,5 @@
 import type { BusinessProfile } from '@/types/businessProfile';
-import type { DocumentDraft, DocumentKind, LineItem, Party } from '@/types/document';
+import type { DocumentDraft, DocumentKind, LineItem, Party, PaymentDetails } from '@/types/document';
 import { addDaysIso, todayIso } from './format';
 
 const DEFAULT_TERMS_DAYS = 30;
@@ -15,8 +15,21 @@ export function businessParty(profile: BusinessProfile | null): Party {
     email: profile.email,
     phone: profile.phone,
     website: profile.website,
-    address: profile.gstin ? `${profile.address}\nGSTIN: ${profile.gstin}` : profile.address,
+    address: profile.address,
+    gstin: profile.gstin || undefined,
   };
+}
+
+function businessPayment(profile: BusinessProfile | null): PaymentDetails | undefined {
+  if (!profile) return undefined;
+  const details = {
+    bankName: profile.bankName,
+    accountName: profile.accountName,
+    accountNumber: profile.accountNumber,
+    ifsc: profile.ifsc,
+    upiId: profile.upiId,
+  };
+  return Object.values(details).some(Boolean) ? details : undefined;
 }
 
 export function newDraft(kind: DocumentKind, profile: BusinessProfile | null): DocumentDraft {
@@ -38,5 +51,9 @@ export function newDraft(kind: DocumentKind, profile: BusinessProfile | null): D
     amountPaid: 0,
     notes: profile?.defaultNotes ?? '',
     terms: profile?.defaultTerms ?? '',
+    logo: profile?.logo || undefined,
+    template: profile?.defaultTemplate ?? 'classic',
+    accent: profile?.accentColor ?? 'blue',
+    payment: businessPayment(profile),
   };
 }

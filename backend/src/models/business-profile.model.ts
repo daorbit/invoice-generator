@@ -13,6 +13,14 @@ export const DEFAULT_PROFILE = {
   paymentTermsDays: 30,
   defaultNotes: '',
   defaultTerms: '',
+  logo: '',
+  defaultTemplate: 'classic',
+  accentColor: 'blue',
+  bankName: '',
+  accountName: '',
+  accountNumber: '',
+  ifsc: '',
+  upiId: '',
 };
 
 export type BusinessProfileFields = typeof DEFAULT_PROFILE;
@@ -33,6 +41,14 @@ const businessProfileSchema = new Schema(
     paymentTermsDays: { type: Number, default: DEFAULT_PROFILE.paymentTermsDays },
     defaultNotes: { type: String, default: DEFAULT_PROFILE.defaultNotes },
     defaultTerms: { type: String, default: DEFAULT_PROFILE.defaultTerms },
+    logo: { type: String, default: DEFAULT_PROFILE.logo },
+    defaultTemplate: { type: String, default: DEFAULT_PROFILE.defaultTemplate },
+    accentColor: { type: String, default: DEFAULT_PROFILE.accentColor },
+    bankName: { type: String, default: DEFAULT_PROFILE.bankName },
+    accountName: { type: String, default: DEFAULT_PROFILE.accountName },
+    accountNumber: { type: String, default: DEFAULT_PROFILE.accountNumber },
+    ifsc: { type: String, default: DEFAULT_PROFILE.ifsc },
+    upiId: { type: String, default: DEFAULT_PROFILE.upiId },
   },
   { timestamps: true }
 );

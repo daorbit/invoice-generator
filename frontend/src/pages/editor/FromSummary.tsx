@@ -21,6 +21,7 @@ export function FromSummary({ from }: { from: Party }) {
         <div>
           <div className={classes.name}>{from.name}</div>
           {from.address && <div className={classes.lines}>{from.address}</div>}
+          {from.gstin && <div className={classes.lines}>GSTIN {from.gstin}</div>}
           {contact && <div className={classes.lines}>{contact}</div>}
         </div>
       ) : (

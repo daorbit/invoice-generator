@@ -6,12 +6,30 @@ export type DocumentStatus = InvoiceStatus | QuotationStatus;
 
 export type DiscountType = 'percentage' | 'fixed';
 
+export type TemplateId = 'classic' | 'modern' | 'minimal' | 'bold';
+export type AccentId = 'blue' | 'indigo' | 'teal' | 'emerald' | 'amber' | 'crimson' | 'slate';
+
 export interface Party {
   name: string;
   email: string;
   address: string;
   phone: string;
   website?: string;
+  gstin?: string;
+}
+
+export interface PaymentDetails {
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  ifsc: string;
+  upiId: string;
+}
+
+interface DesignFields {
+  template?: TemplateId;
+  accent?: AccentId;
+  payment?: PaymentDetails;
 }
 
 export interface LineItem {
@@ -22,7 +40,7 @@ export interface LineItem {
   amount: number;
 }
 
-interface PricingFields {
+interface PricingFields extends DesignFields {
   items: LineItem[];
   tax: number;
   discount: number;
@@ -98,6 +116,9 @@ export interface DocumentDraft {
   notes: string;
   terms: string;
   logo?: string;
+  template: TemplateId;
+  accent: AccentId;
+  payment?: PaymentDetails;
 }
 
 export interface DocumentSummary {

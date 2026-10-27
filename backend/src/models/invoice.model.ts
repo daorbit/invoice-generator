@@ -1,5 +1,5 @@
 import { Schema, model, type InferSchemaType } from 'mongoose';
-import { partySchema, pricingFields } from './document-parts.js';
+import { designFields, partySchema, pricingFields } from './document-parts.js';
 
 export const INVOICE_STATUSES = ['draft', 'sent', 'paid', 'overdue', 'cancelled'] as const;
 export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
@@ -18,6 +18,7 @@ const invoiceSchema = new Schema(
     billTo: { type: partySchema, default: () => ({}) },
     shipTo: { type: partySchema },
     ...pricingFields,
+    ...designFields,
     amountPaid: { type: Number, default: 0 },
     balanceDue: { type: Number, default: 0 },
     notes: { type: String },

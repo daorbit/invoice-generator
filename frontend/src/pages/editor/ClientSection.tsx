@@ -26,6 +26,14 @@ export function ClientSection({ draft, setClient }: { draft: DocumentDraft; setC
         value={client.address}
         onChange={(e) => setClient('address', e.currentTarget.value)}
       />
+      <TextInput
+        label="GSTIN"
+        description="Required on a GST invoice to a registered business."
+        placeholder="22AAAAA0000A1Z5"
+        maxLength={15}
+        value={client.gstin ?? ''}
+        onChange={(e) => setClient('gstin', e.currentTarget.value.toUpperCase())}
+      />
     </EditorSection>
   );
 }

@@ -1,4 +1,5 @@
 import { Schema } from 'mongoose';
+import { ACCENTS, TEMPLATES } from '../lib/design.js';
 
 export interface Party {
   name: string;
@@ -6,6 +7,15 @@ export interface Party {
   address: string;
   phone: string;
   website?: string;
+  gstin?: string;
+}
+
+export interface PaymentDetails {
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  ifsc: string;
+  upiId: string;
 }
 
 export interface LineItem {
@@ -32,9 +42,27 @@ export const partySchema = new Schema<Party>(
     address: { type: String, default: '' },
     phone: { type: String, default: '' },
     website: { type: String },
+    gstin: { type: String },
   },
   { _id: false }
 );
+
+export const paymentSchema = new Schema<PaymentDetails>(
+  {
+    bankName: { type: String, default: '' },
+    accountName: { type: String, default: '' },
+    accountNumber: { type: String, default: '' },
+    ifsc: { type: String, default: '' },
+    upiId: { type: String, default: '' },
+  },
+  { _id: false }
+);
+
+export const designFields = {
+  template: { type: String, enum: TEMPLATES, default: 'classic' },
+  accent: { type: String, enum: ACCENTS, default: 'blue' },
+  payment: { type: paymentSchema },
+};
 
 export const lineItemSchema = new Schema<LineItem>(
   {

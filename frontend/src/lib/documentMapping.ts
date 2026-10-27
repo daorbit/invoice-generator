@@ -17,6 +17,14 @@ function party(value: Party | undefined): Party {
   return { ...EMPTY_PARTY, ...value };
 }
 
+function design(doc: InvoiceRecord['invoice'] | QuotationRecord['quotation']) {
+  return {
+    template: doc.template ?? 'classic',
+    accent: doc.accent ?? 'blue',
+    payment: doc.payment,
+  };
+}
+
 export function invoiceToDraft(record: InvoiceRecord): DocumentDraft {
   const doc = record.invoice;
   return {
@@ -38,6 +46,7 @@ export function invoiceToDraft(record: InvoiceRecord): DocumentDraft {
     notes: doc.notes ?? '',
     terms: doc.terms ?? '',
     logo: doc.logo,
+    ...design(doc),
   };
 }
 
@@ -62,6 +71,7 @@ export function quotationToDraft(record: QuotationRecord): DocumentDraft {
     notes: doc.notes ?? '',
     terms: doc.paymentTerms ?? doc.terms ?? '',
     logo: doc.logo,
+    ...design(doc),
   };
 }
 
@@ -75,6 +85,9 @@ function pricing(draft: DocumentDraft) {
     shipping: draft.shipping,
     notes: draft.notes,
     logo: draft.logo,
+    template: draft.template,
+    accent: draft.accent,
+    payment: draft.payment,
   };
 }
 

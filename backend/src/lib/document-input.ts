@@ -1,6 +1,7 @@
-import type { DiscountType, LineItem, Party } from '../models/document-parts.js';
+import type { DiscountType, LineItem, Party, PaymentDetails } from '../models/document-parts.js';
 import { round2 } from './totals.js';
 import { badRequestError } from './http-error.js';
+import { readAccent, readTemplate } from './design.js';
 
 const MAX_TEXT = 500;
 const MAX_LONG_TEXT = 5000;
@@ -43,6 +44,28 @@ function party(value: unknown): Party {
     address: text(raw.address, 1000),
     phone: text(raw.phone, 50),
     website: optionalText(raw.website),
+    gstin: optionalText(raw.gstin, 15)?.toUpperCase(),
+  };
+}
+
+function payment(value: unknown): PaymentDetails | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const raw = asObject(value);
+  const details = {
+    bankName: text(raw.bankName, 120),
+    accountName: text(raw.accountName, 120),
+    accountNumber: text(raw.accountNumber, 34),
+    ifsc: text(raw.ifsc, 11).toUpperCase(),
+    upiId: text(raw.upiId, 120),
+  };
+  return Object.values(details).some(Boolean) ? details : undefined;
+}
+
+function design(raw: Raw) {
+  return {
+    template: readTemplate(raw.template),
+    accent: readAccent(raw.accent),
+    payment: payment(raw.payment),
   };
 }
 
@@ -102,6 +125,7 @@ export function readInvoiceInput(body: unknown) {
     billTo: party(raw.billTo),
     shipTo,
     ...pricing(raw),
+    ...design(raw),
     amountPaid: amount(raw.amountPaid),
     notes: optionalText(raw.notes, MAX_LONG_TEXT),
     terms: optionalText(raw.terms, MAX_LONG_TEXT),
@@ -119,6 +143,7 @@ export function readQuotationInput(body: unknown) {
     from: party(raw.from),
     quoteTo: party(raw.quoteTo),
     ...pricing(raw),
+    ...design(raw),
     notes: optionalText(raw.notes, MAX_LONG_TEXT),
     terms: optionalText(raw.terms, MAX_LONG_TEXT),
     paymentTerms: optionalText(raw.paymentTerms, MAX_LONG_TEXT),

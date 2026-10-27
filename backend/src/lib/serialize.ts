@@ -15,6 +15,9 @@ function pricingOf(doc: Lean<InvoiceDocument> | Lean<QuotationDocument>) {
     currency: doc.currency ?? 'USD',
     subtotal: doc.subtotal ?? 0,
     total: doc.total ?? 0,
+    template: doc.template ?? 'classic',
+    accent: doc.accent ?? 'blue',
+    payment: doc.payment ?? undefined,
   };
 }
 
