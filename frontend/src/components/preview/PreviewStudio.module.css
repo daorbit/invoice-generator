@@ -1,0 +1,28 @@
+.screen {
+  display: flex;
+  justify-content: center;
+  min-height: 100%;
+  padding: 40px 24px;
+  background: #e9ecf2;
+}
+
+.page {
+  flex-shrink: 0;
+  width: 794px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px -12px rgba(15, 23, 42, 0.35);
+}
+
+.screen[data-device='phone'] {
+  padding: 16px 12px;
+}
+
+.screen[data-device='phone'] .page {
+  zoom: 0.47;
+  border-radius: 6px;
+}
+
+.deviceIcon {
+  display: flex;
+  padding: 0 2px;
+}

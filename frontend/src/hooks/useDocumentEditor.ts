@@ -61,6 +61,10 @@ export function useDocumentEditor(
     setDraft((d) => (d ? { ...d, client: { ...d.client, [field]: value } } : d));
   }, []);
 
+  const fillClient = useCallback((client: Party) => {
+    setDraft((d) => (d ? { ...d, client: { ...client } } : d));
+  }, []);
+
   const updateItem = useCallback((itemId: string, patch: Partial<Omit<LineItem, 'id' | 'amount'>>) => {
     setDraft((d) =>
       d
@@ -120,6 +124,7 @@ export function useDocumentEditor(
     dirty,
     setField,
     setClient,
+    fillClient,
     updateItem,
     addItem,
     removeItem,

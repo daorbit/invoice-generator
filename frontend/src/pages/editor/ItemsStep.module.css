@@ -1,0 +1,66 @@
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px 116px 104px 30px;
+  align-items: center;
+  gap: 8px;
+  padding-block: 6px;
+}
+
+.row + .row {
+  border-top: 1px solid var(--border);
+}
+
+.head {
+  padding-block: 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.right {
+  text-align: right;
+}
+
+.amount {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.subtotal {
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+
+.subtotal b {
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+@container (max-width: 620px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr) 64px 96px 30px;
+  }
+
+  .amount,
+  .amountHead {
+    display: none;
+  }
+}

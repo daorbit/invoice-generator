@@ -51,8 +51,10 @@ export function PreviewSummary({ draft, totals }: Props) {
               <span>{money(draft.shipping)}</span>
             </>
           )}
-          <span className={classes.grand}>Total</span>
-          <span className={classes.grand}>{money(totals.total)}</span>
+          <div className={classes.grand}>
+            <span>Total</span>
+            <span>{money(totals.total)}</span>
+          </div>
           {isInvoice && draft.amountPaid > 0 && (
             <>
               <span>Paid</span>

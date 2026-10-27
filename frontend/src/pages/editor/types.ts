@@ -8,5 +8,5 @@ export interface SectionProps {
   setField: Editor['setField'];
 }
 
-export type ClientSetter = Editor['setClient'];
+export type ClientActions = Pick<Editor, 'setClient' | 'fillClient'>;
 export type ItemActions = Pick<Editor, 'updateItem' | 'addItem' | 'removeItem'>;

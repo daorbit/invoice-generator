@@ -1,12 +1,12 @@
-import { useRef } from 'react';
+import { Suspense, lazy, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ActionIcon, Box, Button, Skeleton, Tooltip } from '@mantine/core';
-import { ArrowLeft, Download, FileQuestion } from 'lucide-react';
+import { ArrowLeft, Eye, FileQuestion } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DocsButton } from '@/components/ui/DocsButton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { HostNotificationsBell } from '@/components/ui/HostNotificationsBell';
-import { DocumentPreview } from '@/components/preview/DocumentPreview';
+import { PdfSource } from '@/components/preview/PdfSource';
 import { useHostPhone } from '@/hooks/useHostPhone';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { useDocumentEditor } from '@/hooks/useDocumentEditor';
@@ -16,15 +16,16 @@ import { DOCS } from '@/lib/docs';
 import { DOCUMENT_PATH } from '@/lib/documentMapping';
 import { KIND_META } from '@/lib/documentMeta';
 import type { DocumentKind } from '@/types/document';
-import { FromSummary } from './editor/FromSummary';
-import { DesignSection } from './editor/DesignSection';
-import { DetailsSection } from './editor/DetailsSection';
-import { ClientSection } from './editor/ClientSection';
-import { ItemsSection } from './editor/ItemsSection';
-import { PricingSection } from './editor/PricingSection';
-import { NotesSection } from './editor/NotesSection';
+import { ClientStep } from './editor/ClientStep';
+import { ItemsStep } from './editor/ItemsStep';
+import { ScheduleStep } from './editor/ScheduleStep';
+import { PricingStep } from './editor/PricingStep';
+import { NotesStep } from './editor/NotesStep';
+import { EditorSummary } from './editor/EditorSummary';
 import { StatusMenu } from './editor/StatusMenu';
 import classes from './DocumentEditorPage.module.css';
+
+const PreviewStudio = lazy(() => import('@/components/preview/PreviewStudio'));
 
 export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
   const { id } = useParams<{ id: string }>();
@@ -32,8 +33,9 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
   const hostPhone = useHostPhone();
   const { profile, loading: profileLoading } = useBusinessProfile();
   const editor = useDocumentEditor(kind, id, profile, profileLoading);
-  const previewRef = useRef<HTMLDivElement>(null);
-  const pdf = usePdfDownload(previewRef);
+  const pdfRef = useRef<HTMLDivElement>(null);
+  const pdf = usePdfDownload(pdfRef);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const meta = KIND_META[kind];
   const backTo = kind === 'quotation' ? '/?view=quotations' : '/';
   const { draft } = editor;
@@ -42,6 +44,8 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
     const savedId = await editor.save();
     if (savedId && !id) navigate(`${DOCUMENT_PATH[kind]}/${savedId}`, { replace: true });
   };
+
+  const download = () => void pdf.download(draft?.number || meta.singular);
 
   const back = (
     <Tooltip label={`All ${meta.plural.toLowerCase()}`} withArrow>
@@ -65,31 +69,21 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
   }
 
   const title = id ? `${meta.singular} ${draft?.number ?? ''}` : `New ${meta.singular.toLowerCase()}`;
+  const description = id
+    ? draft?.client.name || meta.singular
+    : 'Five quick steps. Preview and pick a design whenever you like.';
 
   return (
     <Box className={classes.page}>
       <PageHeader
         leading={back}
         title={title}
-        description={draft?.client.name || `Fill in the details and the preview updates as you type.`}
+        description={description}
         actions={
           <>
-            {id && draft && (
-              <StatusMenu
-                kind={kind}
-                id={id}
-                status={draft.status}
-                onChange={editor.markStatus}
-              />
-            )}
-            <Button
-              variant="default"
-              leftSection={<Download size={16} />}
-              loading={pdf.downloading}
-              disabled={!draft}
-              onClick={() => void pdf.download(draft?.number || meta.singular)}
-            >
-              PDF
+            {id && draft && <StatusMenu kind={kind} id={id} status={draft.status} onChange={editor.markStatus} />}
+            <Button variant="default" leftSection={<Eye size={16} />} disabled={!draft} onClick={() => setPreviewOpen(true)}>
+              Preview
             </Button>
             <Button loading={editor.saving} disabled={!draft || (Boolean(id) && !editor.dirty)} onClick={() => void save()}>
               {id ? 'Save changes' : `Create ${meta.singular.toLowerCase()}`}
@@ -102,30 +96,48 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
 
       {editor.loading || !draft ? (
         <div className={classes.loading}>
-          <Skeleton height={120} radius="md" />
+          <Skeleton height={140} radius="md" />
           <Skeleton height={220} radius="md" />
         </div>
       ) : (
-        <div className={classes.layout}>
-          <div className={classes.form}>
-            <FromSummary from={draft.from} />
-            <DesignSection draft={draft} setField={editor.setField} />
-            <DetailsSection draft={draft} setField={editor.setField} />
-            <ClientSection draft={draft} setClient={editor.setClient} />
-            <ItemsSection
+        <>
+          <div className={classes.layout}>
+            <div className={classes.steps}>
+              <ClientStep draft={draft} setClient={editor.setClient} fillClient={editor.fillClient} />
+              <ItemsStep
+                draft={draft}
+                updateItem={editor.updateItem}
+                addItem={editor.addItem}
+                removeItem={editor.removeItem}
+              />
+              <ScheduleStep draft={draft} setField={editor.setField} />
+              <PricingStep draft={draft} setField={editor.setField} />
+              <NotesStep draft={draft} setField={editor.setField} />
+            </div>
+            <EditorSummary
               draft={draft}
-              updateItem={editor.updateItem}
-              addItem={editor.addItem}
-              removeItem={editor.removeItem}
+              downloading={pdf.downloading}
+              onPreview={() => setPreviewOpen(true)}
+              onDownload={download}
             />
-            <PricingSection draft={draft} setField={editor.setField} />
-            <NotesSection draft={draft} setField={editor.setField} />
           </div>
-          <aside className={classes.preview}>
-            <span className={classes.previewLabel}>Preview</span>
-            <DocumentPreview ref={previewRef} draft={draft} />
-          </aside>
-        </div>
+
+          <PdfSource ref={pdfRef} draft={draft} />
+
+          {previewOpen && (
+            <Suspense fallback={null}>
+              <PreviewStudio
+                opened
+                draft={draft}
+                downloading={pdf.downloading}
+                onClose={() => setPreviewOpen(false)}
+                onTemplate={(value) => editor.setField('template', value)}
+                onAccent={(value) => editor.setField('accent', value)}
+                onDownload={download}
+              />
+            </Suspense>
+          )}
+        </>
       )}
     </Box>
   );

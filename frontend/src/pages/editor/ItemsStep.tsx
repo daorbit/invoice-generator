@@ -1,10 +1,11 @@
 import { ActionIcon, Button, NumberInput, TextInput } from '@mantine/core';
 import { Plus, X } from 'lucide-react';
 import { formatMoney } from '@/lib/format';
+import { computeTotals } from '@/lib/totals';
 import type { DocumentDraft } from '@/types/document';
-import { EditorSection } from './EditorSection';
+import { EditorStep } from './EditorStep';
 import type { ItemActions } from './types';
-import classes from './ItemsSection.module.css';
+import classes from './ItemsStep.module.css';
 
 const MAX_ITEMS = 200;
 
@@ -12,14 +13,20 @@ function toNumber(value: number | string): number {
   return typeof value === 'number' ? value : 0;
 }
 
-export function ItemsSection({ draft, updateItem, addItem, removeItem }: { draft: DocumentDraft } & ItemActions) {
+export function ItemsStep({ draft, updateItem, addItem, removeItem }: { draft: DocumentDraft } & ItemActions) {
   const single = draft.items.length === 1;
+  const subtotal = computeTotals(draft).subtotal;
 
   return (
-    <EditorSection title="Items">
+    <EditorStep
+      index={2}
+      title="What are you billing for?"
+      hint="One line per product or service. Amounts work out as you type."
+      done={subtotal > 0}
+    >
       <div className={classes.table}>
         <div className={`${classes.row} ${classes.head}`}>
-          <span>Description</span>
+          <span>Item</span>
           <span className={classes.right}>Qty</span>
           <span className={classes.right}>Rate</span>
           <span className={`${classes.right} ${classes.amountHead}`}>Amount</span>
@@ -28,8 +35,8 @@ export function ItemsSection({ draft, updateItem, addItem, removeItem }: { draft
         {draft.items.map((item) => (
           <div key={item.id} className={classes.row}>
             <TextInput
-              aria-label="Description"
-              placeholder="What you are billing for"
+              aria-label="Item"
+              placeholder="Website design, 5 pages"
               value={item.description}
               onChange={(e) => updateItem(item.id, { description: e.currentTarget.value })}
             />
@@ -62,16 +69,20 @@ export function ItemsSection({ draft, updateItem, addItem, removeItem }: { draft
           </div>
         ))}
       </div>
-      <Button
-        variant="subtle"
-        size="compact-sm"
-        leftSection={<Plus size={14} />}
-        className={classes.add}
-        disabled={draft.items.length >= MAX_ITEMS}
-        onClick={addItem}
-      >
-        Add item
-      </Button>
-    </EditorSection>
+      <div className={classes.footer}>
+        <Button
+          variant="subtle"
+          size="compact-sm"
+          leftSection={<Plus size={14} />}
+          disabled={draft.items.length >= MAX_ITEMS}
+          onClick={addItem}
+        >
+          Add item
+        </Button>
+        <span className={classes.subtotal}>
+          Subtotal<b>{formatMoney(subtotal, draft.currency)}</b>
+        </span>
+      </div>
+    </EditorStep>
   );
 }
