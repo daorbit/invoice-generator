@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Invoice, InvoiceItem } from '../types/invoice';
 import { generateInvoiceNumber } from '../utils/invoiceUtils';
+import type { BusinessDefaults } from '../types/businessProfile';
 
 // Load initial state from localStorage
 const loadInvoiceFromStorage = (): Invoice | null => {
@@ -169,6 +170,14 @@ const invoiceSlice = createSlice({
     setLogo: (state, action: PayloadAction<string>) => {
       state.logo = action.payload;
     },
+    applyBusinessDefaults: (state, action: PayloadAction<BusinessDefaults>) => {
+      if (state.from.name) return;
+      const { from, currency, notes, terms } = action.payload;
+      state.from = { ...from };
+      state.currency = currency;
+      if (!state.notes && notes) state.notes = notes;
+      if (!state.terms && terms) state.terms = terms;
+    },
   },
 });
 
@@ -182,6 +191,7 @@ export const {
   deleteItem,
   resetInvoice,
   setLogo,
+  applyBusinessDefaults,
 } = invoiceSlice.actions;
 
 export default invoiceSlice.reducer;

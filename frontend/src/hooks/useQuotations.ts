@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { quotationApi, QuotationResponse, QuotationListParams } from '../api/quotations';
 import { setQuotation } from '../store/quotationSlice';
-import { useAuth } from '../context/AuthContext';
+
+type QuotationStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
 
 interface UseQuotationsReturn {
   quotations: QuotationResponse[];
@@ -13,26 +14,22 @@ interface UseQuotationsReturn {
   saveQuotation: (id?: string) => Promise<QuotationResponse>;
   loadQuotation: (id: string) => Promise<void>;
   deleteQuotation: (id: string) => Promise<void>;
-  updateStatus: (id: string, status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired') => Promise<void>;
+  updateStatus: (id: string, status: QuotationStatus) => Promise<void>;
   convertToInvoice: (id: string) => Promise<{ invoiceId: string; invoiceNumber: string }>;
-  emailQuotation: (id: string, recipientEmail: string) => Promise<void>;
   duplicateQuotation: (id: string) => Promise<void>;
   clearError: () => void;
 }
 
 interface UseQuotationsOptions {
-  autoLoad?: boolean; // If true, automatically loads quotations on mount
+  autoLoad?: boolean;
 }
 
-/**
- * Custom hook for managing quotations
- * Handles both guest mode (localStorage) and authenticated mode (server sync)
- * @param options.autoLoad - If true, automatically loads quotations when authenticated (default: false)
- */
+function messageOf(err: unknown, fallback: string): string {
+  return err instanceof Error && err.message ? err.message : fallback;
+}
+
 export const useQuotations = (options: UseQuotationsOptions = {}): UseQuotationsReturn => {
   const { autoLoad = false } = options;
-  const { isAuthenticated, user } = useAuth();
-  const isGuest = user?.isAnonymous || false;
   const dispatch = useAppDispatch();
   const currentQuotation = useAppSelector((state) => state.quotation);
 
@@ -41,233 +38,116 @@ export const useQuotations = (options: UseQuotationsOptions = {}): UseQuotations
   const [error, setError] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
 
-  /**
-   * Clear error message
-   */
-  const clearError = useCallback(() => {
+  const clearError = useCallback(() => setError(null), []);
+
+  const loadQuotations = useCallback(async (params?: QuotationListParams) => {
+    setLoading(true);
     setError(null);
+    try {
+      const data = await quotationApi.getAll(params);
+      setQuotations(data.quotations);
+    } catch (err) {
+      setError(messageOf(err, 'Failed to load quotations'));
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  /**
-   * Load all quotations from server
-   * Only works for authenticated (non-guest) users
-   */
-  const loadQuotations = useCallback(
-    async (params?: QuotationListParams) => {
-      if (isGuest) {
-        // Guest mode - no server data to load
-        setQuotations([]);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await quotationApi.getAll(params);
-        setQuotations(data.quotations);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load quotations');
-        console.error('Load quotations error:', err);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [isGuest]
-  );
-
-  /**
-   * Save current quotation to server
-   * Guest mode: Does nothing (already handled by Redux + localStorage)
-   * Authenticated: Saves to server
-   */
   const saveQuotation = useCallback(
     async (id?: string): Promise<QuotationResponse> => {
-      if (isGuest) {
-        // Guest mode - only save to localStorage (already handled by Redux)
-        // Return a mock response for consistency
-        return {
-          id: 'guest-' + Date.now(),
-          quotation: currentQuotation,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-      }
-
       setSyncing(true);
       setError(null);
       try {
-        let response: QuotationResponse;
-        if (id) {
-          // Update existing
-          response = await quotationApi.update(id, currentQuotation);
-        } else {
-          // Create new
-          response = await quotationApi.create(currentQuotation);
-        }
-        
-        // Refresh list
-        await loadQuotations();
-        return response;
-      } catch (err: any) {
-        setError(err.message || 'Failed to save quotation');
-        console.error('Save quotation error:', err);
+        return id
+          ? await quotationApi.update(id, currentQuotation)
+          : await quotationApi.create(currentQuotation);
+      } catch (err) {
+        setError(messageOf(err, 'Failed to save quotation'));
         throw err;
       } finally {
         setSyncing(false);
       }
     },
-    [isGuest, currentQuotation, loadQuotations]
+    [currentQuotation]
   );
 
-  /**
-   * Load quotation by ID from server and set it in Redux
-   */
   const loadQuotation = useCallback(
     async (id: string) => {
-      if (isGuest) {
-        setError('Cannot load quotation in guest mode');
-        return;
-      }
-
       setLoading(true);
       setError(null);
       try {
         const data = await quotationApi.getById(id);
         dispatch(setQuotation(data.quotation));
-      } catch (err: any) {
-        setError(err.message || 'Failed to load quotation');
-        console.error('Load quotation error:', err);
+      } catch (err) {
+        setError(messageOf(err, 'Failed to load quotation'));
       } finally {
         setLoading(false);
       }
     },
-    [isGuest, dispatch]
+    [dispatch]
   );
 
-  /**
-   * Delete quotation by ID
-   */
   const deleteQuotation = useCallback(
     async (id: string) => {
-      if (isGuest) {
-        setError('Cannot delete quotation in guest mode');
-        return;
-      }
-
       setError(null);
       try {
         await quotationApi.delete(id);
-        await loadQuotations(); // Refresh list
-      } catch (err: any) {
-        setError(err.message || 'Failed to delete quotation');
-        console.error('Delete quotation error:', err);
+        await loadQuotations();
+      } catch (err) {
+        setError(messageOf(err, 'Failed to delete quotation'));
         throw err;
       }
     },
-    [isGuest, loadQuotations]
+    [loadQuotations]
   );
 
-  /**
-   * Update quotation status
-   */
   const updateStatus = useCallback(
-    async (id: string, status: 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired') => {
-      if (isGuest) {
-        setError('Cannot update status in guest mode');
-        return;
-      }
-
+    async (id: string, status: QuotationStatus) => {
       setError(null);
       try {
         await quotationApi.updateStatus(id, status);
-        await loadQuotations(); // Refresh list
-      } catch (err: any) {
-        setError(err.message || 'Failed to update status');
-        console.error('Update status error:', err);
+        await loadQuotations();
+      } catch (err) {
+        setError(messageOf(err, 'Failed to update status'));
         throw err;
       }
     },
-    [isGuest, loadQuotations]
+    [loadQuotations]
   );
 
-  /**
-   * Convert quotation to invoice
-   */
   const convertToInvoice = useCallback(
-    async (id: string): Promise<{ invoiceId: string; invoiceNumber: string }> => {
-      if (isGuest) {
-        setError('Cannot convert quotation in guest mode');
-        throw new Error('Cannot convert quotation in guest mode');
-      }
-
+    async (id: string) => {
       setError(null);
       try {
         const response = await quotationApi.convertToInvoice(id);
-        await loadQuotations(); // Refresh list
+        await loadQuotations();
         return response;
-      } catch (err: any) {
-        setError(err.message || 'Failed to convert quotation');
-        console.error('Convert quotation error:', err);
+      } catch (err) {
+        setError(messageOf(err, 'Failed to convert quotation'));
         throw err;
       }
     },
-    [isGuest, loadQuotations]
+    [loadQuotations]
   );
 
-  /**
-   * Email quotation to recipient
-   */
-  const emailQuotation = useCallback(
-    async (id: string, recipientEmail: string) => {
-      if (isGuest) {
-        setError('Cannot email quotation in guest mode');
-        return;
-      }
-
-      setError(null);
-      try {
-        await quotationApi.emailQuotation(id, { recipientEmail });
-      } catch (err: any) {
-        setError(err.message || 'Failed to email quotation');
-        console.error('Email quotation error:', err);
-        throw err;
-      }
-    },
-    [isGuest]
-  );
-
-  /**
-   * Duplicate an existing quotation
-   */
   const duplicateQuotation = useCallback(
     async (id: string) => {
-      if (isGuest) {
-        setError('Cannot duplicate quotation in guest mode');
-        return;
-      }
-
       setError(null);
       try {
-        const newQuotation = await quotationApi.duplicate(id);
-        dispatch(setQuotation(newQuotation.quotation));
-        await loadQuotations(); // Refresh list
-      } catch (err: any) {
-        setError(err.message || 'Failed to duplicate quotation');
-        console.error('Duplicate quotation error:', err);
+        const copy = await quotationApi.duplicate(id);
+        dispatch(setQuotation(copy.quotation));
+        await loadQuotations();
+      } catch (err) {
+        setError(messageOf(err, 'Failed to duplicate quotation'));
         throw err;
       }
     },
-    [isGuest, dispatch, loadQuotations]
+    [dispatch, loadQuotations]
   );
 
-  /**
-   * Auto-load quotations when user becomes authenticated (only if autoLoad is enabled)
-   */
   useEffect(() => {
-    if (autoLoad && isAuthenticated && !isGuest) {
-      loadQuotations();
-    }
-  }, [autoLoad, isAuthenticated, isGuest, loadQuotations]);
+    if (autoLoad) loadQuotations();
+  }, [autoLoad, loadQuotations]);
 
   return {
     quotations,
@@ -280,7 +160,6 @@ export const useQuotations = (options: UseQuotationsOptions = {}): UseQuotations
     deleteQuotation,
     updateStatus,
     convertToInvoice,
-    emailQuotation,
     duplicateQuotation,
     clearError,
   };

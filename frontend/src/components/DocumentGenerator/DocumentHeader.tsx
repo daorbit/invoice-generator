@@ -12,14 +12,11 @@ import {
   Print as PrintIcon,
   RestartAlt as ResetIcon,
 } from '@mui/icons-material';
-import { UserMenu } from '../UserMenu';
 import { DocumentMode, statusColors } from './types';
 
 interface DocumentHeaderProps {
   mode: DocumentMode;
   document: any;
-  isAuthenticated: boolean;
-  isAnonymous: boolean;
   isSaving: boolean;
   isDownloading: boolean;
   onBack: () => void;
@@ -34,8 +31,6 @@ interface DocumentHeaderProps {
 export const DocumentHeader: React.FC<DocumentHeaderProps> = ({
   mode,
   document,
-  isAuthenticated,
-  isAnonymous,
   isSaving,
   isDownloading,
   onBack,
@@ -103,9 +98,7 @@ export const DocumentHeader: React.FC<DocumentHeaderProps> = ({
       
       {/* Right Side - Action Buttons */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-        {/* Save to Server Button - Only for authenticated users */}
-        {isAuthenticated && !isAnonymous && (
-          <Button
+        <Button
             size="medium"
             variant="contained"
             onClick={onSave}
@@ -128,7 +121,6 @@ export const DocumentHeader: React.FC<DocumentHeaderProps> = ({
           >
             {isSaving ? 'Saving...' : 'Save'}
           </Button>
-        )}
         
         <Tooltip title="Reset Form">
           <IconButton 
@@ -211,8 +203,6 @@ export const DocumentHeader: React.FC<DocumentHeaderProps> = ({
             <PrintIcon />
           </IconButton>
         </Tooltip>
-        
-        <UserMenu />
       </Box>
     </Box>
   );

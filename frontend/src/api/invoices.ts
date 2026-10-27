@@ -26,12 +26,6 @@ export interface InvoiceListResponse {
   totalPages: number;
 }
 
-export interface EmailInvoiceRequest {
-  recipientEmail: string;
-  subject?: string;
-  message?: string;
-}
-
 /**
  * Invoice API service
  */
@@ -102,31 +96,6 @@ export const invoiceApi = {
     try {
       const response = await apiClient.patch(`/invoices/${id}/status`, { status });
       return response.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
-  },
-
-  /**
-   * Generate PDF for invoice
-   */
-  generatePdf: async (id: string): Promise<Blob> => {
-    try {
-      const response = await apiClient.get(`/invoices/${id}/pdf`, {
-        responseType: 'blob',
-      });
-      return response.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
-  },
-
-  /**
-   * Email invoice to client
-   */
-  emailInvoice: async (id: string, data: EmailInvoiceRequest): Promise<void> => {
-    try {
-      await apiClient.post(`/invoices/${id}/email`, data);
     } catch (error) {
       throw new Error(handleApiError(error));
     }

@@ -30,8 +30,6 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useDashboard } from '../hooks/useDashboard';
-import { useAuth } from '../context/AuthContext';
-import { UserMenu } from '../components/UserMenu';
 import {
   BarChart,
   Bar,
@@ -48,9 +46,7 @@ import {
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const isGuest = user?.isAnonymous || false;
-  
+
   // Use dashboard-specific hook for stats and recent documents
   const { stats, recentDocuments, loading, error } = useDashboard();
 
@@ -104,90 +100,6 @@ export const DashboardPage: React.FC = () => {
   // Separate recent documents by type
   const invoices = recentDocuments.filter(doc => doc.type === 'invoice');
   const quotations = recentDocuments.filter(doc => doc.type === 'quotation');
-
-  // Show guest mode message
-  if (isGuest) {
-    return (
-      <Box sx={{ maxWidth: 1400, mx: 'auto', px: { xs: 3, sm: 4, md: 6 }, py: 4 }}>
-        <Alert 
-          severity="info" 
-          sx={{ 
-            mb: 3,
-            borderRadius: 1,
-            border: '1px solid #cfe2ff',
-            bgcolor: '#e7f1ff',
-            color: '#084298',
-            '& .MuiAlert-icon': { color: '#084298' }
-          }}
-        >
-          <Typography variant="h6" gutterBottom>
-            Guest Mode
-          </Typography>
-          <Typography variant="body2">
-            You are currently using the app in guest mode. Your documents are saved locally in your browser.
-            To access documents across devices and enable cloud features, please log in with a registered account.
-          </Typography>
-          <Button 
-            variant="contained" 
-            sx={{ 
-              mt: 2,
-              bgcolor: '#0d6efd',
-              textTransform: 'none',
-              fontWeight: 600,
-              boxShadow: 'none',
-              '&:hover': { bgcolor: '#0b5ed7', boxShadow: 'none' }
-            }}
-            onClick={() => navigate('/login')}
-          >
-            Log In
-          </Button>
-        </Alert>
-
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, color: '#1a1a1a' }}>
-            Create New Document
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<InvoiceIcon />}
-              onClick={() => navigate('/invoice')}
-              sx={{ 
-                flex: 1,
-                bgcolor: '#0d6efd',
-                textTransform: 'none',
-                fontWeight: 600,
-                boxShadow: 'none',
-                '&:hover': { bgcolor: '#0b5ed7', boxShadow: 'none' }
-              }}
-            >
-              New Invoice
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              startIcon={<QuotationIcon />}
-              onClick={() => navigate('/quotation')}
-              sx={{ 
-                flex: 1,
-                borderColor: '#dee2e6',
-                color: '#495057',
-                textTransform: 'none',
-                fontWeight: 600,
-                '&:hover': { 
-                  borderColor: '#adb5bd',
-                  bgcolor: '#f8f9fa'
-                }
-              }}
-            >
-              New Quotation
-            </Button>
-          </Box>
-        </Box>
-      </Box>
-    );
-  }
 
   // Prepare chart data
   const revenueData = [
@@ -245,7 +157,7 @@ export const DashboardPage: React.FC = () => {
                   Dashboard
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#6c757d', fontWeight: 400 }}>
-                  Welcome back, {user?.username || 'User'}
+                  Invoices and quotations for this workspace
                 </Typography>
               </Box>
             </Box>
@@ -291,9 +203,6 @@ export const DashboardPage: React.FC = () => {
               >
                 New Invoice
               </Button>
-              
-              {/* User Profile Menu */}
-              <UserMenu />
             </Box>
           </Box>
         </Box>

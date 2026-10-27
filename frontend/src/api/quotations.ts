@@ -25,12 +25,6 @@ export interface QuotationListResponse {
   totalPages: number;
 }
 
-export interface EmailQuotationRequest {
-  recipientEmail: string;
-  subject?: string;
-  message?: string;
-}
-
 export interface ConvertToInvoiceResponse {
   invoiceId: string;
   invoiceNumber: string;
@@ -121,31 +115,6 @@ export const quotationApi = {
     try {
       const response = await apiClient.post(`/quotations/${id}/convert`);
       return response.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
-  },
-
-  /**
-   * Generate PDF for quotation
-   */
-  generatePdf: async (id: string): Promise<Blob> => {
-    try {
-      const response = await apiClient.get(`/quotations/${id}/pdf`, {
-        responseType: 'blob',
-      });
-      return response.data;
-    } catch (error) {
-      throw new Error(handleApiError(error));
-    }
-  },
-
-  /**
-   * Email quotation to client
-   */
-  emailQuotation: async (id: string, data: EmailQuotationRequest): Promise<void> => {
-    try {
-      await apiClient.post(`/quotations/${id}/email`, data);
     } catch (error) {
       throw new Error(handleApiError(error));
     }

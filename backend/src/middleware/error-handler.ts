@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler } from 'express';
 import type { ApiError } from '../types/index.js';
+import { HttpError } from '../lib/http-error.js';
 
 interface KnownError {
   name?: string;
@@ -30,6 +31,11 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   if (res.headersSent) {
     console.error(`[error] after response on ${req.method} ${req.originalUrl}:`, err);
     req.socket.destroy();
+    return;
+  }
+
+  if (err instanceof HttpError) {
+    res.status(err.status).json({ error: err.code, message: err.message });
     return;
   }
 

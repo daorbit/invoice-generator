@@ -11,12 +11,17 @@ import { Provider } from 'react-redux';
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { theme } from '@/app/theme';
+import { HOST_COLOR_SCHEME } from '@/lib/bootParams';
 import { store } from './store/store';
 import App from './App';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <MantineProvider theme={theme} defaultColorScheme="auto">
+    <MantineProvider
+      theme={theme}
+      defaultColorScheme={HOST_COLOR_SCHEME}
+      forceColorScheme={HOST_COLOR_SCHEME === 'auto' ? undefined : HOST_COLOR_SCHEME}
+    >
       <Notifications position="top-center" limit={3} />
       <Provider store={store}>
         <App />

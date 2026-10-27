@@ -1,60 +1,57 @@
 # invoice-generator — invoices service
 
-Invoices and quotations for Quantalog workspaces. A microservice in the same mould as `../da-forms`: a React + Mantine frontend in `frontend`, an Express + TypeScript + Mongoose backend in `backend`, one git repo, one Vercel project. Quantalog is live with real users, so this service has to be safe and fast from its first deploy.
+Quotations and invoices for Quantalog workspaces, shipped as the Quantalog app **Invoicing** (`apps.invoicing`). A microservice in the same mould as `../da-forms`: a React + Mantine frontend in `frontend`, an Express + TypeScript + Mongoose backend in `backend`, one git repo, one Vercel project. Quantalog is live with real users, so this service has to be safe and fast.
 
 `npm run install:all` installs all three packages. `npm run dev` at this root starts the backend on port 8082 and the frontend on port 3002, which proxies `/api` to 8082. These ports sit next to da-forms (8081 and 3001) and Quantalog (4000, 5173, 5777), so all three products can run at once. Backend tests use `node:test` (`npm test` in `backend`, files `src/**/*.test.ts`). `vercel.json` sends `/api/*` to `backend/api/index.ts` and everything else to the frontend build.
 
-## Current state
+Positioning: a connected Quantalog app (leads → quote → invoice → paid), GST-ready for Indian businesses. It is not an accounting tool; no expenses, ledgers or inventory.
 
-The repo was a standalone frontend-only app. It is now a monorepo and the whole app is being redesigned.
+## How it fits into Quantalog
 
-- `frontend` is still the old app. It uses MUI with its own theme, its own login, register and Google sign-in (a JWT kept in `localStorage`), axios (`src/api/client.ts`), Redux slices (`src/store`) and `html2pdf.js`. `main.tsx` already wraps it in `MantineProvider` with the shared Quantalog theme, so redesigned screens are built in Mantine while the old MUI screens keep working until they are replaced.
-- The old screens call an older external API: `/auth/*`, `/invoices/*`, `/quotations/*` (CRUD plus `status`, `pdf`, `email`, `duplicate` and `convert`) and `/dashboard/stats|recent`. That API is not in this repo. The new `backend` replaces it, scoped to Quantalog workspaces instead of its own user accounts.
-- `DocumentGeneratorPage.old.tsx` is dead code, kept only as a reference while the screens are redone.
-- `backend` so far has the app factory, the Mongo connection, the error, not-found and async handlers, the bearer-secret guard, workspace-token verification and `GET /api/health`. No domain models or routes exist yet.
+There are no accounts here. Quantalog owns the session; this service trusts a workspace token.
 
-## Structure
+- **Turning it on.** A workspace admin enables Invoicing in Quantalog → Apps. The app panel then shows the business details form (`real-ana-fe/src/features/invoices/components/InvoicingSettings.tsx`, registered in `APP_SETTINGS`), which saves to this service's `PUT /settings`. The sidebar item **Invoices** (`/app/invoices`) appears once the app is on. The tile stays hidden while `VITE_INVOICES_URL` is unset, and the app is always off in demo.
+- **Token.** Quantalog mints a one-hour token at `POST /api/workspaces/:wid/invoices-token` (`real-ana-be/src/http/routes/invoices-token.ts`, editor and above, refuses while the app is off). It has the forms-token format (`workspaceId.expiresAt.actorId.signature`, HMAC-SHA256, base64url) signed with `INVOICE_SERVICE_SECRET`. `backend/src/lib/workspace-token.ts` verifies it.
+- **Embedding.** `real-ana-fe/src/features/invoices/pages/Invoices.tsx` loads `${VITE_INVOICES_URL}/<workspaceId>?embedded=1&mode=…&wt=<token>` in an iframe. The frontend reads the workspace id from the first path segment and the token from `wt` (`frontend/src/lib/bootParams.ts`), then uses the path as the router `basename`. When the token expires, `lib/workspaceToken.ts` asks the host for a new one with `quantalog:workspace-token-request`; the host answers through `useHostFrameToken`.
+- **Purge.** Deleting a workspace in Quantalog calls `DELETE /api/internal/workspaces/:workspaceId` here (`purgeInvoiceWorkspace` in `real-ana-be/src/infra/http-client/invoice-service.ts`), with `Bearer INVOICE_SERVICE_SECRET`.
+- **Env.** Quantalog backend: `INVOICES_API_BASE` (this service's origin) and `INVOICE_SERVICE_SECRET`. Quantalog dashboard: `VITE_INVOICES_URL` (this service's origin). Here: `INVOICE_SERVICE_SECRET` (same value), `MONGODB_URI`, `QUANTALOG_API_URL`, `CRON_SECRET`.
 
-### Backend (`backend/src`)
+A change to a token claim, an internal route or a response shape updates both repos in the same change.
 
-Same layout as `da-forms/backend`. Reuse its patterns and copy its helpers rather than inventing new ones.
+## Backend (`backend/src`)
 
-- `server.ts` exports the app and listens only outside Vercel. `api/index.ts` is the Vercel entry.
-- `app.ts`: middleware order. It sets `trust proxy` and `cors()`, a 2mb JSON body limit, and connects to the database per request through `connectDb` (`config/db.ts` caches the connection promise), then mounts `/api`, `notFound` and `errorHandler`.
-- `config/env.ts` is the only place that reads `process.env`.
-- `routes/*.route.ts` are thin routers mounted in `routes/index.ts`. Controllers in `controllers/` parse input and respond. Logic lives in `services/*`, Mongoose models in `models/*`, and pure helpers in `lib/*`. Wrap async handlers with `asyncHandler`.
-- `middleware/require-workspace-token.ts` guards every `/api/workspaces/:workspaceId/*` route. `middleware/require-bearer-secret.ts` guards `/api/internal/*` (with `INVOICE_SERVICE_SECRET`) and `/api/cron/*` (with `CRON_SECRET`). Both fail closed when their secret is unset.
-- Errors return `{ error, message }` (`ApiError` in `types/index.ts`) with an accurate status code.
+Same layout as `da-forms/backend`.
 
-### Frontend (`frontend/src`)
+- `app.ts`: `trust proxy`, `cors()`, a 4mb JSON limit for invoice and quotation bodies (they can carry a logo data URL), 2mb elsewhere, a per-request `connectDb`, then `/api`, `notFound`, `errorHandler`.
+- `routes/index.ts`: `/health`, `/internal` (bearer secret), and `/workspaces/:workspaceId` (`workspace.route.ts`, guarded by `requireWorkspaceToken`) with `/invoices`, `/quotations`, `/dashboard` and `/settings`.
+- Invoices and quotations: list (paginated, `status`, `search`, `sortBy`, `sortOrder`), read, create, update, delete, `PATCH /:id/status`, `POST /:id/duplicate`. Quotations also have `POST /:id/convert`, which creates one invoice and links it through `convertedInvoiceId`. Dashboard: `GET /dashboard/stats` and `GET /dashboard/recent?limit=` (max 25).
+- Settings: `GET /settings` returns `{ profile, complete }`, and `PUT /settings` validates and saves the business profile (`lib/business-profile-input.ts`: name, email and address are required; the GSTIN format is checked; prefixes are capital letters, digits and dashes).
+- Models: `Invoice`, `Quotation` (shared parts in `models/document-parts.ts`), `Counter` (per workspace and kind) and `BusinessProfile`. Every query includes `workspaceId`, and unique indexes cover `{workspaceId, invoiceNumber}` and `{workspaceId, quotationNumber}`.
+- Input never reaches a model unread: `lib/document-input.ts` whitelists fields, caps lengths, item count (200) and the logo size, and recomputes each line amount. `lib/totals.ts` computes subtotal, tax, discount and total on the server, using the editor's rules.
+- Numbers: a blank number on create, every duplicate and every conversion take the next value from `services/numbering.service.ts` (`<prefix>-0001`, the prefix from the business profile).
+- Response shapes match what the old screens expect (`lib/serialize.ts`): `{ id, invoice, status, createdAt, updatedAt }`, `{ id, quotation, … }`, and lists as `{ invoices|quotations, total, page, limit, totalPages }`. Dashboard routes wrap results in `{ success, data }`.
+- Errors throw `HttpError` (`lib/http-error.ts`). Ids that are not ObjectIds, and documents from another workspace, answer 404.
 
-- `main.tsx`: Mantine (`app/theme.ts`, `Notifications` at top-center) around the Redux provider and `App`.
-- `app/theme.ts` is a copy of `da-forms/frontend/src/app/theme.ts`, which matches `real-ana-fe/src/app/theme.ts`. `styles/tokens.css`, `mantine-overrides.css`, `dropdown.css` and `fonts.css` (Google Sans Flex in `assets/fonts`) are copies of the da-forms files. Keep all three repos in step: a token or theme change goes to `real-ana-fe`, `da-forms` and here together.
-- `lib/notify.ts` is the toast helper (the same as da-forms), styled by `components/ui/Toast.module.css`.
-- The `@/` alias points to `src`.
-- Target layout for redesigned code: `pages/*` for routes, `components/<area>/*` for UI, `hooks/*`, `lib/*` for pure helpers, and `api/*` for requests.
+## Frontend (`frontend/src`)
 
-## Quantalog integration (planned, touches both repos)
-
-This service follows da-forms' contract with Quantalog. None of it is wired yet. Each step changes `real-ana-be`, `real-ana-fe` and this repo together.
-
-1. **Workspace token.** Quantalog mints a one-hour token for editors and above, the same format as the forms token (`workspaceId.expiresAt.actorId.signature`, HMAC-SHA256, base64url), signed with `INVOICE_SERVICE_SECRET`. It needs a new route next to `real-ana-be/src/http/routes/forms-token.ts`. `lib/workspace-token.ts` here already verifies that format. The token rides in `Authorization: Bearer`, or in `?wt=` on the first iframe load.
-2. **Embedding.** The dashboard embeds the frontend in an iframe with `?embedded=1` and passes its theme. Port da-forms' `lib/bootParams.ts`, `app/themeParams.ts`, `app/hostTokens.ts` and `hooks/useEmbedded.ts`. Every embedded page header shows the Quantalog notification bell next to the Docs button.
-3. **Replace standalone auth.** Once embedded, the login, register and Google screens, the `authToken` in `localStorage` and the 401 redirect in `api/client.ts` go away. Every request carries the workspace token, and every route is under `/api/workspaces/:workspaceId/*`.
-4. **Service to service.** Calls to Quantalog (plan limits, branding, the bell, audit) go through one `lib/quantalog.ts` client to `/api/internal/invoices/*` with `Bearer INVOICE_SERVICE_SECRET`, like da-forms' `lib/quantalog.ts`. Plan limits refuse with Quantalog's `planLimit` shape (402, `quota_exceeded` or `plan_required`).
-5. **Workspace purge.** `DELETE /api/internal/workspaces/:workspaceId` deletes every invoice, quotation and client of a workspace when Quantalog deletes the workspace.
-6. **Apps tile and docs.** Register the app on Quantalog's Apps page (follow the checklist in `../real-time-analytics/CLAUDE.md` → Apps), and add a docs page in `quantalog-lp/src/content/docs`.
-
-Scheduled work, such as overdue reminders or recurring invoices, runs inside an existing Cloudflare Worker tick (the account is at its trigger limit) by calling `/api/cron/*` here with `Bearer CRON_SECRET`. Never use a timer or in-process cron.
+- `main.tsx`: Mantine (`app/theme.ts`, color scheme forced from the host's `mode`) around the Redux provider and `App`.
+- `App.tsx`: without a workspace id in the path it shows `OpenFromQuantalog`. Otherwise it routes `/` (dashboard), `/invoice` and `/quotation` under `basename=/<workspaceId>`.
+- `api/client.ts`: axios against `/api/workspaces/<workspaceId>`, with the workspace token on every request and one retry after a token refresh.
+- `hooks/useBusinessDefaults.ts` fills a fresh draft's "From" details, currency, notes and terms from the business profile.
+- The screens are still the old MUI ones (`pages/*`, `components/DocumentGenerator/*`, `app/legacyTheme.ts`) and are being redesigned in Mantine. `app/theme.ts` and `styles/*` are copies of da-forms', which match `real-ana-fe`; keep all three in step. Toasts go through `lib/notify.ts`. `@/` points to `src`.
+- PDFs are made in the browser with `html2pdf.js`, which is imported dynamically on download.
 
 ## Roadmap
 
-1. Backend models and routes, scoped by `workspaceId`: `Invoice`, `Quotation` and `Client`, with per-workspace numbering through an atomic counter (`findOneAndUpdate` with `$inc`), status, quotation → invoice convert and duplicate.
-2. The Quantalog token, embedding and auth replacement above.
-3. Redesign every screen in Mantine: the list and dashboard, the document editor with a live preview, and the client book. Remove a screen's MUI code in the same change. When the last MUI screen is gone, drop `@mui/*`, `@emotion/*` and the MUI `ThemeProvider` in `App.tsx`.
-4. PDF export without the eager `html2pdf.js` import (load it only on the screen that downloads), and email sending through the workspace's email app in da-forms or Quantalog.
-5. Payment links through the workspace's existing gateways (Razorpay, Cashfree, PayU), and paid status from their webhooks.
-6. Overdue reminders and recurring invoices inside an existing cron tick.
+1. Redesign every screen in Mantine: the list and dashboard, the editor with a live preview, and the client book. Add `HostNotificationsBell` and a Docs button to each embedded header. Remove a screen's MUI code in the same change, then drop `@mui/*`, `@emotion/*` and `legacyTheme`.
+2. Open, edit and delete saved documents from the dashboard (the old Edit and View buttons do nothing). Leave the number blank on new documents, so workspace numbering always applies.
+3. Scope the Redux drafts kept in `localStorage` by workspace id.
+4. GST invoices: HSN/SAC per line, CGST/SGST or IGST by place of supply, numbering by financial year.
+5. Payment links through the workspace's gateways, and paid status from their webhooks.
+6. Send quotations and invoices by email, through the workspace's email app.
+7. Overdue reminders inside an existing cron tick (`/api/cron/*` with `Bearer CRON_SECRET`; the Cloudflare account is at its trigger limit).
+8. Plan limits through Quantalog (`/api/internal/invoices/*`), and paid revenue fed back into Quantalog analytics by lead source.
+9. Docs page `quantalog-lp/src/content/docs/quantalog-invoicing.tsx`, and an entry in the landing page Apps carousel.
 
 ## Rules
 
@@ -67,11 +64,10 @@ Scheduled work, such as overdue reminders or recurring invoices, runs inside an 
    - No gradients, glow or coloured shadows. Hover changes border, background, colour or opacity only.
    - Errors and status go in the top-center toast (`lib/notify.ts`), in one short sentence.
    - Literal `lucide-react` icons, no sparkle icons, no monogram tiles. Prices are green (`var(--green)`).
-   - The accent marks selected states, and only the primary button is monochrome.
-6. Every workspace query includes `workspaceId`. Bound every list with a limit or pagination, use `.select()` and `.lean()` for read-only results, and add an index for every new query shape.
-7. Run independent awaits with `Promise.all`. No queries inside loops.
-8. Deployed to Vercel serverless. Don't rely on in-memory state. Work after a response (email, webhooks) goes through Vercel's `waitUntil`, as in da-forms' `lib/afterResponse.ts`.
-9. Keep response shapes stable once Quantalog reads them. A change to a token claim, internal route or shape updates both repos in the same change.
-10. Load heavy frontend libraries (PDF, charts) only on the screen that uses them. No polling and no refetch on focus.
-11. Secrets (gateway keys, SMTP passwords) are encrypted at rest and only ever returned masked. Never put a real secret in an `.env.example`.
+6. Every workspace query includes `workspaceId`. Bound every list, use `.select()` and `.lean()` for reads, and add an index for every new query shape.
+7. Run independent awaits with `Promise.all`. No queries inside loops. Take a new document number only after the source document has been found, so failed requests leave no gaps.
+8. Deployed to Vercel serverless. Don't rely on in-memory state. Work after a response goes through Vercel's `waitUntil`, as in da-forms' `lib/afterResponse.ts`.
+9. Keep response shapes stable once Quantalog reads them.
+10. Load heavy frontend libraries only on the screen that uses them. No polling and no refetch on focus.
+11. Never put a real secret in an `.env.example`.
 12. The developer runs type-checks, builds and tests. Don't run `tsc`, builds or test suites unless asked. In the final message, say what changed, what to check by hand, and any new endpoint, index, cron work or startup request.

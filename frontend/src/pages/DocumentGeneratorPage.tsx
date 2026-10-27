@@ -22,9 +22,9 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DocumentPreview } from "../components/InvoicePreview/DocumentPreview";
 import { useNavigate } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../store/hooks";
-import { useAuth } from "../context/AuthContext";
 import { useInvoices } from "../hooks/useInvoices";
 import { useQuotations } from "../hooks/useQuotations";
+import { useBusinessDefaults } from "../hooks/useBusinessDefaults";
 import { resetInvoice } from "../store/invoiceSlice";
 import { resetQuotation } from "../store/quotationSlice";
 
@@ -59,9 +59,9 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({
 }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { user, isAuthenticated } = useAuth();
   const { saveInvoice, syncing: invoiceSyncing } = useInvoices();
   const { saveQuotation, syncing: quotationSyncing } = useQuotations();
+  useBusinessDefaults(mode);
 
   // Get the appropriate state based on mode
   const invoice = useAppSelector((state) => state.invoice);
@@ -212,15 +212,6 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({
   };
 
   const handleSaveToServer = async () => {
-    if (!isAuthenticated || user?.isAnonymous) {
-      setNotification({
-        open: true,
-        message: "Please login to save to server",
-        severity: "error",
-      });
-      return;
-    }
-
     try {
       if (mode === "invoice") {
         const invoiceId = (invoice as any).id;
@@ -468,8 +459,6 @@ export const DocumentGeneratorPage: React.FC<DocumentGeneratorPageProps> = ({
         <DocumentHeader
           mode={mode}
           document={document}
-          isAuthenticated={isAuthenticated}
-          isAnonymous={user?.isAnonymous || false}
           isSaving={isSaving}
           isDownloading={isDownloading}
           onBack={() => navigate("/")}

@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Quotation, QuotationItem } from '../types/quotation';
+import type { BusinessDefaults } from '../types/businessProfile';
 
 // Generate quotation number
 const generateQuotationNumber = () => {
@@ -183,6 +184,14 @@ const quotationSlice = createSlice({
     setQuotationLogo: (state, action: PayloadAction<string>) => {
       state.logo = action.payload;
     },
+    applyQuotationBusinessDefaults: (state, action: PayloadAction<BusinessDefaults>) => {
+      if (state.from.name) return;
+      const { from, currency, notes, terms } = action.payload;
+      state.from = { ...from };
+      state.currency = currency;
+      if (!state.notes && notes) state.notes = notes;
+      if (!state.terms && terms) state.terms = terms;
+    },
   },
 });
 
@@ -197,6 +206,7 @@ export const {
   updateQuotationStatus,
   resetQuotation,
   setQuotationLogo,
+  applyQuotationBusinessDefaults,
 } = quotationSlice.actions;
 
 export default quotationSlice.reducer;

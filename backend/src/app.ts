@@ -10,6 +10,10 @@ export function createApp() {
 
   app.set('trust proxy', true);
   app.use(cors());
+  app.use(
+    ['/api/workspaces/:workspaceId/invoices', '/api/workspaces/:workspaceId/quotations'],
+    express.json({ limit: '4mb' })
+  );
   app.use(express.json({ limit: '2mb' }));
 
   app.use((_req, _res, next) => {
