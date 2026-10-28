@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useQrCode } from './useQrCode';
 
 const RENDER_DELAY_MS = 250;
 const QR_SIZE_PX = 240;
@@ -17,38 +17,6 @@ function upiUri({ upiId, payee, amount, note }: UpiRequest): string {
 }
 
 export function useUpiQr(request: UpiRequest): string | null {
-  const [src, setSrc] = useState<string | null>(null);
   const enabled = Boolean(request.upiId) && request.currency === 'INR' && request.amount > 0;
-  const uri = enabled ? upiUri(request) : '';
-
-  useEffect(() => {
-    if (!uri) {
-      setSrc(null);
-      return;
-    }
-    let cancelled = false;
-    const timer = setTimeout(() => {
-      import('qrcode')
-        .then(({ default: QRCode }) =>
-          QRCode.toDataURL(uri, {
-            margin: 0,
-            width: QR_SIZE_PX,
-            errorCorrectionLevel: 'M',
-            color: { dark: '#111827', light: '#ffffff' },
-          })
-        )
-        .then((url) => {
-          if (!cancelled) setSrc(url);
-        })
-        .catch(() => {
-          if (!cancelled) setSrc(null);
-        });
-    }, RENDER_DELAY_MS);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [uri]);
-
-  return src;
+  return useQrCode(enabled ? upiUri(request) : '', { width: QR_SIZE_PX, margin: 0, delayMs: RENDER_DELAY_MS });
 }

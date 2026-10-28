@@ -1,11 +1,19 @@
 import { SegmentedControl, Tooltip } from '@mantine/core';
-import { LaptopIcon, SmartphoneIcon } from 'lucide-react';
+import { LaptopIcon, SmartphoneIcon, TabletIcon } from 'lucide-react';
+import type { DeviceId } from 'da-frame-set';
 import classes from './PreviewStudio.module.css';
 
-export type PreviewDevice = 'laptop' | 'phone';
+export type PreviewDevice = 'laptop' | 'tablet' | 'phone';
+
+export const DEVICE_FRAME: Record<PreviewDevice, DeviceId> = {
+  laptop: 'macbook-air',
+  tablet: 'ipad-air',
+  phone: 'iphone-pro',
+};
 
 const DEVICES: { value: PreviewDevice; label: string; Icon: typeof LaptopIcon }[] = [
   { value: 'laptop', label: 'Laptop', Icon: LaptopIcon },
+  { value: 'tablet', label: 'Tablet', Icon: TabletIcon },
   { value: 'phone', label: 'Phone', Icon: SmartphoneIcon },
 ];
 

@@ -26,10 +26,10 @@ import { NotesStep } from './editor/NotesStep';
 import { PreviewCanvas } from './editor/PreviewCanvas';
 import { StatusMenu } from './editor/StatusMenu';
 import { ActivityLine } from './editor/ActivityLine';
-import { ShareDialog } from './editor/share/ShareDialog';
 import classes from './DocumentEditorPage.module.css';
 
 const PreviewStudio = lazy(() => import('@/components/preview/PreviewStudio'));
+const ShareStudio = lazy(() => import('./editor/share/ShareStudio'));
 
 export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
   const { id } = useParams<{ id: string }>();
@@ -182,15 +182,17 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
             </Suspense>
           )}
 
-          {id && (
-            <ShareDialog
-              opened={shareOpen}
-              onClose={() => setShareOpen(false)}
-              draft={draft}
-              activity={editor.activity}
-              dirty={editor.dirty}
-              actions={share}
-            />
+          {id && shareOpen && (
+            <Suspense fallback={null}>
+              <ShareStudio
+                opened
+                onClose={() => setShareOpen(false)}
+                draft={draft}
+                activity={editor.activity}
+                dirty={editor.dirty}
+                actions={share}
+              />
+            </Suspense>
           )}
         </>
       )}

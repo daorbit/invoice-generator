@@ -41,6 +41,11 @@ export function whatsappLink(draft: DocumentDraft, url: string): string {
   return `https://wa.me/${number}?text=${encodeURIComponent(shareText(draft, url))}`;
 }
 
+export function telegramLink(draft: DocumentDraft, url: string): string {
+  const text = shareText(draft, url).replace(`: ${url}`, '');
+  return `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+}
+
 export function mailtoLink(draft: DocumentDraft, url: string): string {
   const subject = encodeURIComponent(defaultSubject(draft));
   const body = encodeURIComponent(`${shareText(draft, url)}\n\n${draft.from.name}`);
