@@ -5,7 +5,7 @@
   --faint: #9ca3af;
   --rule: #e5e7eb;
   --soft: #f9fafb;
-  --tint: color-mix(in srgb, var(--doc-accent) 8%, #ffffff);
+  --tint: var(--doc-accent-tint, #f3f4f6);
 
   position: relative;
   display: flex;

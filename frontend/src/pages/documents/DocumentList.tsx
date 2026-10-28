@@ -1,10 +1,11 @@
 import { RowList } from '@/components/list/RowList';
 import { PAGE_SIZE } from '@/lib/documentMeta';
-import type { DocumentSummary } from '@/types/document';
-import { DocumentRow } from './DocumentRow';
+import type { DocumentKind, DocumentSummary } from '@/types/document';
+import { DocumentListHeader, DocumentRow } from './DocumentRow';
 import type { DocumentRowActions } from './DocumentRowMenu';
 
 interface Props {
+  kind: DocumentKind;
   items: DocumentSummary[];
   loading: boolean;
   total: number;
@@ -14,7 +15,7 @@ interface Props {
   actions: DocumentRowActions;
 }
 
-export function DocumentList({ items, loading, total, page, busyId, onPage, actions }: Props) {
+export function DocumentList({ kind, items, loading, total, page, busyId, onPage, actions }: Props) {
   return (
     <RowList
       loading={loading}
@@ -24,6 +25,7 @@ export function DocumentList({ items, loading, total, page, busyId, onPage, acti
       pageSize={PAGE_SIZE}
       onPage={onPage}
     >
+      <DocumentListHeader kind={kind} />
       {items.map((doc) => (
         <DocumentRow key={doc.id} doc={doc} busy={busyId === doc.id} actions={actions} />
       ))}

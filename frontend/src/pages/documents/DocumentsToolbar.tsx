@@ -1,61 +1,67 @@
-import { ActionIcon, Button, Menu, Tooltip } from '@mantine/core';
-import { CheckIcon, ChevronDownIcon, RefreshCwIcon } from 'lucide-react';
+import { ActionIcon, Tooltip } from '@mantine/core';
+import { RefreshCwIcon } from 'lucide-react';
 import { SearchField } from '@/components/ui/SearchField';
-import { StatusDot } from '@/components/ui/StatusPill';
+import { SegmentedTabs, type SegmentedTabItem } from '@/components/ui/SegmentedTabs';
 import toolbar from '@/components/ui/toolbar.module.css';
 import { KIND_META, STATUSES, STATUS_META } from '@/lib/documentMeta';
 import type { StatusFilter } from '@/hooks/useDocumentList';
-import type { DocumentKind } from '@/types/document';
+import type { DocumentKind, DocumentStatus } from '@/types/document';
 import classes from './DocumentsToolbar.module.css';
+
+type StatusCounts = Partial<Record<DocumentStatus, number>>;
 
 interface Props {
   kind: DocumentKind;
   status: StatusFilter;
   search: string;
   loading: boolean;
+  counts: StatusCounts | null;
   onStatus: (status: StatusFilter) => void;
   onSearch: (search: string) => void;
   onRefresh: () => void;
 }
 
-export function DocumentsToolbar({ kind, status, search, loading, onStatus, onSearch, onRefresh }: Props) {
-  const statusLabel = status === 'all' ? 'All statuses' : STATUS_META[status].label;
+function chip(label: string, count: number | null) {
+  return (
+    <span className={classes.chip}>
+      {label}
+      {count !== null && <span className={classes.count}>{count}</span>}
+    </span>
+  );
+}
 
+function statusTabs(kind: DocumentKind, status: StatusFilter, counts: StatusCounts | null): SegmentedTabItem<StatusFilter>[] {
+  const countOf = (value: DocumentStatus) => (counts ? (counts[value] ?? 0) : null);
+  const total = counts ? STATUSES[kind].reduce((sum, value) => sum + (counts[value] ?? 0), 0) : null;
+  const visible = STATUSES[kind].filter((value) => !counts || countOf(value) || value === status);
+
+  return [
+    { value: 'all', label: chip('All', total) },
+    ...visible.map((value) => ({ value, label: chip(STATUS_META[value].label, countOf(value)) })),
+  ];
+}
+
+export function DocumentsToolbar({ kind, status, search, loading, counts, onStatus, onSearch, onRefresh }: Props) {
   return (
     <div className={classes.root}>
-      <SearchField
-        value={search}
-        onChange={onSearch}
-        placeholder="Search by number or customer"
-        ariaLabel={`Search ${KIND_META[kind].plural.toLowerCase()}`}
-        className={classes.search}
-      />
+      <div className={classes.filters}>
+        <SegmentedTabs
+          ariaLabel="Filter by status"
+          value={status}
+          onChange={onStatus}
+          data={statusTabs(kind, status, counts)}
+          size="sm"
+        />
+      </div>
 
       <div className={classes.end}>
-        <Menu position="bottom-end" width={190}>
-          <Menu.Target>
-            <Button variant="subtle" className={toolbar.pillButton} rightSection={<ChevronDownIcon size={14} />}>
-              {statusLabel}
-            </Button>
-          </Menu.Target>
-          <Menu.Dropdown>
-            <Menu.Label>Status</Menu.Label>
-            <Menu.Item onClick={() => onStatus('all')} rightSection={status === 'all' ? <CheckIcon size={14} /> : undefined}>
-              All statuses
-            </Menu.Item>
-            {STATUSES[kind].map((value) => (
-              <Menu.Item
-                key={value}
-                leftSection={<StatusDot tone={STATUS_META[value].tone} />}
-                onClick={() => onStatus(value)}
-                rightSection={status === value ? <CheckIcon size={14} /> : undefined}
-              >
-                {STATUS_META[value].label}
-              </Menu.Item>
-            ))}
-          </Menu.Dropdown>
-        </Menu>
-
+        <SearchField
+          value={search}
+          onChange={onSearch}
+          placeholder="Search number or customer"
+          ariaLabel={`Search ${KIND_META[kind].plural.toLowerCase()}`}
+          className={classes.search}
+        />
         <Tooltip label="Refresh" withArrow>
           <ActionIcon variant="subtle" className={toolbar.iconButton} size={34} radius="xl" onClick={onRefresh} aria-label="Refresh">
             <RefreshCwIcon size={16} className={loading ? toolbar.spinning : undefined} />

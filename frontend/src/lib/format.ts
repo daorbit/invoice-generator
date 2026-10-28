@@ -19,6 +19,14 @@ export function formatDate(value: string | null | undefined): string {
   return value ? dayjs(value).format('D MMM YYYY') : '';
 }
 
+export function daysUntil(value: string): number {
+  return dayjs(value).startOf('day').diff(dayjs().startOf('day'), 'day');
+}
+
+export function plural(count: number, noun: string): string {
+  return `${count} ${count === 1 ? noun : `${noun}s`}`;
+}
+
 export function todayIso(): string {
   return dayjs().format('YYYY-MM-DD');
 }

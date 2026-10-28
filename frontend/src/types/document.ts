@@ -218,9 +218,17 @@ export interface DocumentQuery {
 }
 
 export interface DashboardStats {
-  invoices: { total: number; paid: number; unpaid: number; recent: number };
-  quotations: { total: number; pending: number; accepted: number; rejected: number; recent: number };
+  invoices: { total: number; paid: number; unpaid: number; recent: number; byStatus?: Partial<Record<DocumentStatus, number>> };
+  quotations: {
+    total: number;
+    pending: number;
+    accepted: number;
+    rejected: number;
+    recent: number;
+    byStatus?: Partial<Record<DocumentStatus, number>>;
+  };
   revenue: { total: number; paid: number; pending: number };
+  receivables?: { current: number; overdue: number; openCount: number; overdueCount: number };
 }
 
 export interface EmailRequest {

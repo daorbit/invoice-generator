@@ -5,8 +5,8 @@ import classes from './SectionPage.module.css';
 export function SectionPage({ children }: { children: ReactNode }) {
   return (
     <div className={classes.shell}>
-      <SectionNav />
       <main className={classes.content}>{children}</main>
+      <SectionNav />
     </div>
   );
 }

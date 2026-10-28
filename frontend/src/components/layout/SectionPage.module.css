@@ -1,18 +1,19 @@
 .shell {
   display: grid;
-  grid-template-columns: 212px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 64px;
   min-height: 100%;
 }
 
 .content {
   container-type: inline-size;
   min-width: 0;
-  padding: 24px 28px 40px;
+  padding: 28px 28px 40px;
 }
 
 @media (max-width: 56em) {
   .shell {
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
   }
 
   .content {

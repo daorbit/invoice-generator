@@ -1,4 +1,6 @@
+import { Fragment } from 'react';
 import { NavLink } from 'react-router-dom';
+import { Tooltip } from '@mantine/core';
 import { ChartColumn, FileText, Package, ReceiptText, UsersRound, type LucideIcon } from 'lucide-react';
 import classes from './SectionNav.module.css';
 
@@ -32,17 +34,20 @@ const GROUPS: { label: string; sections: Section[] }[] = [
 
 export function SectionNav() {
   return (
-    <nav className={classes.nav} aria-label="Invoicing">
-      {GROUPS.map((group) => (
-        <div key={group.label} className={classes.group}>
-          <span className={classes.groupLabel}>{group.label}</span>
-          {group.sections.map(({ to, label, icon: Icon, end }) => (
-            <NavLink key={to} to={to} end={end} className={classes.link}>
-              <Icon size={16} className={classes.icon} />
-              {label}
-            </NavLink>
-          ))}
-        </div>
+    <nav className={classes.rail} aria-label="Invoicing">
+      {GROUPS.map((group, index) => (
+        <Fragment key={group.label}>
+          {index > 0 && <span className={classes.divider} aria-hidden />}
+          <div className={classes.group} role="group" aria-label={group.label}>
+            {group.sections.map(({ to, label, icon: Icon, end }) => (
+              <Tooltip key={to} label={label} position="left" withArrow openDelay={120}>
+                <NavLink to={to} end={end} className={classes.link} aria-label={label}>
+                  <Icon size={18} strokeWidth={1.9} />
+                </NavLink>
+              </Tooltip>
+            ))}
+          </div>
+        </Fragment>
       ))}
     </nav>
   );

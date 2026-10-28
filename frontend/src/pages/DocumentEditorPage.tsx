@@ -97,6 +97,7 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
     <BrandLogoProvider logo={profile?.logo ?? ''}>
     <Box className={classes.page}>
       <PageHeader
+        compact
         leading={back}
         title={title}
         description={description}

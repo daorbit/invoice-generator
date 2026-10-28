@@ -65,6 +65,7 @@ export function CustomerDocuments({ detail, onChanged }: { detail: CustomerDetai
         />
       ) : (
         <DocumentList
+          kind={kind}
           items={items}
           loading={!detail}
           total={items.length}

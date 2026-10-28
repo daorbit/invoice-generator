@@ -1,104 +1,90 @@
-.nav {
+.rail {
   position: sticky;
   top: 0;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  align-items: center;
+  gap: 10px;
   height: 100dvh;
-  padding: 24px 12px;
-  border-right: 1px solid var(--border);
+  padding: 20px 0;
+  border-left: 1px solid var(--border);
   overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
 }
 
 .group {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 4px;
 }
 
-.groupLabel {
-  padding: 0 10px 6px;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted);
+.divider {
+  flex-shrink: 0;
+  width: 20px;
+  height: 1px;
+  background: var(--border);
 }
 
 .link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 34px;
-  padding: 0 10px;
-  border-radius: 9px;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--text-2);
-  text-decoration: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  color: var(--muted);
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.icon {
-  flex-shrink: 0;
-  color: var(--muted);
-  transition: color 0.15s ease;
-}
-
 .link:hover {
-  background: color-mix(in srgb, var(--text) 5%, transparent);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
   color: var(--text);
 }
 
 .link:global(.active) {
   background: var(--selected-bg);
   color: var(--selected-fg);
-  font-weight: 600;
-}
-
-.link:global(.active) .icon {
-  color: var(--selected-fg);
 }
 
 .link:focus-visible {
   outline: 2px solid var(--accent);
-  outline-offset: -2px;
+  outline-offset: 1px;
 }
 
-[data-motion='off'] .link,
-[data-motion='off'] .icon {
+[data-motion='off'] .link {
   transition: none;
 }
 
 @media (max-width: 56em) {
-  .nav {
+  .rail {
     position: static;
+    order: -1;
     flex-direction: row;
-    gap: 2px;
+    justify-content: center;
+    gap: 6px;
     height: auto;
-    padding: 10px 16px;
-    border-right: 0;
+    padding: 8px 12px;
+    border-left: 0;
     border-bottom: 1px solid var(--border);
     overflow-x: auto;
     overflow-y: hidden;
-    scrollbar-width: none;
-  }
-
-  .nav::-webkit-scrollbar {
-    display: none;
   }
 
   .group {
     flex-direction: row;
-    flex-shrink: 0;
   }
 
-  .groupLabel {
-    display: none;
+  .divider {
+    width: 1px;
+    height: 20px;
   }
 
   .link {
-    flex-shrink: 0;
-    height: 32px;
+    width: 38px;
+    height: 38px;
   }
 }

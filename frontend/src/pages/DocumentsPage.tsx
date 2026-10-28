@@ -17,7 +17,7 @@ import { DOCS } from '@/lib/docs';
 import { DOCUMENT_PATH } from '@/lib/documentMapping';
 import { KIND_META } from '@/lib/documentMeta';
 import type { DocumentKind } from '@/types/document';
-import { SummaryStrip } from './documents/SummaryStrip';
+import { DocumentsOverview } from './documents/DocumentsOverview';
 import { SetupNotice } from './documents/SetupNotice';
 import { DocumentsToolbar } from './documents/DocumentsToolbar';
 import { DocumentList } from './documents/DocumentList';
@@ -72,13 +72,14 @@ export function DocumentsPage({ kind }: { kind: DocumentKind }) {
 
       {!profileLoading && !complete && <SetupNotice />}
 
-      <SummaryStrip stats={stats} currency={profile?.currency || 'INR'} />
+      <DocumentsOverview kind={kind} stats={stats} currency={profile?.currency || 'INR'} />
 
       <DocumentsToolbar
         kind={kind}
         status={list.status}
         search={list.search}
         loading={list.loading}
+        counts={stats ? ((kind === 'invoice' ? stats.invoices.byStatus : stats.quotations.byStatus) ?? null) : null}
         onStatus={list.setStatus}
         onSearch={list.setSearch}
         onRefresh={refresh}
@@ -99,6 +100,7 @@ export function DocumentsPage({ kind }: { kind: DocumentKind }) {
         />
       ) : (
         <DocumentList
+          kind={kind}
           items={list.items}
           loading={list.loading}
           total={list.total}

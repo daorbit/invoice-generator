@@ -1,27 +1,41 @@
 [data-accent='blue'] {
   --doc-accent: #2f6bff;
+  --doc-accent-tint: #eef3ff;
+  --doc-accent-wash: #dae4ff;
 }
 
 [data-accent='indigo'] {
   --doc-accent: #4f46e5;
+  --doc-accent-tint: #f1f0fd;
+  --doc-accent-wash: #dfdefa;
 }
 
 [data-accent='teal'] {
   --doc-accent: #0d9488;
+  --doc-accent-tint: #ecf6f5;
+  --doc-accent-wash: #d3ecea;
 }
 
 [data-accent='emerald'] {
   --doc-accent: #059669;
+  --doc-accent-tint: #ebf7f3;
+  --doc-accent-wash: #d2ece4;
 }
 
 [data-accent='amber'] {
   --doc-accent: #b45309;
+  --doc-accent-tint: #f9f1eb;
+  --doc-accent-wash: #f2e0d3;
 }
 
 [data-accent='crimson'] {
   --doc-accent: #dc2626;
+  --doc-accent-tint: #fceeee;
+  --doc-accent-wash: #f9d8d8;
 }
 
 [data-accent='slate'] {
   --doc-accent: #334155;
+  --doc-accent-tint: #eff0f1;
+  --doc-accent-wash: #dadde0;
 }

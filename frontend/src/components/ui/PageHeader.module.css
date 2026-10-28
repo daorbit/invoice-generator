@@ -28,6 +28,23 @@
   letter-spacing: -0.02em;
 }
 
+.root[data-compact] {
+  margin-bottom: var(--mantine-spacing-md);
+}
+
+.root[data-compact] .row,
+.root[data-compact] .main {
+  align-items: center;
+}
+
+.root[data-compact] .main {
+  gap: 12px;
+}
+
+.root[data-compact] .title {
+  line-height: 1.25;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
