@@ -15,6 +15,22 @@ export function formatMoney(value: number, currency: string): string {
   return format.format(value);
 }
 
+const compactFormats = new Map<string, Intl.NumberFormat>();
+
+export function formatCompactMoney(value: number, currency: string): string {
+  let format = compactFormats.get(currency);
+  if (!format) {
+    const options: Intl.NumberFormatOptions = { notation: 'compact', minimumFractionDigits: 0, maximumFractionDigits: 1 };
+    try {
+      format = new Intl.NumberFormat(currency === 'INR' ? 'en-IN' : undefined, { ...options, style: 'currency', currency });
+    } catch {
+      format = new Intl.NumberFormat(undefined, { ...options, style: 'currency', currency: 'USD' });
+    }
+    compactFormats.set(currency, format);
+  }
+  return format.format(value);
+}
+
 export function formatDate(value: string | null | undefined): string {
   return value ? dayjs(value).format('D MMM YYYY') : '';
 }

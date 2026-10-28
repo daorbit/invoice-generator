@@ -2,6 +2,13 @@ import { env } from '../config/env.js';
 import { HttpError } from './http-error.js';
 
 const EMAIL_TIMEOUT_MS = 25_000;
+const FX_TIMEOUT_MS = 4_000;
+
+export interface QuantalogFxRates {
+  base: string;
+  rates: Record<string, number>;
+  fetchedAt: string;
+}
 
 export interface DocumentEmail {
   to: string[];
@@ -21,7 +28,7 @@ export interface DocumentEmail {
   pdf?: { filename: string; content: string };
 }
 
-function emailConfigured(): boolean {
+function quantalogConfigured(): boolean {
   return Boolean(env.quantalogApiUrl && env.invoiceServiceSecret);
 }
 
@@ -31,8 +38,20 @@ async function failureMessage(response: Response): Promise<string> {
   return message || 'The email could not be sent. Try again.';
 }
 
+export async function fetchFxRates(): Promise<QuantalogFxRates | null> {
+  if (!quantalogConfigured()) return null;
+  const response = await fetch(`${env.quantalogApiUrl}/api/internal/invoices/fx`, {
+    headers: { authorization: `Bearer ${env.invoiceServiceSecret}` },
+    signal: AbortSignal.timeout(FX_TIMEOUT_MS),
+  }).catch(() => null);
+  if (!response?.ok) return null;
+  const body = (await response.json().catch(() => null)) as Partial<QuantalogFxRates> | null;
+  if (!body || typeof body.base !== 'string' || !body.rates || typeof body.rates !== 'object') return null;
+  return { base: body.base, rates: body.rates, fetchedAt: String(body.fetchedAt ?? '') };
+}
+
 export async function sendDocumentEmail(workspaceId: string, email: DocumentEmail): Promise<void> {
-  if (!emailConfigured()) {
+  if (!quantalogConfigured()) {
     throw new HttpError(503, 'not_configured', 'Email sending is not set up on this server.');
   }
 

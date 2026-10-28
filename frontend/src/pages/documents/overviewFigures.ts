@@ -1,5 +1,5 @@
 import type { MeterSegment } from '@/components/ui/SplitMeter';
-import { formatMoney, plural } from '@/lib/format';
+import { formatCompactMoney, formatMoney, plural } from '@/lib/format';
 import type { CurrencyDashboardStats, DocumentKind } from '@/types/document';
 
 export interface OverviewFigure {
@@ -12,6 +12,7 @@ export interface OverviewFigure {
 export interface OverviewModel {
   eyebrow: string;
   headline: string;
+  headlineFull?: string;
   caption: string;
   segments: MeterSegment[];
   meterLabel: string;
@@ -19,13 +20,15 @@ export interface OverviewModel {
 }
 
 function invoiceOverview(stats: CurrencyDashboardStats): OverviewModel {
-  const money = (value: number) => formatMoney(value, stats.currency);
+  const money = (value: number) => formatCompactMoney(value, stats.currency);
   const receivables = stats.receivables;
+  const owed = receivables.current + receivables.overdue;
   const drafts = stats.invoices.byStatus?.draft ?? 0;
 
   return {
     eyebrow: 'Total receivables',
-    headline: money(receivables.current + receivables.overdue),
+    headline: money(owed),
+    headlineFull: formatMoney(owed, stats.currency),
     caption: receivables.openCount
       ? `${plural(receivables.openCount, 'unpaid invoice')}${receivables.overdueCount ? `, ${receivables.overdueCount} past due` : ''}`
       : 'Nothing waiting to be paid',

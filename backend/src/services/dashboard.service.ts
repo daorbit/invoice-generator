@@ -2,6 +2,8 @@ import { Invoice } from '../models/invoice.model.js';
 import { Quotation } from '../models/quotation.model.js';
 import { round2 } from '../lib/totals.js';
 import { UNPAID } from './reports/report-filters.js';
+import { convertStats } from './dashboard-conversion.js';
+import type { FxRates } from './fx.service.js';
 
 const RECENT_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -52,6 +54,8 @@ function currenciesOf(rows: StatusTotals[]): string[] {
   return [...new Set(rows.map((row) => row._id.currency))];
 }
 
+export type CurrencyStats = ReturnType<typeof statsForCurrency>;
+
 function statsForCurrency(invoiceRows: StatusTotals[], quotationRows: StatusTotals[], currency: string) {
   const invoices = invoiceRows.filter((row) => row._id.currency === currency);
   const quotations = quotationRows.filter((row) => row._id.currency === currency);
@@ -92,7 +96,7 @@ function statsForCurrency(invoiceRows: StatusTotals[], quotationRows: StatusTota
   };
 }
 
-export async function getDashboardStats(workspaceId: string, homeCurrency: string) {
+export async function getDashboardStats(workspaceId: string, homeCurrency: string, fx: FxRates | null) {
   const now = new Date();
   const since = new Date(now.getTime() - RECENT_DAYS * DAY_MS);
   const [invoiceRows, quotationRows] = await Promise.all([
@@ -109,10 +113,17 @@ export async function getDashboardStats(workspaceId: string, homeCurrency: strin
   const primary =
     byCurrency[primaryCurrency] ?? statsForCurrency(invoiceRows, quotationRows, primaryCurrency);
 
+  const entries = Object.values(byCurrency);
+  const converted = Object.fromEntries(
+    [...new Set([primaryCurrency, ...currencies])].map((target) => [target, convertStats(entries, target, fx)]),
+  );
+
   return {
     ...primary,
     currencies,
     byCurrency,
+    converted,
+    statusCounts: { invoice: countsByStatus(invoiceRows), quotation: countsByStatus(quotationRows) },
   };
 }
 

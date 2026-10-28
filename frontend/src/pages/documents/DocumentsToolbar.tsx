@@ -6,9 +6,8 @@ import toolbar from '@/components/ui/toolbar.module.css';
 import { KIND_META, STATUSES, STATUS_META } from '@/lib/documentMeta';
 import type { StatusFilter } from '@/hooks/useDocumentList';
 import type { DocumentKind, DocumentStatus } from '@/types/document';
+import type { StatusCounts } from './statusCounts';
 import classes from './DocumentsToolbar.module.css';
-
-type StatusCounts = Partial<Record<DocumentStatus, number>>;
 
 interface Props {
   kind: DocumentKind;

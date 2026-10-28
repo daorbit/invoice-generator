@@ -4,6 +4,7 @@ import { SplitMeter } from '@/components/ui/SplitMeter';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import type { DashboardStats, DocumentKind } from '@/types/document';
 import { overviewFor } from './overviewFigures';
+import { conversionNote } from './conversionNote';
 import classes from './DocumentsOverview.module.css';
 
 interface Props {
@@ -36,9 +37,11 @@ export function DocumentsOverview({ kind, stats }: Props) {
   if (!stats) return <OverviewSkeleton />;
 
   const currency = selected && stats.byCurrency[selected] ? selected : stats.currency;
-  const currencyStats = stats.byCurrency[currency] ?? stats;
-  const model = overviewFor(kind, currencyStats);
-  const hasMultipleCurrencies = stats.currencies.length > 1;
+  const converted = stats.converted?.[currency];
+  const model = overviewFor(kind, converted?.stats ?? stats.byCurrency[currency] ?? stats);
+  const note = kind === 'invoice' && converted ? conversionNote(converted) : '';
+  const caption = note ? `${model.caption} · ${note}` : model.caption;
+  const hasMultipleCurrencies = kind === 'invoice' && stats.currencies.length > 1;
 
   return (
     <section className={classes.root} aria-label={model.eyebrow}>
@@ -55,8 +58,10 @@ export function DocumentsOverview({ kind, stats }: Props) {
             />
           )}
         </div>
-        <span className={classes.headline}>{model.headline}</span>
-        <span className={classes.caption}>{model.caption}</span>
+        <span className={classes.headline} title={model.headlineFull}>
+          {model.headline}
+        </span>
+        <span className={classes.caption}>{caption}</span>
         <div className={classes.meter}>
           <SplitMeter segments={model.segments} ariaLabel={model.meterLabel} />
         </div>

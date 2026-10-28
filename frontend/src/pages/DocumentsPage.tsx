@@ -20,6 +20,7 @@ import type { DocumentKind } from '@/types/document';
 import { DocumentsOverview } from './documents/DocumentsOverview';
 import { SetupNotice } from './documents/SetupNotice';
 import { DocumentsToolbar } from './documents/DocumentsToolbar';
+import { statusCounts } from './documents/statusCounts';
 import { DocumentList } from './documents/DocumentList';
 import { DeleteDocumentModal } from './documents/DeleteDocumentModal';
 
@@ -79,7 +80,7 @@ export function DocumentsPage({ kind }: { kind: DocumentKind }) {
         status={list.status}
         search={list.search}
         loading={list.loading}
-        counts={stats ? ((kind === 'invoice' ? stats.invoices.byStatus : stats.quotations.byStatus) ?? null) : null}
+        counts={statusCounts(stats, kind)}
         onStatus={list.setStatus}
         onSearch={list.setSearch}
         onRefresh={refresh}

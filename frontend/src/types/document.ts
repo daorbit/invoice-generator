@@ -232,9 +232,17 @@ export interface CurrencyDashboardStats {
   receivables: { current: number; overdue: number; openCount: number; overdueCount: number };
 }
 
+export interface ConvertedStats {
+  stats: CurrencyDashboardStats;
+  rates: { currency: string; rate: number }[];
+  missing: string[];
+}
+
 export interface DashboardStats extends CurrencyDashboardStats {
   currencies: string[];
   byCurrency: Record<string, CurrencyDashboardStats>;
+  converted?: Record<string, ConvertedStats>;
+  statusCounts?: Record<DocumentKind, Partial<Record<DocumentStatus, number>>>;
 }
 
 export interface EmailRequest {
