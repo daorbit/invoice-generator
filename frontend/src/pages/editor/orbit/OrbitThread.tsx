@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Loader } from '@mantine/core';
 import { CircleAlert } from 'lucide-react';
 import { OrbitMark } from '@/components/orbit/OrbitMark';
@@ -8,16 +8,17 @@ import classes from './OrbitStudio.module.css';
 
 interface Props {
   turns: OrbitTurn[];
-  introTitle: string;
-  introText: string;
+  intro: string;
+  followUps: ReactNode;
 }
 
-function workingLabel(turn: OrbitTurn): string {
+function workingLabel(turn: OrbitTurn, first: boolean): string {
   if (turn.ask === GST_ASK) return 'Checking GST codes';
-  return turn.attachment ? 'Reading the document' : 'Working on it';
+  if (turn.attachment) return 'Reading the document';
+  return first ? 'Drafting' : 'Updating';
 }
 
-export function OrbitThread({ turns, introTitle, introText }: Props) {
+export function OrbitThread({ turns, intro, followUps }: Props) {
   const end = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,13 +28,12 @@ export function OrbitThread({ turns, introTitle, introText }: Props) {
   return (
     <div className={classes.thread}>
       {turns.length === 0 && (
-        <div className={classes.intro}>
-          <OrbitMark size={32} />
-          <span className={classes.introTitle}>{introTitle}</span>
-          <p className={classes.introText}>{introText}</p>
+        <div className={classes.reply}>
+          <OrbitMark size={20} />
+          <div className={classes.replyBody}>{intro}</div>
         </div>
       )}
-      {turns.map((turn) => (
+      {turns.map((turn, index) => (
         <div key={turn.id} className={classes.turn}>
           <div className={classes.ask}>
             {turn.attachment && <FileChip name={turn.attachment} />}
@@ -44,8 +44,8 @@ export function OrbitThread({ turns, introTitle, introText }: Props) {
             <div className={classes.replyBody}>
               {turn.pending ? (
                 <span className={classes.working}>
-                  <Loader size={12} type="dots" />
-                  {workingLabel(turn)}
+                  <Loader size={12} type="dots" color="var(--accent)" />
+                  {workingLabel(turn, index === 0)}
                 </span>
               ) : (
                 <span>{turn.reply}</span>
@@ -64,6 +64,7 @@ export function OrbitThread({ turns, introTitle, introText }: Props) {
           </div>
         </div>
       ))}
+      {followUps}
       <div ref={end} />
     </div>
   );

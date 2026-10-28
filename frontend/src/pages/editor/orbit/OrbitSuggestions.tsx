@@ -4,12 +4,14 @@ import classes from './OrbitStudio.module.css';
 interface Props {
   studio: OrbitStudioState;
   prompts: string[];
-  showGst: boolean;
+  showGst?: boolean;
+  layout: 'starters' | 'followUps';
 }
 
-export function OrbitSuggestions({ studio, prompts, showGst }: Props) {
+export function OrbitSuggestions({ studio, prompts, showGst = false, layout }: Props) {
+  if (!prompts.length && !showGst) return null;
   return (
-    <div className={classes.suggestions}>
+    <div className={classes[layout]}>
       {showGst && (
         <button type="button" className={classes.chip} disabled={studio.busy} onClick={studio.checkGst}>
           {GST_ASK}

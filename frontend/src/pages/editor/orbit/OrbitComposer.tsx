@@ -9,7 +9,13 @@ import classes from './OrbitStudio.module.css';
 
 const ACCEPT = 'image/png,image/jpeg,image/webp,application/pdf';
 
-export function OrbitComposer({ studio, placeholder }: { studio: OrbitStudioState; placeholder: string }) {
+interface Props {
+  studio: OrbitStudioState;
+  placeholder: string;
+  compact?: boolean;
+}
+
+export function OrbitComposer({ studio, placeholder, compact = false }: Props) {
   const fileInput = useRef<HTMLInputElement>(null);
   const empty = !studio.prompt.trim() && !studio.attachment;
 
@@ -31,7 +37,11 @@ export function OrbitComposer({ studio, placeholder }: { studio: OrbitStudioStat
   };
 
   return (
-    <div className={classes.composer} onDragOver={(event) => event.preventDefault()} onDrop={onDrop}>
+    <div
+      className={compact ? `${classes.composer} ${classes.compact}` : classes.composer}
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={onDrop}
+    >
       {studio.attachment && (
         <div className={classes.staged}>
           <FileChip
@@ -44,10 +54,9 @@ export function OrbitComposer({ studio, placeholder }: { studio: OrbitStudioStat
       <Textarea
         variant="unstyled"
         autosize
-        minRows={2}
-        maxRows={6}
-        px="sm"
-        pt={6}
+        minRows={compact ? 1 : 3}
+        maxRows={compact ? 5 : 8}
+        classNames={{ input: classes.input }}
         placeholder={placeholder}
         value={studio.prompt}
         disabled={studio.busy}
@@ -77,24 +86,26 @@ export function OrbitComposer({ studio, placeholder }: { studio: OrbitStudioStat
             variant="subtle"
             color="gray"
             radius="xl"
+            size="md"
             disabled={studio.busy}
             onClick={() => fileInput.current?.click()}
             aria-label="Attach a photo or PDF"
           >
-            <Paperclip size={16} />
+            <Paperclip size={15} />
           </ActionIcon>
         </Tooltip>
-        <ActionIcon
-          variant="filled"
-          radius="xl"
-          size="lg"
-          disabled={empty || studio.busy}
-          loading={studio.busy}
-          onClick={() => studio.send()}
-          aria-label="Send"
-        >
-          <ArrowUp size={16} />
-        </ActionIcon>
+        <Tooltip label="Send" withArrow>
+          <ActionIcon
+            radius="xl"
+            size={compact ? 'md' : 'lg'}
+            className={classes.send}
+            disabled={empty || studio.busy}
+            onClick={() => studio.send()}
+            aria-label="Send"
+          >
+            <ArrowUp size={compact ? 14 : 16} />
+          </ActionIcon>
+        </Tooltip>
       </div>
     </div>
   );

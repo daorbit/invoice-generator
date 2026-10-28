@@ -13,13 +13,12 @@ const DRAFT_PROMPTS: Record<DocumentKind, string[]> = {
   ],
 };
 
-const EDIT_PROMPTS = [
-  'Give 10% off',
-  'Make it due in 15 days',
-  'Write payment terms for a 50% advance',
-  'Add shipping of 500',
-];
+const EDIT_PROMPTS = ['Give 10% off', 'Make it due in 15 days', 'Write payment terms for a 50% advance'];
 
-export function orbitSuggestions(kind: DocumentKind, blank: boolean): string[] {
-  return blank ? DRAFT_PROMPTS[kind] : EDIT_PROMPTS;
+export function draftPrompts(kind: DocumentKind): string[] {
+  return DRAFT_PROMPTS[kind];
+}
+
+export function editPrompts(): string[] {
+  return EDIT_PROMPTS;
 }
