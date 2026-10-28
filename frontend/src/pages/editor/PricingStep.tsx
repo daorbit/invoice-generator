@@ -57,6 +57,8 @@ export function PricingStep({ draft, setField, applyTaxRate }: SectionProps & Ta
           label="Discount"
           min={0}
           decimalScale={2}
+          thousandSeparator=","
+          hideControls
           value={draft.discount}
           onChange={(value) => setField('discount', toNumber(value))}
           rightSectionWidth={100}
@@ -73,15 +75,18 @@ export function PricingStep({ draft, setField, applyTaxRate }: SectionProps & Ta
           label="Shipping"
           min={0}
           decimalScale={2}
+          thousandSeparator=","
+          hideControls
           value={draft.shipping}
           onChange={(value) => setField('shipping', toNumber(value))}
         />
         {isInvoice && (
           <NumberInput
             label="Already paid"
-            description="An advance or part payment."
             min={0}
             decimalScale={2}
+            thousandSeparator=","
+            hideControls
             value={draft.amountPaid}
             onChange={(value) => setField('amountPaid', toNumber(value))}
           />
