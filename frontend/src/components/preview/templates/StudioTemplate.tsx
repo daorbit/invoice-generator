@@ -1,6 +1,8 @@
 import type { DocumentView } from '../useDocumentView';
 import { UpiQr, pageClasses } from './PageShell';
-import { ItemText } from './Extras';
+import { ClientAddress, ClientName, ItemQty, ItemRate, ItemText, NoteText } from './Extras';
+import { InlineText } from '../inline/InlineText';
+import { NOTES } from '../inline/inlineTargets';
 import classes from './Studio.module.css';
 
 export function StudioTemplate({ view }: { view: DocumentView }) {
@@ -28,8 +30,8 @@ export function StudioTemplate({ view }: { view: DocumentView }) {
       <div className={classes.facts}>
         <div>
           <div className={classes.label}>{view.clientLabel}</div>
-          <div className={classes.clientName}>{client.name || 'Client name'}</div>
-          {client.address && <div className={classes.lines}>{client.address}</div>}
+          <ClientName view={view} className={classes.clientName} />
+          <ClientAddress view={view} className={classes.lines} />
           {client.gstin && <div className={classes.lines}>GSTIN {client.gstin}</div>}
           {view.clientContact && <div className={classes.lines}>{view.clientContact}</div>}
         </div>
@@ -66,8 +68,8 @@ export function StudioTemplate({ view }: { view: DocumentView }) {
             <tr key={item.id}>
               <td className={classes.index}>{index + 1}</td>
               <td><ItemText item={item} view={view} /></td>
-              <td className={classes.num}>{view.qty(item)}</td>
-              <td className={classes.num}>{view.money(item.rate)}</td>
+              <td className={classes.num}><ItemQty item={item} view={view} /></td>
+              <td className={classes.num}><ItemRate item={item} view={view} /></td>
               <td className={classes.num}>{view.money(item.amount)}</td>
             </tr>
           ))}
@@ -87,10 +89,18 @@ export function StudioTemplate({ view }: { view: DocumentView }) {
         </div>
       </div>
       <div className={classes.words}>{view.words}</div>
-      {draft.terms && <div className={classes.note}>{draft.terms}</div>}
+      {draft.terms && <NoteText kind="terms" value={draft.terms} className={classes.note} />}
 
       <div className={`${classes.footer} ${pageClasses.push}`}>
-        <div className={classes.thanks}>{draft.notes || 'Thank you for the business!'}</div>
+        <InlineText
+          block
+          multiline
+          className={classes.thanks}
+          target={NOTES}
+          value={draft.notes}
+          fallback="Thank you for the business!"
+          label="Notes"
+        />
         {view.payment.length > 0 && (
           <>
             <div className={`${classes.infoHead} ${classes.label}`}>Payment info</div>

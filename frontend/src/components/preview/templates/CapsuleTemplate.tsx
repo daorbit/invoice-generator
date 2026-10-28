@@ -1,6 +1,6 @@
 import type { DocumentView } from '../useDocumentView';
 import { pageClasses } from './PageShell';
-import { AmountWords, NotesAndSignature, PaymentStrip, ItemText } from './Extras';
+import { AmountWords, ClientAddress, ClientName, ItemQty, ItemRate, ItemText, NotesAndSignature, PaymentStrip } from './Extras';
 import classes from './Capsule.module.css';
 
 export function CapsuleTemplate({ view }: { view: DocumentView }) {
@@ -22,9 +22,9 @@ export function CapsuleTemplate({ view }: { view: DocumentView }) {
           </div>
           <div className={classes.clientCard}>
             <div className={classes.label}>{view.isInvoice ? 'Invoice to:' : 'Quote for:'}</div>
-            <div className={classes.clientName}>{client.name || 'Client name'}</div>
+            <ClientName view={view} className={classes.clientName} />
             {view.clientContact && <div className={classes.lines}>{view.clientContact}</div>}
-            {client.address && <div className={classes.lines}>{client.address}</div>}
+            <ClientAddress view={view} className={classes.lines} />
             {client.gstin && <div className={classes.lines}>GSTIN {client.gstin}</div>}
           </div>
         </div>
@@ -54,8 +54,8 @@ export function CapsuleTemplate({ view }: { view: DocumentView }) {
       {view.items.map((item) => (
         <div key={item.id} className={classes.row}>
           <span className={classes.pill}><ItemText item={item} view={view} /></span>
-          <span className={classes.ring}>{view.qty(item)}</span>
-          <span className={classes.ring}>{view.money(item.rate)}</span>
+          <span className={classes.ring}><ItemQty item={item} view={view} /></span>
+          <span className={classes.ring}><ItemRate item={item} view={view} /></span>
           <span className={classes.solid}>{view.money(item.amount)}</span>
         </div>
       ))}

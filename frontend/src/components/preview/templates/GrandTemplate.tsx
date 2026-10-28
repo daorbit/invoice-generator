@@ -1,6 +1,6 @@
 import type { DocumentView } from '../useDocumentView';
 import { UpiQr, pageClasses } from './PageShell';
-import { ItemText } from './Extras';
+import { ClientAddress, ClientName, ItemQty, ItemRate, ItemText, NoteText } from './Extras';
 import classes from './Grand.module.css';
 
 export function GrandTemplate({ view }: { view: DocumentView }) {
@@ -32,8 +32,8 @@ export function GrandTemplate({ view }: { view: DocumentView }) {
       <div className={classes.card}>
         <div>
           <div className={classes.label}>{view.clientLabel}</div>
-          <div className={classes.clientName}>{client.name || 'Client name'}</div>
-          {client.address && <div className={classes.lines}>{client.address}</div>}
+          <ClientName view={view} className={classes.clientName} />
+          <ClientAddress view={view} className={classes.lines} />
           {client.gstin && <div className={classes.strong}>GSTIN {client.gstin}</div>}
           {view.clientContact && <div className={classes.lines}>{view.clientContact}</div>}
         </div>
@@ -62,8 +62,8 @@ export function GrandTemplate({ view }: { view: DocumentView }) {
             <tr key={item.id}>
               <td className={classes.index}>{String(index + 1).padStart(2, '0')}</td>
               <td><ItemText item={item} view={view} /></td>
-              <td className={classes.num}>{view.qty(item)}</td>
-              <td className={classes.num}>{view.money(item.rate)}</td>
+              <td className={classes.num}><ItemQty item={item} view={view} /></td>
+              <td className={classes.num}><ItemRate item={item} view={view} /></td>
               <td className={classes.num}>{view.money(item.amount)}</td>
             </tr>
           ))}
@@ -117,13 +117,13 @@ export function GrandTemplate({ view }: { view: DocumentView }) {
           {view.draft.notes && (
             <>
               <div className={classes.label}>Notes</div>
-              <div className={classes.noteText}>{view.draft.notes}</div>
+              <NoteText kind="notes" value={view.draft.notes} className={classes.noteText} />
             </>
           )}
           {view.draft.terms && (
             <>
               <div className={classes.label}>{view.termsLabel}</div>
-              <div className={classes.noteText}>{view.draft.terms}</div>
+              <NoteText kind="terms" value={view.draft.terms} className={classes.noteText} />
             </>
           )}
         </div>

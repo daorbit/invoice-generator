@@ -1,5 +1,7 @@
 import type { LineItem } from '@/types/document';
 import type { DocumentView, Row } from '../useDocumentView';
+import { InlineText } from '../inline/InlineText';
+import { CLIENT_ADDRESS, CLIENT_NAME, NOTES, TERMS, itemTarget } from '../inline/inlineTargets';
 import { UpiQr } from './PageShell';
 import classes from './Extras.module.css';
 
@@ -7,9 +9,66 @@ export function ItemText({ item, view }: { item: LineItem; view: DocumentView })
   const meta = view.itemMeta(item);
   return (
     <>
-      <span className={classes.itemName}>{item.description}</span>
+      <InlineText
+        className={classes.itemName}
+        target={itemTarget(item.id, 'description')}
+        value={item.description}
+        label="Item description"
+        placeholder="Item"
+      />
       {meta && <span className={classes.itemMeta}>{meta}</span>}
     </>
+  );
+}
+
+export function ItemQty({ item, view }: { item: LineItem; view: DocumentView }) {
+  return (
+    <InlineText target={itemTarget(item.id, 'quantity')} value={String(item.quantity)} display={view.qty(item)} label="Quantity" />
+  );
+}
+
+export function ItemRate({ item, view }: { item: LineItem; view: DocumentView }) {
+  return (
+    <InlineText target={itemTarget(item.id, 'rate')} value={String(item.rate)} display={view.money(item.rate)} label="Rate" />
+  );
+}
+
+export function ClientName({ view, className }: { view: DocumentView; className?: string }) {
+  return (
+    <InlineText
+      block
+      className={className}
+      target={CLIENT_NAME}
+      value={view.client.name}
+      fallback="Client name"
+      label="Client name"
+    />
+  );
+}
+
+export function ClientAddress({ view, className }: { view: DocumentView; className?: string }) {
+  return (
+    <InlineText
+      block
+      multiline
+      className={className}
+      target={CLIENT_ADDRESS}
+      value={view.client.address}
+      label="Client address"
+    />
+  );
+}
+
+export function NoteText({ kind, value, className }: { kind: 'notes' | 'terms'; value: string; className?: string }) {
+  return (
+    <InlineText
+      block
+      multiline
+      className={className}
+      target={kind === 'notes' ? NOTES : TERMS}
+      value={value}
+      label={kind === 'notes' ? 'Notes' : 'Terms'}
+    />
   );
 }
 
@@ -46,13 +105,13 @@ export function NotesAndSignature({ view }: { view: DocumentView }) {
         {view.draft.notes && (
           <>
             <div className={classes.label}>Notes</div>
-            <div className={classes.text}>{view.draft.notes}</div>
+            <NoteText kind="notes" value={view.draft.notes} className={classes.text} />
           </>
         )}
         {view.draft.terms && (
           <>
             <div className={classes.label}>{view.termsLabel}</div>
-            <div className={classes.text}>{view.draft.terms}</div>
+            <NoteText kind="terms" value={view.draft.terms} className={classes.text} />
           </>
         )}
       </div>

@@ -1,6 +1,6 @@
 import type { DocumentView } from '../useDocumentView';
 import { pageClasses } from './PageShell';
-import { AmountWords, PaymentStrip, ItemText } from './Extras';
+import { AmountWords, ClientAddress, ClientName, ItemQty, ItemRate, ItemText, NoteText, PaymentStrip } from './Extras';
 import classes from './Agency.module.css';
 
 export function AgencyTemplate({ view }: { view: DocumentView }) {
@@ -29,9 +29,9 @@ export function AgencyTemplate({ view }: { view: DocumentView }) {
           </div>
           <div className={classes.client}>
             <div className={classes.label}>{view.isInvoice ? 'Invoice to:' : 'Quote for:'}</div>
-            <div className={classes.clientName}>{client.name || 'Client name'}</div>
+            <ClientName view={view} className={classes.clientName} />
             {view.clientContact && <div className={classes.lines}>{view.clientContact}</div>}
-            {client.address && <div className={classes.lines}>{client.address}</div>}
+            <ClientAddress view={view} className={classes.lines} />
             {client.gstin && <div className={classes.lines}>GSTIN {client.gstin}</div>}
           </div>
         </div>
@@ -66,8 +66,8 @@ export function AgencyTemplate({ view }: { view: DocumentView }) {
           {view.items.map((item) => (
             <tr key={item.id}>
               <td className={classes.strong}><ItemText item={item} view={view} /></td>
-              <td className={classes.num}>{view.qty(item)}</td>
-              <td className={classes.num}>{view.money(item.rate)}</td>
+              <td className={classes.num}><ItemQty item={item} view={view} /></td>
+              <td className={classes.num}><ItemRate item={item} view={view} /></td>
               <td className={`${classes.num} ${classes.strong}`}>{view.money(item.amount)}</td>
             </tr>
           ))}
@@ -93,7 +93,7 @@ export function AgencyTemplate({ view }: { view: DocumentView }) {
         {(draft.terms || draft.notes) && (
           <div className={classes.terms}>
             <div className={classes.termsTitle}>{draft.terms ? `${view.termsLabel}:` : 'Notes:'}</div>
-            <div className={classes.lines}>{draft.terms || draft.notes}</div>
+            <NoteText kind={draft.terms ? 'terms' : 'notes'} value={draft.terms || draft.notes} className={classes.lines} />
           </div>
         )}
         <div className={classes.bar} />

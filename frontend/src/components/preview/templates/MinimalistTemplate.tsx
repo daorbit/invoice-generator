@@ -1,6 +1,6 @@
 import type { DocumentView } from '../useDocumentView';
 import { UpiQr, pageClasses } from './PageShell';
-import { ItemText } from './Extras';
+import { ClientAddress, ClientName, ItemQty, ItemRate, ItemText, NoteText } from './Extras';
 import classes from './Minimalist.module.css';
 
 export function MinimalistTemplate({ view }: { view: DocumentView }) {
@@ -26,8 +26,8 @@ export function MinimalistTemplate({ view }: { view: DocumentView }) {
         </div>
         <div>
           <div className={classes.label}>{view.clientLabel}</div>
-          <div className={classes.name}>{client.name || 'Client name'}</div>
-          {client.address && <div className={classes.lines}>{client.address}</div>}
+          <ClientName view={view} className={classes.name} />
+          <ClientAddress view={view} className={classes.lines} />
           {client.gstin && <div className={classes.lines}>GSTIN {client.gstin}</div>}
           {view.clientContact && <div className={classes.lines}>{view.clientContact}</div>}
         </div>
@@ -61,8 +61,8 @@ export function MinimalistTemplate({ view }: { view: DocumentView }) {
           {view.items.map((item) => (
             <tr key={item.id}>
               <td><ItemText item={item} view={view} /></td>
-              <td className={classes.num}>{view.qty(item)}</td>
-              <td className={classes.num}>{view.money(item.rate)}</td>
+              <td className={classes.num}><ItemQty item={item} view={view} /></td>
+              <td className={classes.num}><ItemRate item={item} view={view} /></td>
               <td className={classes.num}>{view.money(item.amount)}</td>
             </tr>
           ))}
@@ -111,13 +111,13 @@ export function MinimalistTemplate({ view }: { view: DocumentView }) {
           {view.draft.notes && (
             <>
               <div className={classes.label}>Notes</div>
-              <div className={classes.noteText}>{view.draft.notes}</div>
+              <NoteText kind="notes" value={view.draft.notes} className={classes.noteText} />
             </>
           )}
           {view.draft.terms && (
             <>
               <div className={classes.label}>{view.termsLabel}</div>
-              <div className={classes.noteText}>{view.draft.terms}</div>
+              <NoteText kind="terms" value={view.draft.terms} className={classes.noteText} />
             </>
           )}
         </div>

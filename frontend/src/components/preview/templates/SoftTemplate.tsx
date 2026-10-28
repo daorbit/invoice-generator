@@ -1,6 +1,8 @@
 import type { DocumentView } from '../useDocumentView';
 import { UpiQr } from './PageShell';
-import { DetailRows, ItemText } from './Extras';
+import { ClientAddress, ClientName, DetailRows, ItemQty, ItemRate, ItemText, NoteText } from './Extras';
+import { InlineText } from '../inline/InlineText';
+import { NOTES } from '../inline/inlineTargets';
 import classes from './Soft.module.css';
 
 export function SoftTemplate({ view }: { view: DocumentView }) {
@@ -20,8 +22,8 @@ export function SoftTemplate({ view }: { view: DocumentView }) {
       <div className={classes.two}>
         <div className={classes.card}>
           <div className={classes.label}>To</div>
-          <div className={classes.name}>{client.name || 'Client name'}</div>
-          {client.address && <div className={classes.lines}>{client.address}</div>}
+          <ClientName view={view} className={classes.name} />
+          <ClientAddress view={view} className={classes.lines} />
           {client.gstin && <div className={classes.lines}>GSTIN {client.gstin}</div>}
           {view.clientContact && <div className={classes.lines}>{view.clientContact}</div>}
         </div>
@@ -52,8 +54,8 @@ export function SoftTemplate({ view }: { view: DocumentView }) {
             {view.items.map((item) => (
               <tr key={item.id}>
                 <td><ItemText item={item} view={view} /></td>
-                <td className={classes.num}>{view.qty(item)}</td>
-                <td className={classes.num}>{view.money(item.rate)}</td>
+                <td className={classes.num}><ItemQty item={item} view={view} /></td>
+                <td className={classes.num}><ItemRate item={item} view={view} /></td>
                 <td className={classes.num}>{view.money(item.amount)}</td>
               </tr>
             ))}
@@ -80,8 +82,16 @@ export function SoftTemplate({ view }: { view: DocumentView }) {
 
       <div className={classes.two}>
         <div className={`${classes.card} ${classes.thanks}`}>
-          <div className={classes.thanksTitle}>{draft.notes || 'Thank you for the business!'}</div>
-          {draft.terms && <div className={classes.lines}>{draft.terms}</div>}
+          <InlineText
+            block
+            multiline
+            className={classes.thanksTitle}
+            target={NOTES}
+            value={draft.notes}
+            fallback="Thank you for the business!"
+            label="Notes"
+          />
+          {draft.terms && <NoteText kind="terms" value={draft.terms} className={classes.lines} />}
         </div>
         <div className={`${classes.card} ${classes.bank}`}>
           {view.payment.length ? <DetailRows rows={view.payment} /> : <span className={classes.lines}>Authorised signatory</span>}

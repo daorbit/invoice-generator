@@ -24,6 +24,7 @@ import { ScheduleStep } from './editor/ScheduleStep';
 import { PricingStep } from './editor/PricingStep';
 import { NotesStep } from './editor/NotesStep';
 import { PreviewCanvas } from './editor/PreviewCanvas';
+import { usePreviewCommit } from './editor/usePreviewCommit';
 import { StatusMenu } from './editor/StatusMenu';
 import { ActivityLine } from './editor/ActivityLine';
 import classes from './DocumentEditorPage.module.css';
@@ -61,6 +62,8 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
     onLoaded: editor.apply,
     onShareUrl: editor.setShareUrl,
   });
+
+  const commitPreview = usePreviewCommit(editor);
 
   const download = () => void pdf.download(draft?.number || meta.singular);
   const openPreview = () => setPreviewOpen(true);
@@ -163,7 +166,7 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
               <PricingStep draft={draft} setField={editor.setField} applyTaxRate={editor.applyTaxRate} />
               <NotesStep draft={draft} setField={editor.setField} />
             </div>
-            <PreviewCanvas draft={draft} onDesign={openPreview} />
+            <PreviewCanvas draft={draft} onCommit={commitPreview} />
           </div>
 
           <PdfSource ref={pdfRef} draft={draft} />

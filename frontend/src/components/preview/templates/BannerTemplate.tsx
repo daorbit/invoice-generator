@@ -1,6 +1,6 @@
 import type { DocumentView } from '../useDocumentView';
 import { pageClasses } from './PageShell';
-import { AmountWords, NotesAndSignature, PaymentStrip, ItemText } from './Extras';
+import { AmountWords, ClientAddress, ClientName, ItemQty, ItemRate, ItemText, NotesAndSignature, PaymentStrip } from './Extras';
 import classes from './Banner.module.css';
 
 export function BannerTemplate({ view }: { view: DocumentView }) {
@@ -31,9 +31,9 @@ export function BannerTemplate({ view }: { view: DocumentView }) {
           {from.gstin && <div className={classes.heroLines}>GSTIN {from.gstin}</div>}
         </div>
         <div>
-          <div className={classes.partyName}>{client.name || 'Client name'}</div>
+          <ClientName view={view} className={classes.partyName} />
           {view.clientContact && <div className={classes.heroLines}>{view.clientContact}</div>}
-          {client.address && <div className={classes.heroLines}>{client.address}</div>}
+          <ClientAddress view={view} className={classes.heroLines} />
           {client.gstin && <div className={classes.heroLines}>GSTIN {client.gstin}</div>}
         </div>
       </div>
@@ -52,8 +52,8 @@ export function BannerTemplate({ view }: { view: DocumentView }) {
             {view.items.map((item) => (
               <tr key={item.id}>
                 <td className={classes.strong}><ItemText item={item} view={view} /></td>
-                <td className={classes.num}>{view.qty(item)}</td>
-                <td className={classes.num}>{view.money(item.rate)}</td>
+                <td className={classes.num}><ItemQty item={item} view={view} /></td>
+                <td className={classes.num}><ItemRate item={item} view={view} /></td>
                 <td className={`${classes.num} ${classes.strong}`}>{view.money(item.amount)}</td>
               </tr>
             ))}
