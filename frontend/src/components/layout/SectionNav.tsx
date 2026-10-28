@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Tooltip } from '@mantine/core';
-import { ChartColumn, FileText, Package, ReceiptText, UsersRound, type LucideIcon } from 'lucide-react';
+import { ChartColumn, FileText, Package, ReceiptText, Settings, UsersRound, type LucideIcon } from 'lucide-react';
 import classes from './SectionNav.module.css';
 
 interface Section {
@@ -32,6 +32,18 @@ const GROUPS: { label: string; sections: Section[] }[] = [
   },
 ];
 
+const SETTINGS: Section = { to: '/settings', label: 'Settings', icon: Settings };
+
+function RailLink({ to, label, icon: Icon, end }: Section) {
+  return (
+    <Tooltip label={label} position="left" withArrow openDelay={120}>
+      <NavLink to={to} end={end} className={classes.link} aria-label={label}>
+        <Icon size={18} strokeWidth={1.9} />
+      </NavLink>
+    </Tooltip>
+  );
+}
+
 export function SectionNav() {
   return (
     <nav className={classes.rail} aria-label="Invoicing">
@@ -39,16 +51,15 @@ export function SectionNav() {
         <Fragment key={group.label}>
           {index > 0 && <span className={classes.divider} aria-hidden />}
           <div className={classes.group} role="group" aria-label={group.label}>
-            {group.sections.map(({ to, label, icon: Icon, end }) => (
-              <Tooltip key={to} label={label} position="left" withArrow openDelay={120}>
-                <NavLink to={to} end={end} className={classes.link} aria-label={label}>
-                  <Icon size={18} strokeWidth={1.9} />
-                </NavLink>
-              </Tooltip>
+            {group.sections.map((section) => (
+              <RailLink key={section.to} {...section} />
             ))}
           </div>
         </Fragment>
       ))}
+      <div className={classes.footer}>
+        <RailLink {...SETTINGS} />
+      </div>
     </nav>
   );
 }

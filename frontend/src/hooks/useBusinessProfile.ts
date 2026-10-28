@@ -14,6 +14,10 @@ function loadProfile(): Promise<BusinessProfileResponse> {
   return cached;
 }
 
+export function rememberBusinessProfile(response: BusinessProfileResponse) {
+  cached = Promise.resolve(response);
+}
+
 export function useBusinessProfile() {
   const [data, setData] = useState<BusinessProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);

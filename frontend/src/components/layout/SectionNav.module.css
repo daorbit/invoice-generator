@@ -23,6 +23,12 @@
   gap: 4px;
 }
 
+.footer {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+}
+
 .divider {
   flex-shrink: 0;
   width: 20px;
@@ -76,6 +82,11 @@
 
   .group {
     flex-direction: row;
+  }
+
+  .footer {
+    margin-top: 0;
+    margin-left: 6px;
   }
 
   .divider {

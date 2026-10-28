@@ -14,6 +14,7 @@ const CustomerDetailPage = lazy(() =>
 );
 const ItemsPage = lazy(() => import('@/pages/ItemsPage').then((m) => ({ default: m.ItemsPage })));
 const ReportsPage = lazy(() => import('@/pages/ReportsPage').then((m) => ({ default: m.ReportsPage })));
+const SettingsPage = lazy(() => import('@/pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const PublicDocumentPage = lazy(() => import('@/pages/PublicDocumentPage'));
 
 export function App() {
@@ -43,6 +44,7 @@ export function App() {
           <Route path="/customers/:id" element={<CustomerDetailPage />} />
           <Route path="/items" element={<ItemsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

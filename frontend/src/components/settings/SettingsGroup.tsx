@@ -22,18 +22,32 @@ export function SettingRow({
   label,
   hint,
   stacked = false,
+  required = false,
+  alignTop = false,
   children,
 }: {
   label?: string;
   hint?: ReactNode;
   stacked?: boolean;
+  required?: boolean;
+  alignTop?: boolean;
   children: ReactNode;
 }) {
   return (
-    <div className={classes.row} data-stacked={stacked || undefined}>
+    <div className={classes.row} data-stacked={stacked || undefined} data-align-top={alignTop || undefined}>
       {(label || hint) && (
         <div className={classes.rowText}>
-          {label && <div className={classes.rowLabel}>{label}</div>}
+          {label && (
+            <div className={classes.rowLabel}>
+              {label}
+              {required && (
+                <span className={classes.required} aria-hidden>
+                  {' '}
+                  *
+                </span>
+              )}
+            </div>
+          )}
           {hint && <div className={classes.rowHint}>{hint}</div>}
         </div>
       )}

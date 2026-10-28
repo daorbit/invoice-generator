@@ -1,0 +1,50 @@
+.field {
+  width: 300px;
+}
+
+.short {
+  width: 220px;
+}
+
+.prefix {
+  width: 130px;
+}
+
+.logoRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.logoBox {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.logoImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.logoEmpty {
+  font-size: 11px;
+  text-align: center;
+  color: #6b7280;
+}
+
+@container (max-width: 600px) {
+  .field,
+  .short,
+  .prefix {
+    width: 100%;
+  }
+}

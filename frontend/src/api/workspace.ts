@@ -1,6 +1,6 @@
 import { apiClient, call } from './client';
 import type { DashboardStats } from '@/types/document';
-import type { BusinessProfileResponse } from '@/types/businessProfile';
+import type { BusinessProfile, BusinessProfileResponse } from '@/types/businessProfile';
 
 export async function getDashboardStats(): Promise<DashboardStats> {
   const response = await call(() => apiClient.get<{ data: DashboardStats }>('/dashboard/stats'));
@@ -9,4 +9,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
 export function getBusinessProfile(): Promise<BusinessProfileResponse> {
   return call(() => apiClient.get<BusinessProfileResponse>('/settings'));
+}
+
+export function saveBusinessProfile(profile: BusinessProfile): Promise<BusinessProfileResponse> {
+  return call(() => apiClient.put<BusinessProfileResponse>('/settings', profile));
 }
