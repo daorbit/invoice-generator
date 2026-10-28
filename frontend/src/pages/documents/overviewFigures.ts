@@ -1,6 +1,6 @@
 import type { MeterSegment } from '@/components/ui/SplitMeter';
 import { formatMoney, plural } from '@/lib/format';
-import type { DashboardStats, DocumentKind } from '@/types/document';
+import type { CurrencyDashboardStats, DocumentKind } from '@/types/document';
 
 export interface OverviewFigure {
   label: string;
@@ -18,14 +18,9 @@ export interface OverviewModel {
   figures: OverviewFigure[];
 }
 
-function invoiceOverview(stats: DashboardStats, currency: string): OverviewModel {
-  const money = (value: number) => formatMoney(value, currency);
-  const receivables = stats.receivables ?? {
-    current: stats.revenue.pending,
-    overdue: 0,
-    openCount: stats.invoices.unpaid,
-    overdueCount: 0,
-  };
+function invoiceOverview(stats: CurrencyDashboardStats): OverviewModel {
+  const money = (value: number) => formatMoney(value, stats.currency);
+  const receivables = stats.receivables;
   const drafts = stats.invoices.byStatus?.draft ?? 0;
 
   return {
@@ -46,7 +41,7 @@ function invoiceOverview(stats: DashboardStats, currency: string): OverviewModel
   };
 }
 
-function quotationOverview(stats: DashboardStats): OverviewModel {
+function quotationOverview(stats: CurrencyDashboardStats): OverviewModel {
   const { pending, accepted, rejected, total } = stats.quotations;
   const expired = stats.quotations.byStatus?.expired ?? 0;
   const decided = accepted + rejected;
@@ -69,6 +64,6 @@ function quotationOverview(stats: DashboardStats): OverviewModel {
   };
 }
 
-export function overviewFor(kind: DocumentKind, stats: DashboardStats, currency: string): OverviewModel {
-  return kind === 'invoice' ? invoiceOverview(stats, currency) : quotationOverview(stats);
+export function overviewFor(kind: DocumentKind, stats: CurrencyDashboardStats): OverviewModel {
+  return kind === 'invoice' ? invoiceOverview(stats) : quotationOverview(stats);
 }

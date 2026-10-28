@@ -1,13 +1,18 @@
 import { Fragment } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Tooltip } from '@mantine/core';
-import { ChartColumn, FileText, Package, ReceiptText, Settings, UsersRound, type LucideIcon } from 'lucide-react';
+import invoicesIcon from '@/assets/rail-icons/invoices.svg';
+import quotationsIcon from '@/assets/rail-icons/quotations.svg';
+import customersIcon from '@/assets/rail-icons/customers.svg';
+import itemsIcon from '@/assets/rail-icons/items.svg';
+import reportsIcon from '@/assets/rail-icons/reports.svg';
+import settingsIcon from '@/assets/rail-icons/settings.svg';
 import classes from './SectionNav.module.css';
 
 interface Section {
   to: string;
   label: string;
-  icon: LucideIcon;
+  icon: string;
   end?: boolean;
 }
 
@@ -15,30 +20,30 @@ const GROUPS: { label: string; sections: Section[] }[] = [
   {
     label: 'Sales',
     sections: [
-      { to: '/', label: 'Invoices', icon: ReceiptText, end: true },
-      { to: '/quotations', label: 'Quotations', icon: FileText, end: true },
+      { to: '/', label: 'Invoices', icon: invoicesIcon, end: true },
+      { to: '/quotations', label: 'Quotations', icon: quotationsIcon, end: true },
     ],
   },
   {
     label: 'Contacts',
     sections: [
-      { to: '/customers', label: 'Customers', icon: UsersRound },
-      { to: '/items', label: 'Items', icon: Package },
+      { to: '/customers', label: 'Customers', icon: customersIcon },
+      { to: '/items', label: 'Items', icon: itemsIcon },
     ],
   },
   {
     label: 'Insights',
-    sections: [{ to: '/reports', label: 'Reports', icon: ChartColumn }],
+    sections: [{ to: '/reports', label: 'Reports', icon: reportsIcon }],
   },
 ];
 
-const SETTINGS: Section = { to: '/settings', label: 'Settings', icon: Settings };
+const SETTINGS: Section = { to: '/settings', label: 'Settings', icon: settingsIcon };
 
-function RailLink({ to, label, icon: Icon, end }: Section) {
+function RailLink({ to, label, icon, end }: Section) {
   return (
     <Tooltip label={label} position="left" withArrow openDelay={120}>
       <NavLink to={to} end={end} className={classes.link} aria-label={label}>
-        <Icon size={18} strokeWidth={1.9} />
+        <img src={icon} alt="" className={classes.icon} width={26} height={26} />
       </NavLink>
     </Tooltip>
   );

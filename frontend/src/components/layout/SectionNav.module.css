@@ -42,18 +42,19 @@
   width: 40px;
   height: 40px;
   border-radius: 11px;
-  color: var(--muted);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease;
+}
+
+.icon {
+  display: block;
 }
 
 .link:hover {
   background: color-mix(in srgb, var(--text) 6%, transparent);
-  color: var(--text);
 }
 
 .link:global(.active) {
   background: var(--selected-bg);
-  color: var(--selected-fg);
 }
 
 .link:focus-visible {

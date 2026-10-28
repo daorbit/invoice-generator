@@ -29,6 +29,11 @@ export async function getBusinessProfile(workspaceId: string) {
   return respond(toProfile(doc));
 }
 
+export async function getHomeCurrency(workspaceId: string): Promise<string> {
+  const doc = await BusinessProfile.findOne({ workspaceId }).select('currency').lean();
+  return doc?.currency ?? DEFAULT_PROFILE.currency;
+}
+
 export async function saveBusinessProfile(
   workspaceId: string,
   actorId: string | undefined,

@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Skeleton } from '@mantine/core';
 import { SplitMeter } from '@/components/ui/SplitMeter';
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import type { DashboardStats, DocumentKind } from '@/types/document';
 import { overviewFor } from './overviewFigures';
 import classes from './DocumentsOverview.module.css';
@@ -7,7 +9,6 @@ import classes from './DocumentsOverview.module.css';
 interface Props {
   kind: DocumentKind;
   stats: DashboardStats | null;
-  currency: string;
 }
 
 function OverviewSkeleton() {
@@ -30,14 +31,30 @@ function OverviewSkeleton() {
   );
 }
 
-export function DocumentsOverview({ kind, stats, currency }: Props) {
+export function DocumentsOverview({ kind, stats }: Props) {
+  const [selected, setSelected] = useState<string | null>(null);
   if (!stats) return <OverviewSkeleton />;
-  const model = overviewFor(kind, stats, currency);
+
+  const currency = selected && stats.byCurrency[selected] ? selected : stats.currency;
+  const currencyStats = stats.byCurrency[currency] ?? stats;
+  const model = overviewFor(kind, currencyStats);
+  const hasMultipleCurrencies = stats.currencies.length > 1;
 
   return (
     <section className={classes.root} aria-label={model.eyebrow}>
       <div className={classes.primary}>
-        <span className={classes.eyebrow}>{model.eyebrow}</span>
+        <div className={classes.headerRow}>
+          <span className={classes.eyebrow}>{model.eyebrow}</span>
+          {hasMultipleCurrencies && (
+            <SegmentedTabs
+              value={currency}
+              onChange={setSelected}
+              ariaLabel="Currency"
+              size="sm"
+              data={stats.currencies.map((code) => ({ value: code, label: code }))}
+            />
+          )}
+        </div>
         <span className={classes.headline}>{model.headline}</span>
         <span className={classes.caption}>{model.caption}</span>
         <div className={classes.meter}>

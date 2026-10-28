@@ -21,6 +21,13 @@
   color: var(--muted);
 }
 
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .headline {
   margin-top: 6px;
   font-family: var(--font-display);

@@ -34,7 +34,7 @@ export function DocumentsPage({ kind }: { kind: DocumentKind }) {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const hostPhone = useHostPhone();
-  const { profile, complete, loading: profileLoading } = useBusinessProfile();
+  const { complete, loading: profileLoading } = useBusinessProfile();
   const { stats, reload: reloadStats } = useDashboardStats();
   const list = useDocumentList(kind);
   const { reload: reloadList } = list;
@@ -72,7 +72,7 @@ export function DocumentsPage({ kind }: { kind: DocumentKind }) {
 
       {!profileLoading && !complete && <SetupNotice />}
 
-      <DocumentsOverview kind={kind} stats={stats} currency={profile?.currency || 'INR'} />
+      <DocumentsOverview kind={kind} stats={stats} />
 
       <DocumentsToolbar
         kind={kind}

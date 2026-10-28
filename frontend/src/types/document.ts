@@ -217,7 +217,8 @@ export interface DocumentQuery {
   search?: string;
 }
 
-export interface DashboardStats {
+export interface CurrencyDashboardStats {
+  currency: string;
   invoices: { total: number; paid: number; unpaid: number; recent: number; byStatus?: Partial<Record<DocumentStatus, number>> };
   quotations: {
     total: number;
@@ -228,7 +229,12 @@ export interface DashboardStats {
     byStatus?: Partial<Record<DocumentStatus, number>>;
   };
   revenue: { total: number; paid: number; pending: number };
-  receivables?: { current: number; overdue: number; openCount: number; overdueCount: number };
+  receivables: { current: number; overdue: number; openCount: number; overdueCount: number };
+}
+
+export interface DashboardStats extends CurrencyDashboardStats {
+  currencies: string[];
+  byCurrency: Record<string, CurrencyDashboardStats>;
 }
 
 export interface EmailRequest {
