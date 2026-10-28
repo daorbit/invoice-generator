@@ -28,7 +28,7 @@ export interface DocumentEmail {
   pdf?: { filename: string; content: string };
 }
 
-function quantalogConfigured(): boolean {
+export function quantalogConfigured(): boolean {
   return Boolean(env.quantalogApiUrl && env.invoiceServiceSecret);
 }
 

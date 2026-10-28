@@ -6,6 +6,7 @@ import { dashboardRouter } from './dashboard.route.js';
 import { settingsRouter } from './settings.route.js';
 import { customerRouter, itemRouter } from './catalog.route.js';
 import { reportRouter } from './report.route.js';
+import { orbitRouter } from './orbit.route.js';
 
 export const workspaceRouter = Router({ mergeParams: true });
 
@@ -17,3 +18,4 @@ workspaceRouter.use('/items', itemRouter);
 workspaceRouter.use('/reports', reportRouter);
 workspaceRouter.use('/dashboard', dashboardRouter);
 workspaceRouter.use('/settings', settingsRouter);
+workspaceRouter.use('/orbit', orbitRouter);

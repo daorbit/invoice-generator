@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { HostNotificationsBell } from '@/components/ui/HostNotificationsBell';
 import { PdfSource } from '@/components/preview/PdfSource';
 import { BrandLogoProvider } from '@/components/preview/BrandLogo';
+import { OrbitMark } from '@/components/orbit/OrbitMark';
 import { useHostPhone } from '@/hooks/useHostPhone';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { useDocumentEditor } from '@/hooks/useDocumentEditor';
@@ -31,6 +32,7 @@ import classes from './DocumentEditorPage.module.css';
 
 const PreviewStudio = lazy(() => import('@/components/preview/PreviewStudio'));
 const ShareStudio = lazy(() => import('./editor/share/ShareStudio'));
+const OrbitStudio = lazy(() => import('./editor/orbit/OrbitStudio'));
 
 export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
   const { id } = useParams<{ id: string }>();
@@ -43,6 +45,7 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
   const pdf = usePdfDownload(pdfRef);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [orbitOpen, setOrbitOpen] = useState(() => params.get('orbit') === '1');
   const meta = KIND_META[kind];
   const backTo = kind === 'quotation' ? '/quotations' : '/';
   const { draft } = editor;
@@ -107,6 +110,9 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
         actions={
           <>
             {id && draft && <StatusMenu kind={kind} id={id} status={draft.status} onChange={editor.markStatus} />}
+            <Button variant="default" leftSection={<OrbitMark size={16} />} disabled={!draft} onClick={() => setOrbitOpen(true)}>
+              Orbit
+            </Button>
             <Tooltip label="Preview and design" withArrow>
               <ActionIcon variant="default" size="lg" radius="md" aria-label="Preview" disabled={!draft} onClick={openPreview}>
                 <Eye size={17} />
@@ -182,6 +188,12 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
                 onAccent={(value) => editor.setField('accent', value)}
                 onDownload={download}
               />
+            </Suspense>
+          )}
+
+          {orbitOpen && (
+            <Suspense fallback={null}>
+              <OrbitStudio opened draft={draft} onApply={editor.replaceDraft} onClose={() => setOrbitOpen(false)} />
             </Suspense>
           )}
 

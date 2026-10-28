@@ -147,6 +147,10 @@ export function useDocumentEditor(
     setDraft((d) => (d ? { ...d, tax: rate, items: d.items.map((item) => ({ ...item, taxRate: rate })) } : d));
   }, []);
 
+  const replaceDraft = useCallback((next: DocumentDraft) => {
+    setDraft(next);
+  }, []);
+
   const setShareUrl = useCallback((shareUrl: string | null) => {
     setActivity((current) => ({
       views: { count: 0, firstAt: null, lastAt: null },
@@ -200,6 +204,7 @@ export function useDocumentEditor(
     addItem,
     removeItem,
     applyTaxRate,
+    replaceDraft,
     markStatus,
     setShareUrl,
     apply,
