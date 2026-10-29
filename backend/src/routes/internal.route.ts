@@ -2,9 +2,12 @@ import { Router } from 'express';
 import { env } from '../config/env.js';
 import { asyncHandler } from '../middleware/async-handler.js';
 import { requireBearerSecret } from '../middleware/require-bearer-secret.js';
+import { formsInternalRouter } from './forms-internal.route.js';
 import { purgeWorkspace } from '../services/workspace-purge.service.js';
 
 export const internalRouter = Router();
+
+internalRouter.use('/forms', formsInternalRouter);
 
 internalRouter.use(requireBearerSecret(() => env.invoiceServiceSecret, 'INVOICE_SERVICE_SECRET'));
 

@@ -55,7 +55,12 @@ export async function getInvoice(workspaceId: string, id: string) {
   return toInvoiceResponse(doc);
 }
 
-export async function createInvoice(workspaceId: string, actorId: string | undefined, input: InvoiceInput) {
+export async function createInvoice(
+  workspaceId: string,
+  actorId: string | undefined,
+  input: InvoiceInput,
+  extra: Record<string, unknown> = {}
+) {
   const { invoiceNumber, ...rest } = input;
   const prepared = await prepare(workspaceId, actorId, rest);
   const number = invoiceNumber || (await nextDocumentNumber(workspaceId, 'invoice'));
@@ -64,6 +69,7 @@ export async function createInvoice(workspaceId: string, actorId: string | undef
     createdBy: actorId,
     invoiceNumber: number,
     ...prepared,
+    ...extra,
   });
   return toInvoiceResponse(doc.toObject());
 }
