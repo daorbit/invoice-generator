@@ -7,7 +7,7 @@
 .content {
   container-type: inline-size;
   min-width: 0;
-  padding: 28px 28px 40px;
+  padding: 16px 16px 32px;
 }
 
 @media (max-width: 56em) {

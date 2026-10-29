@@ -57,3 +57,12 @@ html[data-host-bg='textured'] #root {
   background: transparent !important;
   background-color: transparent !important;
 }
+
+@media (max-width: 48em) and (pointer: coarse) {
+  :root .mantine-Input-input,
+  :root .mantine-Textarea-input,
+  :root .mantine-Select-input,
+  :root .mantine-NumberInput-input {
+    font-size: 16px;
+  }
+}

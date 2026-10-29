@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { ActionIcon, Tooltip } from '@mantine/core';
-import { RefreshCwIcon } from 'lucide-react';
+import { useMediaQuery } from '@mantine/hooks';
+import { RefreshCwIcon, SearchIcon, XIcon } from 'lucide-react';
 import { SearchField } from '@/components/ui/SearchField';
 import { SegmentedTabs, type SegmentedTabItem } from '@/components/ui/SegmentedTabs';
 import toolbar from '@/components/ui/toolbar.module.css';
@@ -41,31 +43,57 @@ function statusTabs(kind: DocumentKind, status: StatusFilter, counts: StatusCoun
 }
 
 export function DocumentsToolbar({ kind, status, search, loading, counts, onStatus, onSearch, onRefresh }: Props) {
+  const compact = useMediaQuery('(max-width: 48em)') ?? false;
+  const [searchOpen, setSearchOpen] = useState(false);
+  const expanded = !compact || searchOpen || search !== '';
+  const showFilters = !compact || !expanded;
+  const searchLabel = `Search ${KIND_META[kind].plural.toLowerCase()}`;
+
+  const closeSearch = () => {
+    onSearch('');
+    setSearchOpen(false);
+  };
+
   return (
     <div className={classes.root}>
-      <div className={classes.filters}>
-        <SegmentedTabs
-          ariaLabel="Filter by status"
-          value={status}
-          onChange={onStatus}
-          data={statusTabs(kind, status, counts)}
-          size="sm"
-        />
-      </div>
+      {showFilters && (
+        <div className={classes.filters}>
+          <SegmentedTabs
+            ariaLabel="Filter by status"
+            value={status}
+            onChange={onStatus}
+            data={statusTabs(kind, status, counts)}
+            size="sm"
+          />
+        </div>
+      )}
 
-      <div className={classes.end}>
-        <SearchField
-          value={search}
-          onChange={onSearch}
-          placeholder="Search number or customer"
-          ariaLabel={`Search ${KIND_META[kind].plural.toLowerCase()}`}
-          className={classes.search}
-        />
-        <Tooltip label="Refresh" withArrow>
-          <ActionIcon variant="subtle" className={toolbar.iconButton} size={34} radius="xl" onClick={onRefresh} aria-label="Refresh">
-            <RefreshCwIcon size={16} className={loading ? toolbar.spinning : undefined} />
+      <div className={classes.end} data-open={compact && expanded ? '' : undefined}>
+        {expanded ? (
+          <SearchField
+            value={search}
+            onChange={onSearch}
+            placeholder="Search number or customer"
+            ariaLabel={searchLabel}
+            className={classes.search}
+            autoFocus={compact}
+          />
+        ) : (
+          <ActionIcon variant="subtle" className={toolbar.iconButton} size={34} radius="xl" onClick={() => setSearchOpen(true)} aria-label={searchLabel}>
+            <SearchIcon size={16} />
           </ActionIcon>
-        </Tooltip>
+        )}
+        {compact && expanded ? (
+          <ActionIcon variant="subtle" className={toolbar.iconButton} size={34} radius="xl" onClick={closeSearch} aria-label="Close search">
+            <XIcon size={16} />
+          </ActionIcon>
+        ) : (
+          <Tooltip label="Refresh" withArrow>
+            <ActionIcon variant="subtle" className={toolbar.iconButton} size={34} radius="xl" onClick={onRefresh} aria-label="Refresh">
+              <RefreshCwIcon size={16} className={loading ? toolbar.spinning : undefined} />
+            </ActionIcon>
+          </Tooltip>
+        )}
       </div>
     </div>
   );

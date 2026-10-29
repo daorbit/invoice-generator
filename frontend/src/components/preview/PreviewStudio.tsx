@@ -1,6 +1,7 @@
 import 'da-frame-set/styles.css';
 import { useState } from 'react';
 import { Button } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import { Download, Palette } from 'lucide-react';
 import { DeviceFrame, frameSize, getDevice, useFitScale } from 'da-frame-set';
 import { StudioModal, studioClasses } from '@/components/studio/StudioModal';
@@ -22,7 +23,8 @@ interface Props {
 }
 
 export default function PreviewStudio({ opened, draft, downloading, onClose, onTemplate, onAccent, onDownload }: Props) {
-  const [device, setDevice] = useState<PreviewDevice>('laptop');
+  const narrow = useMediaQuery('(max-width: 48em)', false, { getInitialValueInEffect: false });
+  const [device, setDevice] = useState<PreviewDevice>(narrow ? 'phone' : 'laptop');
   const [designOpen, setDesignOpen] = useState(true);
   const size = frameSize(getDevice(DEVICE_FRAME[device]));
   const { ref, scale, measured } = useFitScale({

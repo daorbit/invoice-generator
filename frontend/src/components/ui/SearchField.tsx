@@ -8,9 +8,10 @@ interface Props {
   placeholder?: string;
   ariaLabel: string;
   className?: string;
+  autoFocus?: boolean;
 }
 
-export function SearchField({ value, onChange, placeholder = 'Search', ariaLabel, className }: Props) {
+export function SearchField({ value, onChange, placeholder = 'Search', ariaLabel, className, autoFocus }: Props) {
   return (
     <TextInput
       placeholder={placeholder}
@@ -25,6 +26,7 @@ export function SearchField({ value, onChange, placeholder = 'Search', ariaLabel
         ) : undefined
       }
       aria-label={ariaLabel}
+      autoFocus={autoFocus}
       classNames={{
         root: `${classes.root} ${className ?? ''}`,
         input: classes.input,

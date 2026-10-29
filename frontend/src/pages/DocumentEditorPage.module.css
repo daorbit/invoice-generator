@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  padding: 16px 24px 16px;
+  padding: 16px;
   overflow: hidden;
 }
 
@@ -45,12 +45,14 @@
   gap: 20px;
 }
 
-@container (max-width: 980px) {
+@media (max-width: 61.25em) {
   .page {
     height: auto;
     overflow: visible;
   }
+}
 
+@container (max-width: 980px) {
   .workspace,
   .loading {
     grid-template-columns: minmax(0, 1fr);
