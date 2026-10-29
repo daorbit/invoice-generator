@@ -6,7 +6,6 @@ import { SectionPage } from '@/components/layout/SectionPage';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DocsButton } from '@/components/ui/DocsButton';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { OrbitMark } from '@/components/orbit/OrbitMark';
 import { HostNotificationsBell } from '@/components/ui/HostNotificationsBell';
 import { useHostPhone } from '@/hooks/useHostPhone';
 import { useBusinessProfile } from '@/hooks/useBusinessProfile';
@@ -63,13 +62,6 @@ export function DocumentsPage({ kind }: { kind: DocumentKind }) {
         description={DESCRIPTION[kind]}
         actions={
           <>
-            <Button
-              variant="default"
-              leftSection={<OrbitMark size={16} />}
-              onClick={() => navigate(`${DOCUMENT_PATH[kind]}/new?orbit=1`)}
-            >
-              Draft with Orbit
-            </Button>
             <Button leftSection={<Plus size={16} />} onClick={create}>
               New {meta.singular.toLowerCase()}
             </Button>
