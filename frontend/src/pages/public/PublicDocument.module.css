@@ -69,9 +69,20 @@
   color: var(--text-2);
 }
 
-.reply[data-decision] {
+.reply[data-decision],
+.reply[data-closed] {
   justify-content: flex-start;
   gap: 8px;
+}
+
+.reply[data-closed] {
+  flex-wrap: nowrap;
+  color: var(--text-2);
+}
+
+.reply[data-closed] svg {
+  flex-shrink: 0;
+  color: var(--muted);
 }
 
 .reply[data-decision='accepted'] svg {

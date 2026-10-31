@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { Button, Group, Modal, TextInput, Textarea } from '@mantine/core';
-import { CircleCheck, CircleX } from 'lucide-react';
+import { CalendarX, CircleCheck, CircleX } from 'lucide-react';
 import dayjs from 'dayjs';
 import { replyToQuotation, type PublicDocument } from '@/api/public';
+import { daysUntil, formatDate } from '@/lib/format';
 import { notify } from '@/lib/notify';
-import type { ClientResponse } from '@/types/document';
+import type { ClientResponse, DocumentStatus } from '@/types/document';
 import classes from './PublicDocument.module.css';
 
 type Decision = ClientResponse['decision'];
+
+const OPEN_STATUSES: DocumentStatus[] = ['draft', 'sent'];
 
 interface Props {
   token: string;
@@ -48,7 +51,22 @@ export function QuoteReply({ token, document, onReplied }: Props) {
     );
   }
 
-  if (!document.canRespond) return null;
+  const validUntil = document.draft.dueDate;
+  const lapsed = validUntil !== null && daysUntil(validUntil) < 0;
+  const expired = document.draft.status === 'expired' || (OPEN_STATUSES.includes(document.draft.status) && lapsed);
+
+  if (!document.canRespond) {
+    if (!expired) return null;
+    return (
+      <div className={classes.reply} data-closed>
+        <CalendarX size={17} />
+        <span className={classes.replyText}>
+          {validUntil ? `This quotation expired on ${formatDate(validUntil)}.` : 'This quotation has expired.'} Ask{' '}
+          {document.draft.from.name || 'the sender'} for an updated one.
+        </span>
+      </div>
+    );
+  }
 
   return (
     <>

@@ -10,12 +10,25 @@ export const STATUS_META: Record<DocumentStatus, StatusMeta> = {
   draft: { label: 'Draft', tone: 'idle' },
   sent: { label: 'Sent', tone: 'live' },
   paid: { label: 'Paid', tone: 'good' },
-  overdue: { label: 'Overdue', tone: 'warn' },
-  cancelled: { label: 'Cancelled', tone: 'bad' },
+  overdue: { label: 'Overdue', tone: 'bad' },
+  cancelled: { label: 'Cancelled', tone: 'idle' },
   accepted: { label: 'Accepted', tone: 'good' },
   rejected: { label: 'Rejected', tone: 'bad' },
-  expired: { label: 'Expired', tone: 'warn' },
+  expired: { label: 'Expired', tone: 'idle' },
 };
+
+const CLIENT_SENT_LABEL: Record<DocumentKind, string> = {
+  invoice: 'Awaiting payment',
+  quotation: 'Awaiting your reply',
+};
+
+export function clientStatusMeta(kind: DocumentKind, status: DocumentStatus): StatusMeta {
+  const meta = STATUS_META[status];
+  return status === 'sent' ? { ...meta, label: CLIENT_SENT_LABEL[kind] } : meta;
+}
+
+export const VOID_STATUSES: DocumentStatus[] = ['cancelled', 'rejected'];
+export const AWAITING_PAYMENT: DocumentStatus[] = ['sent', 'overdue'];
 
 export const STATUSES: Record<DocumentKind, DocumentStatus[]> = {
   invoice: ['draft', 'sent', 'paid', 'overdue', 'cancelled'],

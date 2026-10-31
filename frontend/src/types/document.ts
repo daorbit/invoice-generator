@@ -197,6 +197,7 @@ export interface DocumentSummary {
   issueDate: string | null;
   dueDate: string | null;
   total: number;
+  balanceDue?: number;
   currency: string;
   status: DocumentStatus;
   convertedInvoiceId?: string;

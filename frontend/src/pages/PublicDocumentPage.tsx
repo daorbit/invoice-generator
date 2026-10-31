@@ -11,7 +11,7 @@ import { BrandLogoProvider } from '@/components/preview/BrandLogo';
 import { useAsyncData } from '@/hooks/useAsyncData';
 import { usePdfDownload } from '@/hooks/usePdfDownload';
 import { PUBLIC_PREVIEW } from '@/lib/bootParams';
-import { KIND_META, STATUS_META } from '@/lib/documentMeta';
+import { KIND_META, clientStatusMeta } from '@/lib/documentMeta';
 import { QuoteReply } from './public/QuoteReply';
 import classes from './public/PublicDocument.module.css';
 
@@ -34,7 +34,7 @@ export default function PublicDocumentPage({ token }: { token: string }) {
 
   const draft = data?.draft;
   const label = draft ? KIND_META[draft.kind].singular : '';
-  const status = draft ? STATUS_META[draft.status] : null;
+  const status = draft ? clientStatusMeta(draft.kind, draft.status) : null;
   const logo = draft?.logo || data?.brandLogo || '';
 
   return (

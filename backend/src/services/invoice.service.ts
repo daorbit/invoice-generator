@@ -20,7 +20,7 @@ const LIST_FIELDS = '-logo -workspaceId -createdBy';
 export const COPY_EXCLUDED = '-_id -createdAt -updatedAt -__v -shareToken -views -lastEmail -scheduledEmail';
 
 const SORT_FIELD = {
-  date: 'createdAt',
+  date: 'invoiceDate',
   number: 'invoiceNumber',
   total: 'total',
   status: 'status',

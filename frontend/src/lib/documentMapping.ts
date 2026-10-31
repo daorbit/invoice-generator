@@ -169,6 +169,7 @@ export function invoiceSummary(record: InvoiceRecord): DocumentSummary {
     issueDate: dateOnly(doc.invoiceDate),
     dueDate: dateOnly(doc.dueDate),
     total: doc.total ?? 0,
+    balanceDue: doc.balanceDue,
     currency: doc.currency,
     status: record.status,
   };

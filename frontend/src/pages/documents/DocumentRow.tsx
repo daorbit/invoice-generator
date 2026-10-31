@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 import { StatusPill } from '@/components/ui/StatusPill';
 import { DOCUMENT_PATH } from '@/lib/documentMapping';
-import { KIND_META, STATUS_META } from '@/lib/documentMeta';
+import { KIND_META, STATUS_META, VOID_STATUSES } from '@/lib/documentMeta';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { DocumentKind, DocumentSummary } from '@/types/document';
 import { DocumentRowMenu, type DocumentRowActions } from './DocumentRowMenu';
-import { dueHint } from './dueHint';
+import { dueHint, partlyDue } from './dueHint';
 import classes from './DocumentRow.module.css';
 
 interface Props {
@@ -30,6 +30,7 @@ export function DocumentListHeader({ kind }: { kind: DocumentKind }) {
 export function DocumentRow({ doc, busy, actions }: Props) {
   const status = STATUS_META[doc.status];
   const hint = dueHint(doc);
+  const owed = partlyDue(doc);
 
   return (
     <div className={classes.row}>
@@ -51,7 +52,12 @@ export function DocumentRow({ doc, busy, actions }: Props) {
       <div className={classes.status}>
         <StatusPill tone={status.tone} label={status.label} />
       </div>
-      <span className={classes.amount}>{formatMoney(doc.total, doc.currency)}</span>
+      <div className={classes.amount}>
+        <span className={classes.total} data-void={VOID_STATUSES.includes(doc.status) || undefined}>
+          {formatMoney(doc.total, doc.currency)}
+        </span>
+        {owed !== null && <span className={classes.owed}>{formatMoney(owed, doc.currency)} due</span>}
+      </div>
       <div className={classes.actions}>
         <DocumentRowMenu doc={doc} busy={busy} actions={actions} />
       </div>

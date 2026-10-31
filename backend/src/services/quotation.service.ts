@@ -20,7 +20,7 @@ const LABEL = 'Quotation';
 const LIST_FIELDS = '-logo -workspaceId -createdBy';
 
 const SORT_FIELD = {
-  date: 'createdAt',
+  date: 'quotationDate',
   number: 'quotationNumber',
   total: 'total',
   status: 'status',
