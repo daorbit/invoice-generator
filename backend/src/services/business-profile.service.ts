@@ -49,6 +49,11 @@ export async function saveBusinessProfile(
   return respond(toProfile(doc));
 }
 
+export async function getPaymentTermsDays(workspaceId: string): Promise<number> {
+  const doc = await BusinessProfile.findOne({ workspaceId }).select('paymentTermsDays').lean();
+  return doc?.paymentTermsDays ?? DEFAULT_PROFILE.paymentTermsDays;
+}
+
 export async function getNumberPrefixes(workspaceId: string) {
   const doc = await BusinessProfile.findOne({ workspaceId }).select('invoicePrefix quotationPrefix').lean();
   return {

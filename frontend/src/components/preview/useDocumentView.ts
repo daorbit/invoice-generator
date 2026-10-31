@@ -6,7 +6,7 @@ import { KIND_META } from '@/lib/documentMeta';
 import { formatDate, formatMoney } from '@/lib/format';
 import { isGstDocument, placeOfSupply, stateLabel } from '@/lib/gst';
 import { lineMeta, totalRows, type Row } from '@/lib/taxRows';
-import { computeTotals, type DraftTotals } from '@/lib/totals';
+import { amountDue, computeTotals, type DraftTotals } from '@/lib/totals';
 import type { DocumentDraft, LineItem, Party } from '@/types/document';
 
 export type { Row };
@@ -77,15 +77,16 @@ export function useDocumentView(draft: DocumentDraft): DocumentView {
   const isInvoice = draft.kind === 'invoice';
   const totals = computeTotals(draft);
   const money = (value: number) => formatMoney(value, draft.currency);
+  const balanceDue = amountDue(draft, totals);
   const qr = useUpiQr({
     upiId: isInvoice ? draft.payment?.upiId : undefined,
     payee: draft.from.name,
-    amount: totals.balanceDue,
+    amount: balanceDue,
     currency: draft.currency,
     note: draft.number || 'Invoice',
   });
 
-  const headlineAmount = isInvoice ? totals.balanceDue : totals.total;
+  const headlineAmount = isInvoice ? balanceDue : totals.total;
   const stampTone = isInvoice && (draft.status === 'paid' || draft.status === 'cancelled') ? draft.status : null;
 
   return {

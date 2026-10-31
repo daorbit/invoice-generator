@@ -1,6 +1,7 @@
 import type { InvoiceDocument } from '../models/invoice.model.js';
 import type { QuotationDocument } from '../models/quotation.model.js';
 import { env } from '../config/env.js';
+import { INVOICE_LAPSE, QUOTATION_LAPSE, effectiveStatus } from './due-status.js';
 
 type Lean<T> = Partial<T> & { _id: unknown; createdAt?: Date; updatedAt?: Date };
 type AnyDocument = Lean<InvoiceDocument> | Lean<QuotationDocument>;
@@ -88,7 +89,7 @@ export function toInvoiceResponse(doc: Lean<InvoiceDocument>) {
       notes: doc.notes ?? undefined,
       terms: doc.terms ?? undefined,
     },
-    status: doc.status ?? 'draft',
+    status: effectiveStatus(doc.status, doc.dueDate, INVOICE_LAPSE),
     activity: activityOf(doc),
     ...stamps(doc),
   };
@@ -107,7 +108,7 @@ export function toQuotationResponse(doc: Lean<QuotationDocument>) {
       from: doc.from,
       quoteTo: doc.quoteTo,
       ...pricingOf(doc),
-      status: doc.status ?? 'draft',
+      status: effectiveStatus(doc.status, doc.validUntil, QUOTATION_LAPSE),
       notes: doc.notes ?? undefined,
       terms: doc.terms ?? undefined,
       paymentTerms: doc.paymentTerms ?? undefined,

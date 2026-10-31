@@ -2,6 +2,7 @@ import { Invoice } from '../../models/invoice.model.js';
 import { Quotation } from '../../models/quotation.model.js';
 import type { ReportPeriod } from '../../lib/report-period.js';
 import { round2 } from '../../lib/totals.js';
+import { pastDueCutoff } from '../../lib/due-status.js';
 import { issuedInvoices, monthOf, PAID_ON, paidInvoices, UNPAID } from './report-filters.js';
 
 interface MonthRow {
@@ -39,8 +40,8 @@ function monthly(issued: MonthRow[], collected: MonthRow[]) {
 }
 
 export async function overviewReport(workspaceId: string, period: ReportPeriod) {
-  const now = new Date();
-  const overdue = { $and: [{ $ne: ['$dueDate', null] }, { $lt: ['$dueDate', now] }] };
+  const cutoff = pastDueCutoff();
+  const overdue = { $and: [{ $ne: ['$dueDate', null] }, { $lt: ['$dueDate', cutoff] }] };
 
   const [issued, collected, outstanding, quotations] = await Promise.all([
     Invoice.aggregate<MonthRow>([

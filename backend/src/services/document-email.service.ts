@@ -32,6 +32,10 @@ interface Message {
   pdf?: string | null;
 }
 
+export function dropScheduledEmails(workspaceId: string, documentId: string) {
+  return EmailOutbox.deleteMany({ workspaceId, documentId, status: 'scheduled' });
+}
+
 export function profileOf(workspaceId: string) {
   return BusinessProfile.findOne({ workspaceId }).select('businessName email').lean();
 }
@@ -44,8 +48,9 @@ export function composeEmail(
   message: Message
 ): DocumentEmail {
   const isInvoice = kind === 'invoice';
+  const settled = isInvoice && doc.status === 'paid';
   const due = isInvoice ? (doc as { dueDate?: Date | null }).dueDate : (doc as { validUntil?: Date | null }).validUntil;
-  const value = isInvoice ? (doc as { balanceDue?: number }).balanceDue ?? doc.total : doc.total;
+  const value = isInvoice && !settled ? (doc as { balanceDue?: number }).balanceDue ?? doc.total : doc.total;
   const number = numberOf(doc) || DOCUMENT_LABEL[kind];
 
   return {
@@ -59,8 +64,8 @@ export function composeEmail(
       label: DOCUMENT_LABEL[kind],
       number,
       amount: formatMoney(value ?? 0, doc.currency ?? 'INR'),
-      amountLabel: isInvoice ? 'Amount due' : 'Quote total',
-      dueText: due ? `${isInvoice ? 'Due' : 'Valid until'} ${formatDate(due)}` : '',
+      amountLabel: settled ? 'Amount paid' : isInvoice ? 'Amount due' : 'Quote total',
+      dueText: due && !settled ? `${isInvoice ? 'Due' : 'Valid until'} ${formatDate(due)}` : '',
       link: shareUrlFor(token),
     },
     pdf: message.pdf ? { filename: `${number}.pdf`, content: message.pdf } : undefined,
@@ -76,7 +81,7 @@ export function sentUpdate(status: string | null | undefined, to: string[]) {
 
 async function scheduleEmail(workspaceId: string, kind: DocumentKind, id: string, input: EmailInput) {
   const sendAt = input.sendAt as Date;
-  await EmailOutbox.deleteMany({ workspaceId, documentId: id, status: 'scheduled' });
+  await dropScheduledEmails(workspaceId, id);
   await EmailOutbox.create({
     workspaceId,
     kind,
@@ -109,7 +114,7 @@ export async function emailDocument(workspaceId: string, kind: DocumentKind, id:
   if (!doc) throw notFoundError(DOCUMENT_LABEL[kind]);
 
   await sendDocumentEmail(workspaceId, composeEmail(kind, doc, profile, token, input));
-  await EmailOutbox.deleteMany({ workspaceId, documentId: id, status: 'scheduled' });
+  await dropScheduledEmails(workspaceId, id);
 
   const updated = await model.findOneAndUpdate(filter, sentUpdate(doc.status, input.to), { new: true }).lean();
   if (!updated) throw notFoundError(DOCUMENT_LABEL[kind]);
@@ -118,7 +123,7 @@ export async function emailDocument(workspaceId: string, kind: DocumentKind, id:
 
 export async function cancelScheduledEmail(workspaceId: string, kind: DocumentKind, id: string) {
   const [, updated] = await Promise.all([
-    EmailOutbox.deleteMany({ workspaceId, documentId: id, status: 'scheduled' }),
+    dropScheduledEmails(workspaceId, id),
     documentModel(kind)
       .findOneAndUpdate(ownedFilter(workspaceId, id, DOCUMENT_LABEL[kind]), { $unset: { scheduledEmail: '' } }, { new: true })
       .lean(),

@@ -6,10 +6,14 @@ import { round2 } from '../lib/totals.js';
 import { notFoundError } from '../lib/http-error.js';
 import { toUpdate } from '../lib/update.js';
 import { toInvoiceResponse } from '../lib/serialize.js';
-import { nextDocumentNumber } from './numbering.service.js';
+import { addDays, daysBetween, todayUtc } from '../lib/dates.js';
+import { INVOICE_LAPSE, pastDueCutoff, statusMatch } from '../lib/due-status.js';
+import { withChosenNumber, withDocumentNumber } from './numbering.service.js';
 import { ownedFilter, paginate } from './owned-document.js';
 import { priceDocument } from './document-pricing.js';
 import { ensureCustomer } from './customer.service.js';
+import { dropScheduledEmails } from './document-email.service.js';
+import { getPaymentTermsDays } from './business-profile.service.js';
 
 const LABEL = 'Invoice';
 const LIST_FIELDS = '-logo -workspaceId -createdBy';
@@ -29,12 +33,13 @@ async function prepare(workspaceId: string, actorId: string | undefined, input: 
 }
 
 export async function listInvoices(workspaceId: string, query: ListQuery) {
-  const filter: Record<string, unknown> = { workspaceId };
-  if (query.status) filter.status = query.status;
+  const conditions: Record<string, unknown>[] = [{ workspaceId }];
+  if (query.status) conditions.push(statusMatch(query.status, INVOICE_LAPSE, pastDueCutoff()));
   if (query.search) {
     const pattern = new RegExp(escapeRegex(query.search), 'i');
-    filter.$or = [{ invoiceNumber: pattern }, { 'billTo.name': pattern }];
+    conditions.push({ $or: [{ invoiceNumber: pattern }, { 'billTo.name': pattern }] });
   }
+  const filter: Record<string, unknown> = conditions.length > 1 ? { $and: conditions } : { workspaceId };
 
   const [docs, total] = await Promise.all([
     Invoice.find(filter)
@@ -63,14 +68,9 @@ export async function createInvoice(
 ) {
   const { invoiceNumber, ...rest } = input;
   const prepared = await prepare(workspaceId, actorId, rest);
-  const number = invoiceNumber || (await nextDocumentNumber(workspaceId, 'invoice'));
-  const doc = await Invoice.create({
-    workspaceId,
-    createdBy: actorId,
-    invoiceNumber: number,
-    ...prepared,
-    ...extra,
-  });
+  const doc = await withDocumentNumber(workspaceId, 'invoice', invoiceNumber, (number) =>
+    Invoice.create({ workspaceId, createdBy: actorId, invoiceNumber: number, ...prepared, ...extra })
+  );
   return toInvoiceResponse(doc.toObject());
 }
 
@@ -78,13 +78,18 @@ export async function updateInvoice(workspaceId: string, actorId: string | undef
   const filter = ownedFilter(workspaceId, id, LABEL);
   const { invoiceNumber, ...rest } = input;
   const update = { ...(await prepare(workspaceId, actorId, rest)), ...(invoiceNumber ? { invoiceNumber } : {}) };
-  const doc = await Invoice.findOneAndUpdate(filter, toUpdate(update), { new: true }).lean();
+  const doc = await withChosenNumber('invoice', invoiceNumber, () =>
+    Invoice.findOneAndUpdate(filter, toUpdate(update), { new: true }).lean()
+  );
   if (!doc) throw notFoundError(LABEL);
   return toInvoiceResponse(doc);
 }
 
 export async function deleteInvoice(workspaceId: string, id: string) {
-  const result = await Invoice.deleteOne(ownedFilter(workspaceId, id, LABEL));
+  const [result] = await Promise.all([
+    Invoice.deleteOne(ownedFilter(workspaceId, id, LABEL)),
+    dropScheduledEmails(workspaceId, id),
+  ]);
   if (result.deletedCount === 0) throw notFoundError(LABEL);
 }
 
@@ -96,19 +101,26 @@ export async function setInvoiceStatus(workspaceId: string, id: string, status: 
 }
 
 export async function duplicateInvoice(workspaceId: string, actorId: string | undefined, id: string) {
-  const source = await Invoice.findOne(ownedFilter(workspaceId, id, LABEL))
-    .select(`${COPY_EXCLUDED} -paidAt`)
-    .lean();
+  const [source, termsDays] = await Promise.all([
+    Invoice.findOne(ownedFilter(workspaceId, id, LABEL))
+      .select(`${COPY_EXCLUDED} -paidAt -source`)
+      .lean(),
+    getPaymentTermsDays(workspaceId),
+  ]);
   if (!source) throw notFoundError(LABEL);
-  const invoiceNumber = await nextDocumentNumber(workspaceId, 'invoice');
-  const doc = await Invoice.create({
-    ...source,
-    createdBy: actorId,
-    invoiceNumber,
-    status: 'draft',
-    amountPaid: 0,
-    balanceDue: source.total,
-    sourceQuotationId: undefined,
-  });
+  const issued = todayUtc();
+  const doc = await withDocumentNumber(workspaceId, 'invoice', '', (invoiceNumber) =>
+    Invoice.create({
+      ...source,
+      createdBy: actorId,
+      invoiceNumber,
+      invoiceDate: issued,
+      dueDate: addDays(issued, daysBetween(source.invoiceDate, source.dueDate) ?? termsDays),
+      status: 'draft',
+      amountPaid: 0,
+      balanceDue: source.total,
+      sourceQuotationId: undefined,
+    })
+  );
   return toInvoiceResponse(doc.toObject());
 }

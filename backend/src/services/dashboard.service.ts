@@ -1,6 +1,7 @@
 import { Invoice } from '../models/invoice.model.js';
 import { Quotation } from '../models/quotation.model.js';
 import { round2 } from '../lib/totals.js';
+import { INVOICE_LAPSE, QUOTATION_LAPSE, effectiveStatusExpr, pastDueCutoff, type LapseRule } from '../lib/due-status.js';
 import { UNPAID } from './reports/report-filters.js';
 import { convertStats } from './dashboard-conversion.js';
 import type { FxRates } from './fx.service.js';
@@ -12,27 +13,22 @@ interface StatusTotals {
   _id: { status: string; currency: string };
   count: number;
   total: number;
+  balance: number;
   recent: number;
-  overdue: number;
-  overdueCount: number;
 }
 
-type SummedKey = 'count' | 'total' | 'recent' | 'overdue' | 'overdueCount';
+type SummedKey = 'count' | 'total' | 'balance' | 'recent';
 
-function groupByStatusAndCurrency(workspaceId: string, since: Date, now: Date) {
-  const pastDue = {
-    $or: [{ $eq: ['$status', 'overdue'] }, { $and: [{ $ne: ['$dueDate', null] }, { $lt: ['$dueDate', now] }] }],
-  };
+function groupByStatusAndCurrency(workspaceId: string, since: Date, rule: LapseRule) {
   return [
     { $match: { workspaceId } },
     {
       $group: {
-        _id: { status: '$status', currency: '$currency' },
+        _id: { status: effectiveStatusExpr(rule, pastDueCutoff()), currency: '$currency' },
         count: { $sum: 1 },
         total: { $sum: '$total' },
+        balance: { $sum: { $ifNull: ['$balanceDue', '$total'] } },
         recent: { $sum: { $cond: [{ $gte: ['$createdAt', since] }, 1, 0] } },
-        overdue: { $sum: { $cond: [pastDue, '$total', 0] } },
-        overdueCount: { $sum: { $cond: [pastDue, 1, 0] } },
       },
     },
   ];
@@ -62,8 +58,8 @@ function statsForCurrency(invoiceRows: StatusTotals[], quotationRows: StatusTota
   const billable = invoices.filter((row) => row._id.status !== 'cancelled');
   const paidRevenue = sumWhere(invoices, 'total', ['paid']);
   const totalRevenue = sumWhere(billable, 'total');
-  const receivable = sumWhere(invoices, 'total', UNPAID);
-  const overdue = sumWhere(invoices, 'overdue', UNPAID);
+  const receivable = sumWhere(invoices, 'balance', UNPAID);
+  const overdue = sumWhere(invoices, 'balance', ['overdue']);
 
   return {
     currency,
@@ -91,7 +87,7 @@ function statsForCurrency(invoiceRows: StatusTotals[], quotationRows: StatusTota
       current: round2(receivable - overdue),
       overdue: round2(overdue),
       openCount: sumWhere(invoices, 'count', UNPAID),
-      overdueCount: sumWhere(invoices, 'overdueCount', UNPAID),
+      overdueCount: sumWhere(invoices, 'count', ['overdue']),
     },
   };
 }
@@ -100,8 +96,8 @@ export async function getDashboardStats(workspaceId: string, homeCurrency: strin
   const now = new Date();
   const since = new Date(now.getTime() - RECENT_DAYS * DAY_MS);
   const [invoiceRows, quotationRows] = await Promise.all([
-    Invoice.aggregate<StatusTotals>(groupByStatusAndCurrency(workspaceId, since, now)),
-    Quotation.aggregate<StatusTotals>(groupByStatusAndCurrency(workspaceId, since, now)),
+    Invoice.aggregate<StatusTotals>(groupByStatusAndCurrency(workspaceId, since, INVOICE_LAPSE)),
+    Quotation.aggregate<StatusTotals>(groupByStatusAndCurrency(workspaceId, since, QUOTATION_LAPSE)),
   ]);
 
   const currencies = currenciesOf([...invoiceRows, ...quotationRows]);

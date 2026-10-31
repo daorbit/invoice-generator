@@ -19,6 +19,10 @@ export function lineAmount(item: Pick<LineItem, 'quantity' | 'rate'>): number {
   return round2(item.quantity * item.rate);
 }
 
+export function amountDue(draft: DocumentDraft, totals: DraftTotals): number {
+  return draft.status === 'paid' || draft.status === 'cancelled' ? 0 : totals.balanceDue;
+}
+
 export function computeTotals(draft: DocumentDraft): DraftTotals {
   const subtotal = draft.items.reduce((sum, item) => sum + lineAmount(item), 0);
   const requested = draft.discountType === 'percentage' ? (subtotal * draft.discount) / 100 : draft.discount;

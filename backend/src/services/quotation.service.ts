@@ -6,16 +6,18 @@ import { escapeRegex } from '../lib/list-query.js';
 import { notFoundError } from '../lib/http-error.js';
 import { toUpdate } from '../lib/update.js';
 import { toQuotationResponse } from '../lib/serialize.js';
-import { nextDocumentNumber } from './numbering.service.js';
+import { addDays, daysBetween, todayUtc } from '../lib/dates.js';
+import { QUOTATION_LAPSE, pastDueCutoff, statusMatch } from '../lib/due-status.js';
+import { withChosenNumber, withDocumentNumber } from './numbering.service.js';
 import { ownedFilter, paginate } from './owned-document.js';
 import { priceDocument } from './document-pricing.js';
 import { ensureCustomer } from './customer.service.js';
+import { dropScheduledEmails } from './document-email.service.js';
+import { getPaymentTermsDays } from './business-profile.service.js';
 import { COPY_EXCLUDED } from './invoice.service.js';
 
 const LABEL = 'Quotation';
 const LIST_FIELDS = '-logo -workspaceId -createdBy';
-const DEFAULT_DUE_DAYS = 30;
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 const SORT_FIELD = {
   date: 'createdAt',
@@ -30,12 +32,13 @@ async function prepare(workspaceId: string, actorId: string | undefined, input: 
 }
 
 export async function listQuotations(workspaceId: string, query: ListQuery) {
-  const filter: Record<string, unknown> = { workspaceId };
-  if (query.status) filter.status = query.status;
+  const conditions: Record<string, unknown>[] = [{ workspaceId }];
+  if (query.status) conditions.push(statusMatch(query.status, QUOTATION_LAPSE, pastDueCutoff()));
   if (query.search) {
     const pattern = new RegExp(escapeRegex(query.search), 'i');
-    filter.$or = [{ quotationNumber: pattern }, { 'quoteTo.name': pattern }];
+    conditions.push({ $or: [{ quotationNumber: pattern }, { 'quoteTo.name': pattern }] });
   }
+  const filter: Record<string, unknown> = conditions.length > 1 ? { $and: conditions } : { workspaceId };
 
   const [docs, total] = await Promise.all([
     Quotation.find(filter)
@@ -59,13 +62,9 @@ export async function getQuotation(workspaceId: string, id: string) {
 export async function createQuotation(workspaceId: string, actorId: string | undefined, input: QuotationInput) {
   const { quotationNumber, ...rest } = input;
   const prepared = await prepare(workspaceId, actorId, rest);
-  const number = quotationNumber || (await nextDocumentNumber(workspaceId, 'quotation'));
-  const doc = await Quotation.create({
-    workspaceId,
-    createdBy: actorId,
-    quotationNumber: number,
-    ...prepared,
-  });
+  const doc = await withDocumentNumber(workspaceId, 'quotation', quotationNumber, (number) =>
+    Quotation.create({ workspaceId, createdBy: actorId, quotationNumber: number, ...prepared })
+  );
   return toQuotationResponse(doc.toObject());
 }
 
@@ -78,13 +77,18 @@ export async function updateQuotation(
   const filter = ownedFilter(workspaceId, id, LABEL);
   const { quotationNumber, ...rest } = input;
   const update = { ...(await prepare(workspaceId, actorId, rest)), ...(quotationNumber ? { quotationNumber } : {}) };
-  const doc = await Quotation.findOneAndUpdate(filter, toUpdate(update), { new: true }).lean();
+  const doc = await withChosenNumber('quotation', quotationNumber, () =>
+    Quotation.findOneAndUpdate(filter, toUpdate(update), { new: true }).lean()
+  );
   if (!doc) throw notFoundError(LABEL);
   return toQuotationResponse(doc);
 }
 
 export async function deleteQuotation(workspaceId: string, id: string) {
-  const result = await Quotation.deleteOne(ownedFilter(workspaceId, id, LABEL));
+  const [result] = await Promise.all([
+    Quotation.deleteOne(ownedFilter(workspaceId, id, LABEL)),
+    dropScheduledEmails(workspaceId, id),
+  ]);
   if (result.deletedCount === 0) throw notFoundError(LABEL);
 }
 
@@ -99,18 +103,25 @@ export async function setQuotationStatus(workspaceId: string, id: string, status
 }
 
 export async function duplicateQuotation(workspaceId: string, actorId: string | undefined, id: string) {
-  const source = await Quotation.findOne(ownedFilter(workspaceId, id, LABEL))
-    .select(`${COPY_EXCLUDED} -clientResponse`)
-    .lean();
+  const [source, termsDays] = await Promise.all([
+    Quotation.findOne(ownedFilter(workspaceId, id, LABEL))
+      .select(`${COPY_EXCLUDED} -clientResponse`)
+      .lean(),
+    getPaymentTermsDays(workspaceId),
+  ]);
   if (!source) throw notFoundError(LABEL);
-  const quotationNumber = await nextDocumentNumber(workspaceId, 'quotation');
-  const doc = await Quotation.create({
-    ...source,
-    createdBy: actorId,
-    quotationNumber,
-    status: 'draft',
-    convertedInvoiceId: undefined,
-  });
+  const issued = todayUtc();
+  const doc = await withDocumentNumber(workspaceId, 'quotation', '', (quotationNumber) =>
+    Quotation.create({
+      ...source,
+      createdBy: actorId,
+      quotationNumber,
+      quotationDate: issued,
+      validUntil: addDays(issued, daysBetween(source.quotationDate, source.validUntil) ?? termsDays),
+      status: 'draft',
+      convertedInvoiceId: undefined,
+    })
+  );
   return toQuotationResponse(doc.toObject());
 }
 
@@ -125,7 +136,10 @@ export async function convertQuotation(
   id: string
 ): Promise<ConvertResult> {
   const filter = ownedFilter(workspaceId, id, LABEL);
-  const quotation = await Quotation.findOne(filter).select(COPY_EXCLUDED).lean();
+  const [quotation, termsDays] = await Promise.all([
+    Quotation.findOne(filter).select(COPY_EXCLUDED).lean(),
+    getPaymentTermsDays(workspaceId),
+  ]);
   if (!quotation) throw notFoundError(LABEL);
 
   const seenInvoiceId = quotation.convertedInvoiceId ?? undefined;
@@ -136,47 +150,48 @@ export async function convertQuotation(
     if (existing) return { invoiceId: String(existing._id), invoiceNumber: String(existing.invoiceNumber) };
   }
 
-  const invoiceNumber = await nextDocumentNumber(workspaceId, 'invoice');
-  const now = new Date();
-  const invoice = await Invoice.create({
-    workspaceId,
-    createdBy: actorId,
-    invoiceNumber,
-    invoiceDate: now,
-    dueDate: new Date(now.getTime() + DEFAULT_DUE_DAYS * DAY_MS),
-    logo: quotation.logo,
-    from: quotation.from,
-    billTo: quotation.quoteTo,
-    customerId: quotation.customerId,
-    items: quotation.items,
-    tax: quotation.tax,
-    discount: quotation.discount,
-    discountType: quotation.discountType,
-    shipping: quotation.shipping,
-    currency: quotation.currency,
-    taxMode: quotation.taxMode,
-    pricesIncludeTax: quotation.pricesIncludeTax,
-    roundOff: quotation.roundOff,
-    placeOfSupply: quotation.placeOfSupply,
-    supplyState: quotation.supplyState,
-    interState: quotation.interState,
-    reverseCharge: quotation.reverseCharge,
-    exportUnderLut: quotation.exportUnderLut,
-    template: quotation.template,
-    accent: quotation.accent,
-    payment: quotation.payment,
-    subtotal: quotation.subtotal,
-    taxableAmount: quotation.taxableAmount,
-    taxAmount: quotation.taxAmount,
-    taxLines: quotation.taxLines,
-    discountAmount: quotation.discountAmount,
-    roundOffAmount: quotation.roundOffAmount,
-    total: quotation.total,
-    balanceDue: quotation.total,
-    notes: quotation.notes,
-    terms: quotation.paymentTerms ?? quotation.terms,
-    sourceQuotationId: id,
-  });
+  const issued = todayUtc();
+  const invoice = await withDocumentNumber(workspaceId, 'invoice', '', (invoiceNumber) =>
+    Invoice.create({
+      workspaceId,
+      createdBy: actorId,
+      invoiceNumber,
+      invoiceDate: issued,
+      dueDate: addDays(issued, termsDays),
+      logo: quotation.logo,
+      from: quotation.from,
+      billTo: quotation.quoteTo,
+      customerId: quotation.customerId,
+      items: quotation.items,
+      tax: quotation.tax,
+      discount: quotation.discount,
+      discountType: quotation.discountType,
+      shipping: quotation.shipping,
+      currency: quotation.currency,
+      taxMode: quotation.taxMode,
+      pricesIncludeTax: quotation.pricesIncludeTax,
+      roundOff: quotation.roundOff,
+      placeOfSupply: quotation.placeOfSupply,
+      supplyState: quotation.supplyState,
+      interState: quotation.interState,
+      reverseCharge: quotation.reverseCharge,
+      exportUnderLut: quotation.exportUnderLut,
+      template: quotation.template,
+      accent: quotation.accent,
+      payment: quotation.payment,
+      subtotal: quotation.subtotal,
+      taxableAmount: quotation.taxableAmount,
+      taxAmount: quotation.taxAmount,
+      taxLines: quotation.taxLines,
+      discountAmount: quotation.discountAmount,
+      roundOffAmount: quotation.roundOffAmount,
+      total: quotation.total,
+      balanceDue: quotation.total,
+      notes: quotation.notes,
+      terms: quotation.paymentTerms ?? quotation.terms,
+      sourceQuotationId: id,
+    })
+  );
 
   const claimed = await Quotation.updateOne(
     { ...filter, convertedInvoiceId: seenInvoiceId ?? { $exists: false } },
@@ -187,5 +202,5 @@ export async function convertQuotation(
     return convertQuotation(workspaceId, actorId, id);
   }
 
-  return { invoiceId: String(invoice._id), invoiceNumber };
+  return { invoiceId: String(invoice._id), invoiceNumber: invoice.invoiceNumber };
 }

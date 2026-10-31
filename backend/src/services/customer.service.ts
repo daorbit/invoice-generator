@@ -6,6 +6,7 @@ import { nameKeyOf, type CustomerInput } from '../lib/customer-input.js';
 import { escapeRegex, type PageQuery } from '../lib/list-query.js';
 import { HttpError, notFoundError } from '../lib/http-error.js';
 import { round2 } from '../lib/totals.js';
+import { pastDueCutoff } from '../lib/due-status.js';
 import { toInvoiceResponse, toQuotationResponse } from '../lib/serialize.js';
 import { ownedFilter, paginate } from './owned-document.js';
 import { seedCustomersOnce } from './customer-seed.service.js';
@@ -105,7 +106,7 @@ function customerStats(rows: StatusRow[]) {
 
 export async function getCustomer(workspaceId: string, id: string) {
   const filter = ownedFilter(workspaceId, id, LABEL);
-  const now = new Date();
+  const cutoff = pastDueCutoff();
   const [doc, rows, invoices, quotations] = await Promise.all([
     Customer.findOne(filter).select('-workspaceId -createdBy -nameKey').lean(),
     Invoice.aggregate<StatusRow>([
@@ -116,7 +117,7 @@ export async function getCustomer(workspaceId: string, id: string) {
           count: { $sum: 1 },
           total: { $sum: '$total' },
           balance: { $sum: '$balanceDue' },
-          overdue: { $sum: { $cond: [{ $lt: [{ $ifNull: ['$dueDate', now] }, now] }, '$balanceDue', 0] } },
+          overdue: { $sum: { $cond: [{ $lt: [{ $ifNull: ['$dueDate', cutoff] }, cutoff] }, '$balanceDue', 0] } },
         },
       },
     ]),
