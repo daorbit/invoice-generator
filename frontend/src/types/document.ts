@@ -16,7 +16,12 @@ export type TemplateId =
   | 'agency'
   | 'capsule'
   | 'banner'
-  | 'panel';
+  | 'panel'
+  | 'executive'
+  | 'sidebar'
+  | 'headline'
+  | 'geometric'
+  | 'corporate';
 export type AccentId = 'blue' | 'indigo' | 'teal' | 'emerald' | 'amber' | 'crimson' | 'slate';
 
 export interface Party {

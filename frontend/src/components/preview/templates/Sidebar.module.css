@@ -1,0 +1,176 @@
+.layout {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  flex: 1;
+  margin: -48px;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 44px 26px;
+  background: var(--doc-accent-tint);
+}
+
+.logo {
+  align-self: flex-start;
+  max-width: 150px;
+  max-height: 52px;
+  object-fit: contain;
+}
+
+.brand {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--doc-accent);
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.label {
+  margin-bottom: 4px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--doc-accent);
+}
+
+.name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.lines {
+  white-space: pre-line;
+  color: var(--text);
+}
+
+.pay {
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid var(--doc-accent-wash);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  padding: 44px 44px 48px;
+}
+
+.title {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.number {
+  margin-top: 4px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.due {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 26px;
+  padding: 16px 18px;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+}
+
+.dueLabel {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dueAmount {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--doc-accent);
+}
+
+.dueDate {
+  color: var(--text);
+}
+
+.items {
+  width: 100%;
+  margin-top: 26px;
+  border-collapse: collapse;
+}
+
+.items th {
+  padding: 0 8px 8px;
+  border-bottom: 1.5px solid var(--ink);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--muted);
+}
+
+.items td {
+  padding: 11px 8px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+  color: var(--ink);
+}
+
+.items .num {
+  width: 84px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.totals {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-end;
+  width: 260px;
+  margin-top: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 8px;
+  color: var(--text);
+}
+
+.totalRow span:last-child {
+  color: var(--ink);
+}
+
+.grandRow {
+  margin-top: 6px;
+  padding-block: 9px;
+  border-top: 1.5px solid var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.footer {
+  margin-top: 32px;
+}

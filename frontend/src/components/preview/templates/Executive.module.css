@@ -1,0 +1,167 @@
+.letterhead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding-bottom: 18px;
+  border-bottom: 3px double var(--ink);
+  text-align: center;
+}
+
+.logo {
+  max-width: 150px;
+  max-height: 56px;
+  margin-bottom: 10px;
+  object-fit: contain;
+}
+
+.firm {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 25px;
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+}
+
+.firmLines {
+  white-space: pre-line;
+  color: var(--muted);
+}
+
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+  margin-top: 28px;
+}
+
+.title {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 23px;
+  font-style: italic;
+  color: var(--doc-accent);
+}
+
+.number {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+
+.parties {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 250px;
+  gap: 32px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+}
+
+.label {
+  margin-bottom: 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.clientName {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.lines {
+  white-space: pre-line;
+  color: var(--text);
+}
+
+.items {
+  width: 100%;
+  margin-top: 26px;
+  border-collapse: collapse;
+  border-top: 1.5px solid var(--ink);
+  border-bottom: 1.5px solid var(--ink);
+}
+
+.items th {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--ink);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--ink);
+}
+
+.items td {
+  padding: 11px 10px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+  color: var(--ink);
+}
+
+.items tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.items .index {
+  width: 30px;
+  color: var(--muted);
+}
+
+.items .num {
+  width: 96px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 32px;
+  margin-top: 18px;
+}
+
+.words {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-style: italic;
+  color: var(--ink);
+}
+
+.totals {
+  display: flex;
+  flex-direction: column;
+  font-variant-numeric: tabular-nums;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 5px 0;
+  color: var(--text);
+}
+
+.totalRow span:last-child {
+  color: var(--ink);
+}
+
+.grandRow {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 3px double var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.footer {
+  margin-top: 32px;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+}

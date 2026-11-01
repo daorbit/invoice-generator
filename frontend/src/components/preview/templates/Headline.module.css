@@ -1,0 +1,136 @@
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.logo {
+  max-width: 140px;
+  max-height: 44px;
+  object-fit: contain;
+}
+
+.brand {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.hero {
+  margin-top: 40px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.amount {
+  font-size: 46px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.heroText {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+  margin-top: 24px;
+}
+
+.label {
+  margin-bottom: 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--doc-accent);
+}
+
+.name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.lines {
+  white-space: pre-line;
+  color: var(--text);
+}
+
+.items {
+  width: 100%;
+  margin-top: 34px;
+  border-collapse: collapse;
+}
+
+.items th {
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 10px;
+  font-weight: 500;
+  text-align: left;
+  color: var(--muted);
+}
+
+.items td {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+  color: var(--ink);
+}
+
+.items .num {
+  width: 104px;
+  padding-left: 12px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.totals {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-end;
+  width: 300px;
+  margin-top: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--text);
+}
+
+.totalRow span:last-child {
+  color: var(--ink);
+}
+
+.grandRow {
+  padding-top: 10px;
+  border-bottom: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.footer {
+  margin-top: 32px;
+}

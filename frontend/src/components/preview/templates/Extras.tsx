@@ -98,7 +98,49 @@ export function PaymentStrip({ view }: { view: DocumentView }) {
   );
 }
 
-export function NotesAndSignature({ view }: { view: DocumentView }) {
+export function ItemRows({ view, numClass, indexClass }: { view: DocumentView; numClass: string; indexClass?: string }) {
+  return (
+    <>
+      {view.items.map((item, index) => (
+        <tr key={item.id}>
+          {indexClass && <td className={indexClass}>{index + 1}</td>}
+          <td><ItemText item={item} view={view} /></td>
+          <td className={numClass}><ItemQty item={item} view={view} /></td>
+          <td className={numClass}><ItemRate item={item} view={view} /></td>
+          <td className={numClass}>{view.money(item.amount)}</td>
+        </tr>
+      ))}
+    </>
+  );
+}
+
+export function TotalLines({ view, rowClass }: { view: DocumentView; rowClass: string }) {
+  const paid = view.isInvoice ? view.draft.amountPaid : 0;
+  return (
+    <>
+      {view.totalRows.map(([label, value]) => (
+        <div key={label} className={rowClass}>
+          <span>{label}</span>
+          <span>{value}</span>
+        </div>
+      ))}
+      {paid > 0 && (
+        <>
+          <div className={rowClass}>
+            <span>Total</span>
+            <span>{view.money(view.totals.total)}</span>
+          </div>
+          <div className={rowClass}>
+            <span>Payment made</span>
+            <span>(−) {view.money(paid)}</span>
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+export function NotesAndSignature({ view, signedFor }: { view: DocumentView; signedFor?: boolean }) {
   return (
     <div className={classes.notes}>
       <div>
@@ -116,6 +158,7 @@ export function NotesAndSignature({ view }: { view: DocumentView }) {
         )}
       </div>
       <div className={classes.signature}>
+        {signedFor && <span className={classes.signedFor}>For {view.from.name || 'Your business'}</span>}
         <span className={classes.signLine}>Authorised signatory</span>
       </div>
     </div>

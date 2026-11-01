@@ -60,6 +60,12 @@
   text-align: right;
 }
 
+.signedFor {
+  margin-bottom: auto;
+  font-weight: 600;
+  color: var(--ink);
+}
+
 .signLine {
   padding-top: 6px;
   border-top: 1px solid var(--rule);

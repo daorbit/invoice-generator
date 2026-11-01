@@ -1,0 +1,183 @@
+.circleLarge {
+  position: absolute;
+  top: -120px;
+  right: -100px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: var(--doc-accent);
+}
+
+.circleSmall {
+  position: absolute;
+  top: 118px;
+  right: 150px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--doc-accent-wash);
+}
+
+.diamond {
+  position: absolute;
+  bottom: -70px;
+  left: -70px;
+  width: 160px;
+  height: 160px;
+  background: var(--doc-accent-wash);
+  transform: rotate(45deg);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.head {
+  max-width: 340px;
+}
+
+.logo {
+  display: block;
+  max-width: 150px;
+  max-height: 48px;
+  margin-bottom: 18px;
+  object-fit: contain;
+}
+
+.title {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.dot {
+  color: var(--doc-accent);
+}
+
+.number {
+  margin-top: 6px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.cell {
+  padding-top: 10px;
+  border-top: 2px solid var(--doc-accent);
+}
+
+.label {
+  margin-bottom: 4px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--doc-accent);
+}
+
+.name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.lines {
+  white-space: pre-line;
+  color: var(--text);
+}
+
+.items {
+  width: 100%;
+  margin-top: 30px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.items th {
+  padding: 10px 12px;
+  background: var(--doc-accent-tint);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--doc-accent);
+}
+
+.items th:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.items th:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+.items td {
+  padding: 12px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+  color: var(--ink);
+}
+
+.items td:last-child {
+  font-weight: 700;
+}
+
+.items .num {
+  width: 96px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.totals {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-end;
+  width: 280px;
+  margin-top: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 5px 16px;
+  color: var(--text);
+}
+
+.totalRow span:last-child {
+  color: var(--ink);
+}
+
+.grandRow {
+  margin-top: 8px;
+  padding-block: 11px;
+  border-radius: 999px;
+  background: var(--doc-accent);
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.grandRow span:last-child {
+  color: #ffffff;
+}
+
+.footer {
+  margin-top: 32px;
+}

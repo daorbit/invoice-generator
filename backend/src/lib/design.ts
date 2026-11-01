@@ -9,6 +9,11 @@ export const TEMPLATES = [
   'capsule',
   'banner',
   'panel',
+  'executive',
+  'sidebar',
+  'headline',
+  'geometric',
+  'corporate',
 ] as const;
 export type TemplateId = (typeof TEMPLATES)[number];
 

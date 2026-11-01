@@ -12,6 +12,11 @@ import { AgencyTemplate } from './templates/AgencyTemplate';
 import { CapsuleTemplate } from './templates/CapsuleTemplate';
 import { BannerTemplate } from './templates/BannerTemplate';
 import { PanelTemplate } from './templates/PanelTemplate';
+import { ExecutiveTemplate } from './templates/ExecutiveTemplate';
+import { SidebarTemplate } from './templates/SidebarTemplate';
+import { HeadlineTemplate } from './templates/HeadlineTemplate';
+import { GeometricTemplate } from './templates/GeometricTemplate';
+import { CorporateTemplate } from './templates/CorporateTemplate';
 
 const TEMPLATES: Record<TemplateId, ComponentType<{ view: DocumentView }>> = {
   classic: StandardTemplate,
@@ -24,6 +29,11 @@ const TEMPLATES: Record<TemplateId, ComponentType<{ view: DocumentView }>> = {
   capsule: CapsuleTemplate,
   banner: BannerTemplate,
   panel: PanelTemplate,
+  executive: ExecutiveTemplate,
+  sidebar: SidebarTemplate,
+  headline: HeadlineTemplate,
+  geometric: GeometricTemplate,
+  corporate: CorporateTemplate,
 };
 
 export const DocumentPreview = forwardRef<HTMLDivElement, { draft: DocumentDraft }>(function DocumentPreview(
