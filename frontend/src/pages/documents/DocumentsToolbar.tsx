@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ActionIcon, Tooltip } from '@mantine/core';
+import { ActionIcon } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import { RefreshCwIcon, SearchIcon, XIcon } from 'lucide-react';
+import { SearchIcon, XIcon } from 'lucide-react';
+import { RefreshButton } from '@/components/ui/RefreshButton';
 import { SearchField } from '@/components/ui/SearchField';
 import { SegmentedTabs, type SegmentedTabItem } from '@/components/ui/SegmentedTabs';
 import toolbar from '@/components/ui/toolbar.module.css';
@@ -88,11 +89,7 @@ export function DocumentsToolbar({ kind, status, search, loading, counts, onStat
             <XIcon size={16} />
           </ActionIcon>
         ) : (
-          <Tooltip label="Refresh" withArrow>
-            <ActionIcon variant="subtle" className={toolbar.iconButton} size={34} radius="xl" onClick={onRefresh} aria-label="Refresh">
-              <RefreshCwIcon size={16} className={loading ? toolbar.spinning : undefined} />
-            </ActionIcon>
-          </Tooltip>
+          <RefreshButton refreshing={loading} onRefresh={onRefresh} />
         )}
       </div>
     </div>

@@ -1,7 +1,5 @@
-import { ActionIcon, Tooltip } from '@mantine/core';
-import { RefreshCwIcon } from 'lucide-react';
+import { RefreshButton } from '@/components/ui/RefreshButton';
 import { SearchField } from '@/components/ui/SearchField';
-import toolbar from '@/components/ui/toolbar.module.css';
 import classes from './CatalogToolbar.module.css';
 
 interface Props {
@@ -23,11 +21,7 @@ export function CatalogToolbar({ search, onSearch, placeholder, ariaLabel, count
       </span>
       <div className={classes.end}>
         <SearchField value={search} onChange={onSearch} placeholder={placeholder} ariaLabel={ariaLabel} className={classes.search} />
-        <Tooltip label="Refresh" withArrow>
-          <ActionIcon variant="subtle" className={toolbar.iconButton} size={34} radius="xl" onClick={onRefresh} aria-label="Refresh">
-            <RefreshCwIcon size={16} className={loading ? toolbar.spinning : undefined} />
-          </ActionIcon>
-        </Tooltip>
+        <RefreshButton refreshing={loading} onRefresh={onRefresh} />
       </div>
     </div>
   );
