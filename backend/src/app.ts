@@ -1,15 +1,15 @@
 import express from 'express';
-import cors from 'cors';
 import { connectDb } from './config/db.js';
 import { routes } from './routes/index.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { notFound } from './middleware/not-found.js';
+import { serviceCors } from './middleware/service-cors.js';
 
 export function createApp() {
   const app = express();
 
   app.set('trust proxy', true);
-  app.use(cors());
+  app.use(serviceCors);
   app.use(
     ['/api/workspaces/:workspaceId/invoices/:id/email', '/api/workspaces/:workspaceId/quotations/:id/email'],
     express.json({ limit: '8mb' })

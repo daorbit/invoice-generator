@@ -47,6 +47,7 @@ export function refreshWorkspaceToken(timeoutMs = 5000): Promise<string> {
     };
 
     function onMessage(event: MessageEvent) {
+      if (event.source !== window.parent) return;
       if (event.data?.type !== 'quantalog:workspace-token') return;
       settle(typeof event.data.token === 'string' ? event.data.token : '');
     }
