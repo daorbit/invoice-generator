@@ -1,5 +1,5 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
-import { WORKSPACE_ID } from '../lib/bootParams';
+import { IS_DEMO, WORKSPACE_ID } from '../lib/bootParams';
 import { ensureWorkspaceToken, refreshWorkspaceToken } from '../lib/workspaceToken';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -14,7 +14,12 @@ export const apiClient = axios.create({
   timeout: 30000,
 });
 
+if (IS_DEMO) {
+  apiClient.defaults.adapter = (config) => import('@/demo/demoAdapter').then((m) => m.demoAdapter(config));
+}
+
 apiClient.interceptors.request.use(async (config) => {
+  if (IS_DEMO) return config;
   const token = await ensureWorkspaceToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;

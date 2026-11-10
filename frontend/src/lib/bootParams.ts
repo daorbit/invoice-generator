@@ -19,6 +19,8 @@ export const PUBLIC_PREVIEW = params.get('preview') === '1';
 
 export const IS_EMBEDDED = params.get('embedded') === '1';
 
+export const IS_DEMO = IS_EMBEDDED && params.get('demo') === '1';
+
 export const WORKSPACE_TOKEN = params.get('wt') ?? '';
 
 export const HOST_TEXTURED_BG = IS_EMBEDDED && params.get('bg') === 'textured';
