@@ -5,6 +5,8 @@ import { FileText, Plus, ReceiptText } from 'lucide-react';
 import { SectionPage } from '@/components/layout/SectionPage';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DocsButton } from '@/components/ui/DocsButton';
+import { TourButton } from '@/components/tour/TourButton';
+import { DOCUMENTS_TOUR } from '@/lib/tours';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { HostNotificationsBell } from '@/components/ui/HostNotificationsBell';
 import { useHostPhone } from '@/hooks/useHostPhone';
@@ -62,9 +64,10 @@ export function DocumentsPage({ kind }: { kind: DocumentKind }) {
         description={DESCRIPTION[kind]}
         actions={
           <>
-            <Button leftSection={<Plus size={16} />} onClick={create}>
+            <Button leftSection={<Plus size={16} />} onClick={create} data-tour="docs-new">
               New {meta.singular.toLowerCase()}
             </Button>
+            {!hostPhone && <TourButton tour={DOCUMENTS_TOUR[kind]} ready={!list.loading} />}
             {!hostPhone && <DocsButton path={DOCS.invoicing} />}
             {IS_EMBEDDED && <HostNotificationsBell />}
           </>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActionIcon } from '@mantine/core';
+import { ActionIcon, Tooltip } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { SearchIcon, XIcon } from 'lucide-react';
 import { RefreshButton } from '@/components/ui/RefreshButton';
@@ -58,7 +58,7 @@ export function DocumentsToolbar({ kind, status, search, loading, counts, onStat
   return (
     <div className={classes.root}>
       {showFilters && (
-        <div className={classes.filters}>
+        <div className={classes.filters} data-tour="docs-status">
           <SegmentedTabs
             ariaLabel="Filter by status"
             value={status}
@@ -80,14 +80,18 @@ export function DocumentsToolbar({ kind, status, search, loading, counts, onStat
             autoFocus={compact}
           />
         ) : (
-          <ActionIcon variant="subtle" className={toolbar.iconButton} size={34} radius="xl" onClick={() => setSearchOpen(true)} aria-label={searchLabel}>
-            <SearchIcon size={16} />
-          </ActionIcon>
+          <Tooltip label={searchLabel} withArrow>
+            <ActionIcon variant="subtle" className={toolbar.iconButton} size={34} radius="xl" onClick={() => setSearchOpen(true)} aria-label={searchLabel}>
+              <SearchIcon size={16} />
+            </ActionIcon>
+          </Tooltip>
         )}
         {compact && expanded ? (
-          <ActionIcon variant="subtle" className={toolbar.iconButton} size={34} radius="xl" onClick={closeSearch} aria-label="Close search">
-            <XIcon size={16} />
-          </ActionIcon>
+          <Tooltip label="Close search" withArrow>
+            <ActionIcon variant="subtle" className={toolbar.iconButton} size={34} radius="xl" onClick={closeSearch} aria-label="Close search">
+              <XIcon size={16} />
+            </ActionIcon>
+          </Tooltip>
         ) : (
           <RefreshButton refreshing={loading} onRefresh={onRefresh} />
         )}

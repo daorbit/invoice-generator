@@ -6,7 +6,7 @@ import classes from './PreviewCanvas.module.css';
 
 export function PreviewCanvas({ draft, onCommit }: { draft: DocumentDraft; onCommit: InlineCommit }) {
   return (
-    <section className={classes.canvas} aria-label="Live preview">
+    <section className={classes.canvas} aria-label="Live preview" data-tour="editor-canvas">
       <div className={classes.scroll}>
         <ScaledPage>
           <InlineEditProvider onCommit={onCommit}>

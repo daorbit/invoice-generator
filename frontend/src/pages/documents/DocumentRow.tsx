@@ -58,7 +58,7 @@ export function DocumentRow({ doc, busy, actions }: Props) {
         </span>
         {owed !== null && <span className={classes.owed}>{formatMoney(owed, doc.currency)} due</span>}
       </div>
-      <div className={classes.actions}>
+      <div className={classes.actions} data-tour="docs-row-menu">
         <DocumentRowMenu doc={doc} busy={busy} actions={actions} />
       </div>
     </div>

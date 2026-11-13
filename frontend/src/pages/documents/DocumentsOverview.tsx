@@ -44,7 +44,7 @@ export function DocumentsOverview({ kind, stats }: Props) {
   const hasMultipleCurrencies = kind === 'invoice' && stats.currencies.length > 1;
 
   return (
-    <section className={classes.root} aria-label={model.eyebrow}>
+    <section className={classes.root} aria-label={model.eyebrow} data-tour="docs-overview">
       <div className={classes.primary}>
         <div className={classes.headerRow}>
           <span className={classes.eyebrow}>{model.eyebrow}</span>

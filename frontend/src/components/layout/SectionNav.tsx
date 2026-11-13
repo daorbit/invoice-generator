@@ -51,7 +51,7 @@ function RailLink({ to, label, icon, end }: Section) {
 
 export function SectionNav() {
   return (
-    <nav className={classes.rail} aria-label="Invoicing">
+    <nav className={classes.rail} aria-label="Invoicing" data-tour="inv-nav">
       {GROUPS.map((group, index) => (
         <Fragment key={group.label}>
           {index > 0 && <span className={classes.divider} aria-hidden />}
