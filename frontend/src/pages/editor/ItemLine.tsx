@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { ActionIcon, Autocomplete, NumberInput, Select, TextInput } from '@mantine/core';
+import { ActionIcon, Autocomplete, NumberInput, Select, TextInput, Tooltip } from '@mantine/core';
 import { X } from 'lucide-react';
 import { listItems } from '@/api/catalog';
 import { useSearchOptions } from '@/hooks/useSearchOptions';
@@ -89,15 +89,17 @@ export function ItemLine({ item, currency, rates, gst, zeroRated, removable, upd
           onChange={(value) => updateItem(item.id, { rate: toNumber(value) })}
         />
         <span className={classes.amount}>{formatMoney(item.amount, currency)}</span>
-        <ActionIcon
-          variant="subtle"
-          color="gray"
-          aria-label="Remove item"
-          disabled={!removable}
-          onClick={() => removeItem(item.id)}
-        >
-          <X size={15} />
-        </ActionIcon>
+        <Tooltip label="Remove item" withArrow>
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            aria-label="Remove item"
+            disabled={!removable}
+            onClick={() => removeItem(item.id)}
+          >
+            <X size={15} />
+          </ActionIcon>
+        </Tooltip>
       </div>
       <div className={classes.details}>
         {gst && (

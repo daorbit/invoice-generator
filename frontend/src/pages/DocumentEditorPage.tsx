@@ -4,8 +4,6 @@ import { ActionIcon, Box, Button, Skeleton, Tooltip } from '@mantine/core';
 import { ArrowLeft, Check, Download, Eye, FileQuestion, Send } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DocsButton } from '@/components/ui/DocsButton';
-import { TourButton } from '@/components/tour/TourButton';
-import { EDITOR_TOUR } from '@/lib/tours';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { HostNotificationsBell } from '@/components/ui/HostNotificationsBell';
 import { PdfSource } from '@/components/preview/PdfSource';
@@ -110,15 +108,7 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
           <>
             {id && draft && <StatusMenu kind={kind} id={id} status={draft.status} onChange={editor.markStatus} />}
             <Tooltip label="Preview and design" withArrow>
-              <ActionIcon
-                variant="default"
-                size="lg"
-                radius="md"
-                aria-label="Preview"
-                disabled={!draft}
-                onClick={openPreview}
-                data-tour="editor-preview"
-              >
+              <ActionIcon variant="default" size="lg" radius="md" aria-label="Preview" disabled={!draft} onClick={openPreview}>
                 <Eye size={17} />
               </ActionIcon>
             </Tooltip>
@@ -136,13 +126,7 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
               </ActionIcon>
             </Tooltip>
             {id && (
-              <Button
-                variant="default"
-                leftSection={<Send size={15} />}
-                disabled={!draft}
-                onClick={() => setShareOpen(true)}
-                data-tour="editor-share"
-              >
+              <Button variant="default" leftSection={<Send size={15} />} disabled={!draft} onClick={() => setShareOpen(true)}>
                 Share
               </Button>
             )}
@@ -151,11 +135,10 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
                 Saved
               </Button>
             ) : (
-              <Button loading={editor.saving} disabled={!draft} onClick={() => void save()} data-tour="editor-save">
+              <Button loading={editor.saving} disabled={!draft} onClick={() => void save()}>
                 {id ? 'Save changes' : `Create ${meta.singular.toLowerCase()}`}
               </Button>
             )}
-            {!hostPhone && <TourButton tour={EDITOR_TOUR} ready={!editor.loading && Boolean(draft)} />}
             {!hostPhone && <DocsButton path={DOCS.invoicing} />}
             {IS_EMBEDDED && <HostNotificationsBell />}
           </>
@@ -170,7 +153,7 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
       ) : (
         <>
           <div className={classes.workspace}>
-            <div className={classes.steps} data-tour="editor-steps">
+            <div className={classes.steps}>
               <ClientStep draft={draft} setClient={editor.setClient} fillCustomer={editor.fillCustomer} />
               <ItemsStep
                 draft={draft}

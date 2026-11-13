@@ -58,7 +58,7 @@ export function DocumentsToolbar({ kind, status, search, loading, counts, onStat
   return (
     <div className={classes.root}>
       {showFilters && (
-        <div className={classes.filters} data-tour="docs-status">
+        <div className={classes.filters}>
           <SegmentedTabs
             ariaLabel="Filter by status"
             value={status}

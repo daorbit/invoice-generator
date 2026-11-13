@@ -1,4 +1,4 @@
-import { ActionIcon } from '@mantine/core';
+import { ActionIcon, Tooltip } from '@mantine/core';
 import { FileImage, FileText, X } from 'lucide-react';
 import classes from './OrbitStudio.module.css';
 
@@ -15,9 +15,11 @@ export function FileChip({ name, kind, onRemove }: Props) {
       <Icon size={13} />
       <span className={classes.fileName}>{name}</span>
       {onRemove && (
-        <ActionIcon variant="subtle" color="gray" size="xs" radius="xl" onClick={onRemove} aria-label="Remove attachment">
-          <X size={12} />
-        </ActionIcon>
+        <Tooltip label="Remove attachment" withArrow>
+          <ActionIcon variant="subtle" color="gray" size="xs" radius="xl" onClick={onRemove} aria-label="Remove attachment">
+            <X size={12} />
+          </ActionIcon>
+        </Tooltip>
       )}
     </span>
   );

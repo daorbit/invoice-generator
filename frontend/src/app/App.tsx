@@ -3,7 +3,6 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { OpenFromQuantalog } from '@/components/ui/OpenFromQuantalog';
 import { useDismissOnHostFocus } from '@/hooks/useDismissOnHostFocus';
 import { PUBLIC_TOKEN, WORKSPACE_ID } from '@/lib/bootParams';
-import { TourHost } from '@/components/tour/TourHost';
 
 const DocumentsPage = lazy(() => import('@/pages/DocumentsPage').then((m) => ({ default: m.DocumentsPage })));
 const DocumentEditorPage = lazy(() =>
@@ -33,7 +32,6 @@ export function App() {
 
   return (
     <BrowserRouter basename={`/${WORKSPACE_ID}`}>
-      <TourHost />
       <Suspense fallback={null}>
         <Routes>
           <Route path="/" element={<DocumentsPage key="invoices" kind="invoice" />} />
