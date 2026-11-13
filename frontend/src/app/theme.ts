@@ -30,29 +30,34 @@ function badgeTextColor(color: string | undefined, themeColors: Record<string, u
 export const theme = createTheme({
   primaryColor: 'emerald',
   primaryShade: { light: 6, dark: 6 },
-  fontFamily: "'Google Sans Flex', ui-sans-serif, system-ui, -apple-system, sans-serif",
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
   fontFamilyMonospace: "ui-monospace, 'SF Mono', Menlo, monospace",
   headings: {
-    fontFamily: "'Google Sans Flex', ui-sans-serif, system-ui, sans-serif",
-    fontWeight: '650',
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    fontWeight: '600',
     sizes: {
-      h1: { fontSize: rem(26), lineHeight: '1.2' },
-      h2: { fontSize: rem(20), lineHeight: '1.25' },
-      h3: { fontSize: rem(16), lineHeight: '1.35' },
+      h1: { fontSize: rem(33), lineHeight: '1.21' },
+      h2: { fontSize: rem(24), lineHeight: '1.25' },
+      h3: { fontSize: rem(17), lineHeight: '1.4' },
     },
   },
   defaultRadius: 'md',
-  radius: { xs: rem(4), sm: rem(6), md: rem(8), lg: rem(12), xl: rem(16) },
+  radius: { xs: rem(4), sm: rem(4), md: rem(8), lg: rem(12), xl: rem(20) },
   spacing: { xs: rem(8), sm: rem(12), md: rem(16), lg: rem(24), xl: rem(32) },
+  fontSizes: { xs: rem(12), sm: rem(15), md: rem(17), lg: rem(20), xl: rem(24) },
   cursorType: 'pointer',
   colors: {
+    gray: [
+      '#f8f8fa', '#f2f2f4', '#e9e9ed', '#dedee3', '#d2d2d7',
+      '#aeaeb2', '#86868b', '#48484a', '#333336', '#1d1d1f',
+    ],
     emerald: [
-      '#eef3ff', '#dce6ff', '#b5c8ff', '#8fadff', '#5f8bff',
-      '#4776ff', '#2f6bff', '#255fef', '#1f55d6', '#142c66',
+      '#e6f0fd', '#cce2fb', '#99c5f6', '#66a8f1', '#338ced',
+      '#1a7fe8', '#0071e3', '#0066cc', '#0058b0', '#00305f',
     ],
     dark: [
-      '#d4d5da', '#b0b2ba', '#8a8c95', '#6b6d76', '#303137',
-      '#222327', '#1c1d21', '#16171a', '#111214', '#0b0c0e',
+      '#d1d1d6', '#aeaeb2', '#8e8e93', '#636366', '#333336',
+      '#222224', '#1a1a1c', '#121214', '#0b0b0c', '#000000',
     ],
   },
   shadows: {
@@ -140,7 +145,8 @@ export const theme = createTheme({
     },
     Popover: { defaultProps: { radius: 'lg', shadow: 'lg' } },
     Tooltip: { defaultProps: { radius: 'sm', openDelay: 300 } },
-    Card: { defaultProps: { radius: 'lg' } },
+    Card: { defaultProps: { radius: 'md' } },
+    Anchor: { defaultProps: { c: 'var(--accent-text)' } },
     Button: Button.extend({
       defaultProps: { radius: 'md' },
       vars: (_theme, props) =>
@@ -181,7 +187,7 @@ export const theme = createTheme({
             }
           : { root: {} },
     }),
-    Paper: { defaultProps: { radius: 'lg' } },
+    Paper: { defaultProps: { radius: 'md' } },
     Input: { defaultProps: { radius: 8 } },
     TextInput: { defaultProps: { radius: 8 } },
     PasswordInput: { defaultProps: { radius: 8 } },

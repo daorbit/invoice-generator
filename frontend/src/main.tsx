@@ -1,7 +1,6 @@
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import '@mantine/dates/styles.css';
-import '@/styles/fonts.css';
 import '@/styles/tokens.css';
 import '@/styles/mantine-overrides.css';
 import '@/styles/dropdown.css';
