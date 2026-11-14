@@ -1,5 +1,6 @@
 import { useRef } from 'react';
-import { Button, Skeleton } from '@mantine/core';
+import { Button } from '@mantine/core';
+import { DocumentSheetSkeleton } from '@/components/preview/DocumentSheetSkeleton';
 import { Download, FileQuestion } from 'lucide-react';
 import { getPublicDocument } from '@/api/public';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -68,7 +69,7 @@ export default function PublicDocumentPage({ token }: { token: string }) {
 
         <main className={classes.sheet}>
           {loading && !draft ? (
-            <Skeleton height={900} radius="md" />
+            <DocumentSheetSkeleton />
           ) : (
             draft && (
               <ScaledPage>

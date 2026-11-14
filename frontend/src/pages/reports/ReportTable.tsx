@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Skeleton } from '@mantine/core';
+import { TableRowsSkeleton } from '@/components/ui/skeleton/Skeletons';
 import classes from './Reports.module.css';
 
 export interface ReportColumn<T> {
@@ -23,9 +23,7 @@ export function ReportTable<T>({ columns, rows, rowKey, empty, showTotals, footn
   if (rows === null) {
     return (
       <div className={classes.tableSkeleton}>
-        {Array.from({ length: 5 }).map((_, index) => (
-          <Skeleton key={index} height={14} radius="sm" />
-        ))}
+        <TableRowsSkeleton rows={5} columns={Math.max(2, columns.length)} />
       </div>
     );
   }

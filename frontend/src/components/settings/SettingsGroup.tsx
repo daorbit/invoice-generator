@@ -1,6 +1,30 @@
 import type { ReactNode } from 'react';
-import { Switch } from '@mantine/core';
+import { Skeleton, Switch } from '@mantine/core';
 import classes from './settings.module.css';
+
+const SKELETON_LABELS = [110, 140, 96, 124, 150, 104];
+
+export function SettingsGroupSkeleton({ title, rows }: { title: string; rows: number }) {
+  return (
+    <section className={classes.group} aria-busy="true">
+      <div className={classes.groupHead}>
+        <div className={classes.groupTitle}>{title}</div>
+      </div>
+      <div>
+        {Array.from({ length: rows }).map((_, i) => (
+          <div key={i} className={classes.row}>
+            <div className={classes.rowText}>
+              <Skeleton height={10} width={SKELETON_LABELS[i % SKELETON_LABELS.length]} radius="sm" />
+            </div>
+            <div className={classes.rowControl}>
+              <Skeleton height={34} width={220} maw="100%" radius={8} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export function SettingsStack({ children }: { children: ReactNode }) {
   return <div className={classes.stack}>{children}</div>;

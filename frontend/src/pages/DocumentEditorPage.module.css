@@ -39,12 +39,6 @@
   cursor: default;
 }
 
-.loading {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-  gap: 20px;
-}
-
 @media (max-width: 61.25em) {
   .page {
     height: auto;
@@ -53,8 +47,7 @@
 }
 
 @container (max-width: 980px) {
-  .workspace,
-  .loading {
+  .workspace {
     grid-template-columns: minmax(0, 1fr);
   }
 

@@ -3,6 +3,8 @@ import { stateLabel } from '@/lib/gst';
 import type { Customer } from '@/types/catalog';
 import classes from './CustomerDetail.module.css';
 
+const SKELETON_LABELS = ['GSTIN', 'State', 'Billing address', 'Website'];
+
 function rows(customer: Customer): [string, string][] {
   return (
     [
@@ -30,11 +32,16 @@ export function CustomerProfile({ customer }: { customer: Customer | null }) {
           ))}
         </dl>
       ) : (
-        <div className={classes.details}>
-          {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={index} height={14} radius="sm" my={10} />
+        <dl className={classes.details} aria-busy="true">
+          {SKELETON_LABELS.map((label, index) => (
+            <div key={label} className={classes.detail}>
+              <dt>{label}</dt>
+              <dd>
+                <Skeleton height={12} width={`${70 - index * 10}%`} radius="sm" mt={4} />
+              </dd>
+            </div>
           ))}
-        </div>
+        </dl>
       )}
     </section>
   );

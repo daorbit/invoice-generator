@@ -1,7 +1,6 @@
-import { Skeleton } from '@mantine/core';
 import { CircleAlert } from 'lucide-react';
 import { SectionPage } from '@/components/layout/SectionPage';
-import { SettingsStack } from '@/components/settings/SettingsGroup';
+import { SettingsGroupSkeleton, SettingsStack } from '@/components/settings/SettingsGroup';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DocsButton } from '@/components/ui/DocsButton';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -38,8 +37,17 @@ export function SettingsPage() {
 
       {profile.loading ? (
         <div className={classes.form}>
-          <Skeleton height={320} radius="md" />
-          <Skeleton height={200} radius="md" mt="lg" />
+          <div className={classes.columns}>
+            <SettingsStack>
+              <SettingsGroupSkeleton title="Your business" rows={6} />
+              <SettingsGroupSkeleton title="Payment details" rows={5} />
+            </SettingsStack>
+            <SettingsStack>
+              <SettingsGroupSkeleton title="Logo and style" rows={2} />
+              <SettingsGroupSkeleton title="Numbers and payment terms" rows={4} />
+              <SettingsGroupSkeleton title="Defaults" rows={2} />
+            </SettingsStack>
+          </div>
         </div>
       ) : profile.failed || !draft ? (
         <EmptyState

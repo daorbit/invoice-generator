@@ -4,8 +4,8 @@ import classes from './EditorStep.module.css';
 
 interface Props {
   index: number;
-  title: string;
-  hint?: string;
+  title: ReactNode;
+  hint?: ReactNode;
   done?: boolean;
   action?: ReactNode;
   children: ReactNode;

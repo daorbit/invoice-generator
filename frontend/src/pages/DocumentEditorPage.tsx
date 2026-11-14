@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ActionIcon, Box, Button, Skeleton, Tooltip } from '@mantine/core';
+import { ActionIcon, Box, Button, Tooltip } from '@mantine/core';
 import { ArrowLeft, Check, Download, Eye, FileQuestion, Send } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DocsButton } from '@/components/ui/DocsButton';
@@ -24,6 +24,7 @@ import { ScheduleStep } from './editor/ScheduleStep';
 import { PricingStep } from './editor/PricingStep';
 import { NotesStep } from './editor/NotesStep';
 import { PreviewCanvas } from './editor/PreviewCanvas';
+import { EditorSkeleton } from './editor/EditorSkeleton';
 import { usePreviewCommit } from './editor/usePreviewCommit';
 import { StatusMenu } from './editor/StatusMenu';
 import { ActivityLine } from './editor/ActivityLine';
@@ -146,10 +147,7 @@ export function DocumentEditorPage({ kind }: { kind: DocumentKind }) {
       />
 
       {editor.loading || !draft ? (
-        <div className={classes.loading}>
-          <Skeleton height={420} radius="md" />
-          <Skeleton height={560} radius="md" />
-        </div>
+        <EditorSkeleton kind={kind} />
       ) : (
         <>
           <div className={classes.workspace}>
