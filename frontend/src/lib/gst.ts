@@ -43,7 +43,7 @@ export const GST_STATES: { value: string; label: string }[] = [
 
 const STATE_NAMES = new Map(GST_STATES.map((state) => [state.value, state.label]));
 
-export const GST_RATES = [0, 0.25, 3, 5, 12, 18, 28];
+export const GST_RATES = [0, 0.25, 3, 5, 18, 28, 40];
 export const COMMON_TAX_RATES = [0, 5, 10, 15, 20];
 
 export const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z]$/;
